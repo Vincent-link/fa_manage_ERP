@@ -1,0 +1,26 @@
+zh-CN:
+  activerecord:
+    models:
+      organization: 投资机构
+    attributes:
+      organization:
+        name: 机构名称
+        en_name: 机构英文名称
+        intro: 机构简介
+        logo: 机构logo
+        level: 机构级别
+        site: 机构官网
+        aum: 资产管理规模
+        collect_info: 募资情况
+        stock_info: 剩余可投金额
+        followed_location_ids: 关注地区
+        rmb_amount_min: 人民币单笔最小金额
+        rmb_amount_max: 人民币单笔最大金额
+        usd_amount_min: 美元单笔最小金额
+        usd_amount_max: 人民币单笔最大金额
+        teams: 机构团队
+        tag_ids: 标签id
+        round_ids: 轮次id
+        sector_ids: 行业id
+        currency_ids: 币种id
+        invest_stage_ids: 阶段id

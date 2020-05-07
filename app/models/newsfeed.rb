@@ -1,0 +1,3 @@
+class Newsfeed < Comment
+
+end

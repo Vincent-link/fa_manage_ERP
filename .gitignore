@@ -45,8 +45,7 @@ config/secrets.yml
 config/sendcloud.yml
 config/jpush.yml
 config/smtp.yml
-
-config/initializers/zombie.rb
+config/master.key
 
 config/settings.local.yml
 config/settings/*.local.yml
@@ -60,8 +59,6 @@ yarn-debug.log*
 
 public/apidocs/api/*
 public/apidocs/api-docs.json
-
-config/initializers/zombie.rb
 
 /tags
 

@@ -10,4 +10,11 @@ class ActiveSupport::TestCase
   fixtures :all
 
   # Add more helper methods to be used by all tests here...
+  def session
+    env['rack.session']
+  end
+
+  def login(user)
+    session['current_user_id'] = user&.id
+  end
 end

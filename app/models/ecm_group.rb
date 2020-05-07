@@ -1,0 +1,3 @@
+class EcmGroup < InvestorGroup
+
+end

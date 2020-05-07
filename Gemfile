@@ -21,6 +21,9 @@ gem 'pg'
 # Use Active Storage variant
 # gem 'image_processing', '~> 1.2'
 
+gem 'acts_as_paranoid'
+gem 'paper_trail'
+
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', '>= 1.4.2', require: false
 
@@ -34,18 +37,22 @@ gem 'sso_client', :git => "git@10.101.7.1:imt/sso_client.git"
 gem 'cancancan'
 
 # zombie
-gem 'zombie_service', :git => "git@10.101.7.1:imt/zombie_service.git", tag: '1.3'
-gem 'zombie', :git => "git@10.101.7.1:imt/zombie_client.git"
+gem 'zombie_service', :git => "git@10.101.7.1:imt/zombie_service.git", tag: '1.3.2'
+gem 'zombie', :git => "git@10.101.7.1:imt/zombie_client.git", tag: '1.3.2'
 
 gem "config"
+gem "whenever"
+
+gem 'will_paginate'
 
 # gems below is optional, uncomment is you need
 # kafka
 # gem 'ruby-kafka', '~> 0.7.8'
 # gem 'racecar', :git => "git@10.101.7.1:imt/racecar.git"
+
 # es
-# gem 'elasticsearch-model'
-# gem 'elasticsearch-rails'
+gem 'searchkick'
+
 # excel
 # gem 'spreadsheet'
 # gem 'axlsx'
@@ -58,6 +65,7 @@ gem 'grape-swagger'
 gem 'grape-entity'
 gem 'grape-swagger-entity'
 gem 'grape-cancan'
+gem 'grape_logging'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
@@ -75,4 +83,8 @@ group :development do
   gem 'capistrano-bundler'
   gem 'capistrano-rvm'
   gem 'capistrano-passenger'
+end
+
+group :test do
+  gem 'minitest-hooks'
 end

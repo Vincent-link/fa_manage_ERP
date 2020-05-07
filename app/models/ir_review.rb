@@ -1,0 +1,3 @@
+class IrReview < Comment
+
+end
