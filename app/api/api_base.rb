@@ -59,6 +59,8 @@ class ApiBase < Grape::API
   mount EcmGroupApi
   mount InvesteventApi
   mount UserInvestorGroupApi
+  mount RoleApi
+  mount ResourceApi
 
   add_swagger_documentation
 end

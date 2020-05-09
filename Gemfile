@@ -88,3 +88,5 @@ end
 group :test do
   gem 'minitest-hooks'
 end
+
+gem 'pry'

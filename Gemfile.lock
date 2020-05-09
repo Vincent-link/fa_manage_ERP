@@ -113,6 +113,7 @@ GEM
       capistrano (~> 3.0)
       sshkit (~> 1.2)
     chronic (0.10.2)
+    coderay (1.1.2)
     concurrent-ruby (1.1.6)
     config (2.2.1)
       deep_merge (~> 1.2, >= 1.2.1)
@@ -253,6 +254,9 @@ GEM
       activerecord (>= 4.2)
       request_store (~> 1.1)
     pg (1.2.3)
+    pry (0.13.1)
+      coderay (~> 1.1)
+      method_source (~> 1.0)
     puma (4.3.3)
       nio4r (~> 2.0)
     rack (2.2.2)
@@ -359,6 +363,7 @@ DEPENDENCIES
   minitest-hooks
   paper_trail
   pg
+  pry
   puma (~> 4.1)
   rack-cors
   rails (~> 6.0.2, >= 6.0.2.2)

@@ -2,7 +2,7 @@ module RoleExtend
   extend ActiveSupport::Concern
 
   included do
-    has_and_belongs_to_many :roles, :join_table => :users_roles
+    has_many :roles, through: :users_roles
     has_many :role_resources, :through => :roles
 
     def has_role? role

@@ -4,10 +4,10 @@ class RoleResource < ApplicationRecord
   after_destroy :destroy_children
 
   def resource
-    Resource.find_by_name self.resource_name
+    Resource.find_by_name self.name
   end
 
   def destroy_children
-    res = Resource.find_by_name self.resource_name
+    res = Resource.find_by_name self.name
   end
 end

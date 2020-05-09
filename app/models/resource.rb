@@ -447,17 +447,6 @@ class Resource
     end
   end
 
-  group :export_template, '导出中心权限' do
-    export_temps = Rails.cache.fetch('rs_all_export_temps') do
-      ExportTemplate.all
-    end
-    export_temps.each do |tmp|
-      resource "export_#{tmp.name}", "[导出中心]导出#{tmp.name}" do
-        can :show, ExportTemplate, :id => tmp.id
-      end
-    end
-  end
-
   group :common_task, '日常任务' do
     resource 'manage_common_task', '编辑日常任务' do
       can :manage, CommonTask
@@ -499,17 +488,7 @@ class Resource
   end
 
 
-  group :proxy, '代理权限' do
-    Team.available.each do |t|
-      resource "proxy_team_#{t.id}", "代理#{t.name}权限" do
-        can :manage, CallReport, :team_id => t.id
-        can :read_team, Company::Contact, :team_id => t.id
-        can :read, EmailGroup, {is_public: 'f', is_all: 't', team_id: t.id}
-        can :manage, CallReportRecord, call_reports: {team_id: t.id}
-      end
-    end
-  end
-
+  
   def self.authorize_questionnaire(sso_id, action, target) #获取权限
     if target.is_a? Array
       target = target[0].constantize.find_by_id target[1]
