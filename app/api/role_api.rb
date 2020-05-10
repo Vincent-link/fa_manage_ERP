@@ -1,7 +1,7 @@
 class RoleApi < Grape::API
   resource :roles do
 
-    desc '所有权限'
+    desc '所有权限组'
     get do
       present Role.all, with: Entities::RoleForShow
     end
@@ -62,7 +62,7 @@ class RoleApi < Grape::API
         requires :name, type: String, desc: '名称'
       end
       patch :name do
-        re = declared(params) if @role.update(declared(params))
+        re = params if @role.update(declared(params))
         present re, with: Entities::RoleForShow
       end
 
@@ -71,7 +71,7 @@ class RoleApi < Grape::API
         requires :desc, type: String, desc: '说明'
       end
       patch :desc do
-        re = declared(params) if @role.update(declared(params))
+        re = params if @role.update(declared(params))
         present re, with: Entities::RoleForShow
       end
       

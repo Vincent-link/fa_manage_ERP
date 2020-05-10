@@ -32,17 +32,14 @@ class UserApi < Grape::API
       present UserTitle.all, with: Entities::UserTitles
     end
 
-    desc '按部门筛选'
-    params do
-      requires :bu_id, type: Integer, desc: '部门id'
-    end
-    get :bu do
+    resource ':bu_id' do
+      desc '获取部门用户'
+      params do
+        requires :bu_id, type: Integer, desc: '部门id'
+      end
+      get :users do
       present User.where(bu_id: params[:bu_id]), with: Entities::Users
-    end
-
-    desc '导出用户列表'
-    get :export_users do
-      present User.all, with: Entities::Users
+      end
     end
 
     desc '所有权限组'
@@ -57,6 +54,10 @@ class UserApi < Grape::API
     end
 
     resource ':id' do
+      before do
+        @user = User.find(params[:id])
+      end
+
       desc '登录'
       post :login do
         raise 'not implement' if Rails.env.production?
@@ -76,12 +77,30 @@ class UserApi < Grape::API
         optional 'ids[]', type: Array[String], desc: "权限"
       end
       patch :update_resource do
-        @user = User.find(params[:id])
         @roles = Role.all.select { |e| params[:ids].include?(e.id.to_s) }
         @user.role_ids = @roles.map(&:id)
 
         present @user.user_roles, with: Entities::UserRole
       end
+
+      desc '更新上级负责人'
+      params do
+        requires 'leader_id', type: Integer, desc: "上级负责人"
+      end
+      patch :update_leader do
+        re = params if @user.update(declared(params))
+        present re, with: Entities::Users
+      end
+
+      desc '更新对外title'
+      params do
+        requires 'user_title_id', type: Integer, desc: "对外title"
+      end
+      patch :update_userTitle do
+        re = params if @user.update(declared(params))
+        present re, with: Entities::Users
+      end
+
     end
   end
 end
