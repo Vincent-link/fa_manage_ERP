@@ -1,0 +1,7 @@
+sso_client:
+  app_name: magazine_lee
+  sso_host: http://test1.huaxing.com/
+  client_id: aaefa9b943447002d5c0a46a4e4e21e384c69fba63878a2e2996c58c9a50dd30
+  client_secret: 992eafc7bbae18d7cb7fbdde9075201d114736618a940b1d892a33f18865d353
+
+es_host: '10.100.97.86:9200'

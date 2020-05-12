@@ -9,6 +9,7 @@ class Organization < ApplicationRecord
   has_many :comments, as: :commentable
   has_many :ir_reviews, as: :commentable
   has_many :newsfeeds, as: :commentable
+  has_many :organization_tags
 
   #todo after_create to dm
 
