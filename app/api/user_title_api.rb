@@ -1,5 +1,5 @@
-class TitleApi < Grape::API
-  resource :titles do
+class UserTitleApi < Grape::API
+  resource :user_titles do
 
     desc '所有对外title'
     get do
@@ -28,7 +28,7 @@ class TitleApi < Grape::API
       params do
         requires :name, type: String, desc: '名称'
       end
-      patch :name do
+      patch do
         re = params if @user_title.update(declared(params))
         present re, with: Entities::UserTitle
       end

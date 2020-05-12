@@ -25,6 +25,12 @@ class RoleApi < Grape::API
         present @role, with: Entities::RoleForShow
       end
 
+      desc '获取单个权限组权限'
+      get :resources do
+        @role_resources = Resource.resources.select{|e| RoleResource.where(role_id: params[:id]).pluck(:name).include?(e.name)}        
+        present @role_resources, with: Entities::RoleResource
+      end
+
       desc '更新单个权限组权限'
       params do
         optional 'names[]', type: Array[String], desc: "权限"
@@ -37,8 +43,8 @@ class RoleApi < Grape::API
 
       desc '获取权限组所有用户'
       get :users do
-        @users = User.joins("INNER JOIN user_roles ON users.id = user_roles.user_id AND user_roles.role_id = #{@role.id}")
-        present @users, with: Entities::User
+        @role_users = User.joins(:user_roles).where(user_roles: {role_id: params[:id], deleted_at: nil})
+        present @role_users, with: Entities::User
       end
 
       desc '更新权限组用户'
@@ -46,7 +52,6 @@ class RoleApi < Grape::API
         optional 'ids[]', type: Array[String], desc: "用户ID"
       end
       patch :users do
-        binding.pry
         @users = User.all.select { |e| params[:ids].include?(e.id.to_s) }
         @role.user_ids = @users.map(&:id)
         present @role.user_roles, with: Entities::UserRole
