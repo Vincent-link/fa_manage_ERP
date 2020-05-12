@@ -76,7 +76,7 @@ class UserApi < Grape::API
 
         present @user.user_roles, with: Entities::UserRole
       end
-      
+
       desc '增加一个权限组'
       params do
         optional 'role_id', type: Integer, desc: "权限组"
@@ -102,8 +102,10 @@ class UserApi < Grape::API
         requires 'leader_id', type: Integer, desc: "上级负责人"
       end
       patch :leader do
-        re = params if @user.update(declared(params))
-        present re, with: Entities::Users
+        @user.update(declared(params))
+        @user_leader = User.find(params[:leader_id])
+
+        present @user_leader, with: Entities::Leaders
       end
 
       desc '更新对外title'
@@ -111,8 +113,9 @@ class UserApi < Grape::API
         requires 'user_title_id', type: Integer, desc: "对外title"
       end
       patch :user_title do
-        re = params if @user.update(declared(params))
-        present re, with: Entities::Users
+        @user.update(declared(params))
+
+        present @user.user_title, with: Entities::UserTitle
       end
 
     end

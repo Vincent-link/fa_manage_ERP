@@ -15,8 +15,9 @@ class OrganizationTagApi < Grape::API
         requires :name, type: String, desc: '名称'
       end
       patch do
-        re = params if @organization_tag.update(declared(params))
-        present re, with: Entities::OrganizationTag
+        @organization_tag.update(declared(params))
+
+        present @organization_tag, with: Entities::OrganizationTag
       end      
     end
   end

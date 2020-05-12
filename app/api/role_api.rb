@@ -67,8 +67,8 @@ class RoleApi < Grape::API
         requires :name, type: String, desc: '名称'
       end
       patch :name do
-        re = params if @role.update(declared(params))
-        present re, with: Entities::RoleForShow
+        @role.update(declared(params))
+        present @role, with: Entities::RoleForShow
       end
 
       desc '更新权限组说明'
@@ -76,8 +76,8 @@ class RoleApi < Grape::API
         requires :desc, type: String, desc: '说明'
       end
       patch :desc do
-        re = params if @role.update(declared(params))
-        present re, with: Entities::RoleForShow
+        @role.update(declared(params))
+        present @role, with: Entities::RoleForShow
       end
       
     end

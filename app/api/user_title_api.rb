@@ -29,8 +29,8 @@ class UserTitleApi < Grape::API
         requires :name, type: String, desc: '名称'
       end
       patch do
-        re = params if @user_title.update(declared(params))
-        present re, with: Entities::UserTitle
+        @user_title.update(declared(params))
+        present @user_title, with: Entities::UserTitle
       end
 
       desc 'Title对应用户'
