@@ -12,8 +12,7 @@ module Formatters::LayoutFormatter
       result['data'] = object.delete 'data'
       result['meta']['total'] = object.delete 'total_entries'
       result['meta']['page'] = object.delete 'current_page'
-      result['meta']['pageSize'] = object.delete 'per_page'
-      result['meta']['total_pages'] = object.delete 'total_pages'
+      result['meta']['pageSize'] = object.delete('per_page') || object.delete('page_size')
     else
       result['data'] = object
     end

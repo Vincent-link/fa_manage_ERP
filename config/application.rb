@@ -40,5 +40,6 @@ module Magazine
     config.middleware.use ActionDispatch::Session::CookieStore
 
     config.i18n.default_locale = 'zh-CN'
+    config.time_zone = 'Beijing'
   end
 end

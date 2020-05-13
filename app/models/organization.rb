@@ -10,6 +10,10 @@ class Organization < ApplicationRecord
   has_many :ir_reviews, as: :commentable
   has_many :newsfeeds, as: :commentable
   has_many :organization_tags
+  has_many :lead_organization_relations, -> {relation_type_lead}, class_name: 'OrganizationRelation'
+  has_many :mate_organization_relations, -> {relation_type_mate}, class_name: 'OrganizationRelation'
+  has_many :lead_organizations, through: :lead_organization_relations, source: :relation_organization, class_name: 'Organization'
+  has_many :mate_organizations, through: :mate_organization_relations, source: :relation_organization, class_name: 'Organization'
 
   #todo after_create to dm
 
@@ -27,11 +31,27 @@ class Organization < ApplicationRecord
       t2: {value: 2, desc: 'T2'},
   }
 
+  state_config :invest_period, config: {
+      day_30: {value: 1, desc: '一个月以内'},
+      mouth_2: {value: 2, desc: '两个月'},
+      mouth_gt_3: {value: 3, desc: '三个月及以上'},
+      other: {value: 10, desc: '不一定'},
+  }
+
+  state_config :org_nature, config: {
+      a: {value: 1, desc: 'PE'},
+      b: {value: 2, desc: 'VC'},
+  }
+
+  def search_data
+    attributes.merge last_investevent_date: self.last_investevent&.birth_date
+  end
+
   def self.es_search(params)
     where_hash = {}
-    where_hash[:sector_ids] = {all: params[:sector]}
-    where_hash[:round_ids] = {all: params[:round]}
-    where_hash[:currency_ids] = {all: params[:currency]}
+    where_hash[:sector_ids] = {all: params[:sector]} if params[:sector].present?
+    where_hash[:round_ids] = {all: params[:round]} if !params[:any_round] && params[:round].present?
+    where_hash[:currency_ids] = {all: params[:currency]} if params[:currency].present?
     where_hash[:level] = params[:level] if params[:level].present?
     if params[:amount_min].present? || params[:amount_max].present?
       range = (params[:amount_min] || 0)..(params[:amount_max] || 9999999)
@@ -40,9 +60,15 @@ class Organization < ApplicationRecord
     if params[:investor_group_id]
       where_hash[:id] = InvestorGroup.find(params[:investor_group_id]).organization_ids
     end
+
+    order_hash = {}
+    if params[:order_by]
+      order_hash = {params[:order_by] => params[:order_type]}
+    end
+
     #todo association
 
-    Organization.search(params[:query], where: where_hash, page: params[:page], per_page: params[:per_page], highlight: DEFAULT_HL_TAG)
+    Organization.search(params[:query], where: where_hash, order: order_hash, page: params[:page], per_page: params[:per_page], highlight: DEFAULT_HL_TAG)
   end
 
   def last_investevent
@@ -50,7 +76,15 @@ class Organization < ApplicationRecord
     @last_investevent ||= Zombie::DmInvestevent.by_investor(self.id).order_by_date.limit(1).first
   end
 
-  def better_search_highlights
+  def last_ir_review
+    self.ir_reviews.order(:created_at).last
+  end
+
+  def last_newsfeed
+    self.newsfeeds.order(:created_at).last
+  end
+
+  def t_search_highlights
     unless self.respond_to?(:search_highlights)
       nil
     else
@@ -96,5 +130,23 @@ class Organization < ApplicationRecord
 
   def dm_investevent
     Zombie::DmInvestevent.by_investor(self.id)
+  end
+
+  def dm_investevent_relation
+    Zombie::DmInvesteventInvestorRelation.where(investor_id: self.id)
+  end
+
+  def method_missing method, *args, &block
+    return super method, *args, &block unless method.to_s =~ /^updated_at_of_\w+/
+    attr = method.to_s[14..]
+    self.class.send(:define_method, method) do
+      #self.versions.where("object_changes ?| array[:column]", column: ['alias'])
+      self.versions.where("object_changes ? :column", column: attr).order(:id).last&.created_at || self.updated_at
+    end
+    self.send method, *args, &block
+  end
+
+  def respond_to_missing?(method, *args)
+    method.to_s =~ /^updated_at_of_\w+/ || super
   end
 end

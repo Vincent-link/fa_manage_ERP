@@ -18,6 +18,9 @@ module Entities
     expose :currency_ids, documentation: {type: 'integer', desc: '关注币种', is_array: true}
     expose :scale_ids, documentation: {type: 'integer', desc: '关注投资规模', is_array: true}
     expose :tag_ids, documentation: {type: 'integer', desc: '标签', is_array: true}
+    expose :tag_desc, documentation: {type: String, desc: '标签', is_array: true} do |ins|
+      ['阿斯顿发斯蒂芬', '阿蒂芬']
+    end #todo 假数据
 
     expose :users, as: :covered_by, using: Entities::UserLite, documentation: {type: 'Entities::UserLite', desc: '对接成员'}
 
@@ -33,5 +36,9 @@ module Entities
     expose :virtual_lower_ids, documentation: {type: 'integer', desc: '虚线下级', is_array: true} do |m|
       m.dm_lower_report_relation.select {|relation| relation.report_type == 0}.map(&:id)
     end
+
+    expose :ir_review, documentation: {type: 'string', desc: 'IrReview'}
+    expose :intro, documentation: {type: 'string', desc: '简介'}
+    expose :is_dismiss, documentation: {type: 'boolean', desc: '是否已离职'}
   end
 end

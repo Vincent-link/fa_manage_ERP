@@ -6,7 +6,7 @@ class HistoryApi < Grape::API
         params do
           requires :column, type: String, desc: '字段名'
           optional :page, type: Integer, desc: '页数'
-          optional :per_page, type: Integer, desc: '每页条数'
+          optional :page_size, as: :per_page, type: Integer, desc: '每页条数'
         end
         get :column_history do
           versions = configuration[:owner].classify.constantize.find(params[:id]).versions.where("object_changes ? :column", column: params[:column])
