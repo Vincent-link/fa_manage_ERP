@@ -3,7 +3,7 @@ class ResourceApi < Grape::API
 
     desc '查看所有权限'
     get do
-      present Resource.resources, with: Entities::ResourceForShow
+      present Resource.resources, with: Entities::Resource
     end
   end
 end

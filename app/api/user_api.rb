@@ -23,19 +23,9 @@ class UserApi < Grape::API
     end
     get do
       if params[:bu_id].nil?
-        present User.all, with: Entities::Users 
+        present User.all, with: Entities::User
       else
-        present User.where(bu_id: params[:bu_id]), with: Entities::Users 
-      end
-    end
-
-    resource ':bu_id' do
-      desc '获取部门用户'
-      params do
-        requires :bu_id, type: Integer, desc: '部门id'
-      end
-      get :users do
-      present User.where(bu_id: params[:bu_id]), with: Entities::Users
+        present User.where(bu_id: params[:bu_id]), with: Entities::User
       end
     end
 
@@ -61,13 +51,13 @@ class UserApi < Grape::API
       desc '已选权限组'
       get :selected_roles do
         # binding.pry
-        selected_roles = Role.joins("INNER JOIN user_roles ON roles.id = user_roles.role_id AND user_roles.user_id = #{params[:id]}")
+        selected_roles = Role.joins(:user_roles).where(user_roles: {user_id: params[:id], deleted_at: nil})
         present selected_roles, with: Entities::Roles
       end
 
       desc '更新用户权限组'
       params do
-        optional 'ids[]', type: Array[String], desc: "权限组"
+        optional 'ids', type: Array[String], desc: "权限组"
       end
       patch :roles do
         # binding.pry
@@ -83,7 +73,6 @@ class UserApi < Grape::API
       end
       patch :role do
         @user.add_role_by_id(params[:role_id])
-
         present @user.user_roles, with: Entities::UserRole
       end
 
@@ -103,9 +92,8 @@ class UserApi < Grape::API
       end
       patch :leader do
         @user.update(declared(params))
-        @user_leader = User.find(params[:leader_id])
 
-        present @user_leader, with: Entities::Leaders
+        present User.find_by(id: params[:leader_id]), with: Entities::UserLite
       end
 
       desc '更新对外title'

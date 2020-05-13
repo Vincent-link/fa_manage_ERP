@@ -3,7 +3,7 @@ class RoleApi < Grape::API
 
     desc '所有权限组'
     get do
-      present Role.all, with: Entities::RoleForShow
+      present Role.all, with: Entities::Role
     end
 
     desc "新增权限组"
@@ -12,7 +12,7 @@ class RoleApi < Grape::API
       optional :desc, type: String, desc: '说明'
     end
     post do
-      present Role.create!(params), with: Entities::RoleForShow
+      present Role.create!(declared(params)), with: Entities::Role
     end
 
     resources ':id' do
@@ -20,25 +20,26 @@ class RoleApi < Grape::API
         @role = Role.find(params[:id])
       end
 
-      desc '查看和编辑权限组', entity: Entities::RoleForShow
+      desc '查看和编辑权限组'
       get do
-        present @role, with: Entities::RoleForShow
+        present @role, with: Entities::Role
       end
 
       desc '获取单个权限组权限'
       get :resources do
         @role_resources = Resource.resources.select{|e| RoleResource.where(role_id: params[:id]).pluck(:name).include?(e.name)}        
-        present @role_resources, with: Entities::RoleResource
+        present @role_resources, with: Entities::Resource
       end
 
       desc '更新单个权限组权限'
       params do
-        optional 'names[]', type: Array[String], desc: "权限"
+        optional 'name', type: String, desc: "权限"
       end
       patch :resources do
-        @resources = Resource.resources.select { |e| params[:names].include?(e.name) }
+        # binding.pry
+        @resources = Resource.resources.select { |e| params[:name] == e.name }
         @role.resource_ids = @resources.map(&:name)
-        present @role.role_resources, with: Entities::RoleResource
+        present @role.role_resources, with: Entities::Resource
       end
 
       desc '获取权限组所有用户'
@@ -49,7 +50,7 @@ class RoleApi < Grape::API
 
       desc '更新权限组用户'
       params do
-        optional 'ids[]', type: Array[String], desc: "用户ID"
+        optional 'ids', type: Array[String], desc: "用户ID"
       end
       patch :users do
         @users = User.all.select { |e| params[:ids].include?(e.id.to_s) }
@@ -68,7 +69,7 @@ class RoleApi < Grape::API
       end
       patch :name do
         @role.update(declared(params))
-        present @role, with: Entities::RoleForShow
+        present @role, with: Entities::Role
       end
 
       desc '更新权限组说明'
@@ -77,7 +78,7 @@ class RoleApi < Grape::API
       end
       patch :desc do
         @role.update(declared(params))
-        present @role, with: Entities::RoleForShow
+        present @role, with: Entities::Role
       end
       
     end

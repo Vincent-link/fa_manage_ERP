@@ -11,7 +11,7 @@ class UserTitleApi < Grape::API
       optional :name, type: String, desc: 'Title'
     end
     post do
-      present UserTitle.create!(params), with: Entities::UserTitle
+      present UserTitle.create!(declared(params)), with: Entities::UserTitle
     end
 
     resources ':id' do
