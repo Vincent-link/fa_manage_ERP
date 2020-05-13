@@ -5,14 +5,19 @@ class OrganizationApi < Grape::API
       optional :query, type: String, desc: '检索文本', default: '*'
       optional :sector, type: Array[Integer], desc: '行业', default: []
       optional :round, type: Array[Integer], desc: '轮次', default: []
+      optional :any_round, type: Boolean, desc: '是否不限轮次', default: false
       optional :amount_min, type: Integer, desc: '美元融资规模最小'
       optional :amount_max, type: Integer, desc: '美元融资规模最大'
       optional :level, type: Array[String], desc: '分级'
       optional :investor_group_id, type: Integer, desc: '投资人名单id'
+      optional :tier, type: Integer, desc: 'tier'
       optional :currency, type: Array[Integer], desc: '币种', default: []
-      requires :layout, type: String, desc: 'index/select', default: 'index'
+      requires :layout, type: String, desc: 'index/select', default: 'index', values: ['index', 'select', 'ecm_group']
       requires :page, type: Integer, desc: '页数', default: 1
-      requires :per_page, type: Integer, desc: '每页条数', default: 30
+      optional :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 30
+      optional :per_page, type: Integer, desc: '每页条数', default: 30
+      optional :order_by, type: String, values: ['level', 'last_investevent_date'], desc: '排序字段'
+      optional :order_type, type: String, values: ['asc', 'desc'], desc: '排序类型', default: 'desc'
     end
     get do
       organizations = Organization.es_search(params)
@@ -21,6 +26,8 @@ class OrganizationApi < Grape::API
         present organizations, with: Entities::OrganizationForIndex
       when 'select'
         present organizations, with: Entities::OrganizationForSelect
+      when 'ecm_group'
+        present organizations, with: Entities::OrganizationForEcmGroup, ecm_group: EcmGroup.find(params[:investor_group_id])
       end
     end
 
@@ -42,9 +49,10 @@ class OrganizationApi < Grape::API
       optional :en_name, type: String, desc: '机构英文名称'
       optional :level, type: String, desc: '级别，见公共字典值level'
       optional :site, type: String, desc: '机构官网'
-      optional :tags, type: Array[Integer], desc: '机构标签'
+      optional :tag_ids, type: Array[Integer], desc: '机构标签'
       optional :sector_ids, type: Array[Integer], desc: '关注行业'
       optional :round_ids, type: Array[Integer], desc: '关注轮次'
+      optional :any_round, type: Boolean, desc: '是否不限轮次', default: false
       optional :currency_ids, type: Array[Integer], desc: '可投币种'
       optional :aum, type: String, desc: '资产管理规模'
       optional :collect_info, type: String, desc: '募资情况'
@@ -56,9 +64,14 @@ class OrganizationApi < Grape::API
       optional :followed_location_ids, type: Array[Integer], desc: '关注地区'
       optional :intro, type: String, desc: '机构简介'
       optional :logo, type: String, desc: '机构logo'
+
+      optional :invest_period_id, type: Integer, desc: '投资周期'
+      optional :decision_flow, type: String, desc: '投资决策流程'
+      optional :ic_rule, type: String, desc: '投委会机制'
+      optional :alias, type: Array[String], desc: '机构别名'
     end
     post do
-      present Organization.create!(params), with: Entities::OrganizationForShow
+      present Organization.create!(declared(params, include_missing: false)), with: Entities::OrganizationForShow
     end
 
     desc '动态（假）'
@@ -116,9 +129,10 @@ class OrganizationApi < Grape::API
         optional :en_name, type: String, desc: '机构英文名称'
         optional :level, type: String, desc: '级别，见公共字典值level'
         optional :site, type: String, desc: '机构官网'
-        optional :tags, type: Array[Integer], desc: '机构标签'
+        optional :tag_ids, type: Array[Integer], desc: '机构标签'
         optional :sector_ids, type: Array[Integer], desc: '关注行业'
         optional :round_ids, type: Array[Integer], desc: '关注轮次'
+        optional :any_round, type: Boolean, desc: '是否不限轮次', default: false
         optional :currency_ids, type: Array[Integer], desc: '可投币种'
         optional :aum, type: String, desc: '资产管理规模'
         optional :collect_info, type: String, desc: '募资情况'
@@ -130,9 +144,34 @@ class OrganizationApi < Grape::API
         optional :followed_location_ids, type: Array[Integer], desc: '关注地区'
         optional :intro, type: String, desc: '机构简介'
         optional :logo, type: String, desc: '机构logo'
+        requires :part, type: String, desc: '更新区域', values: ['basic', 'head']
+
+        optional :invest_period, type: Integer, desc: '投资周期'
+        optional :decision_flow, type: String, desc: '投资决策流程'
+        optional :ic_rule, type: String, desc: '投委会机制'
+        optional :alias, type: Array[String], desc: '机构别名'
       end
       patch do
-        present Organization.update!(params), with: Entities::OrganizationForShow
+        params.delete(:part) #todo part validate
+        @organization.update!(declared(params, include_missing: false))
+        present @organization, with: Entities::OrganizationForShow
+      end
+
+
+      desc '更新机构关系', entity: Entities::OrganizationForShow
+      params do
+        requires :relation_type, type: Integer, desc: '关系类型 1:上级 2:同级', values: [1, 2]
+        requires :relation_organization_ids, type: Array[Integer], desc: '机构ids'
+      end
+      patch :organization_relations do
+        ids_name = case params[:relation_type]
+                   when 1
+                     'lead_organization_ids'
+                   when 2
+                     'mate_organization_ids'
+                   end
+        @organization.send(ids_name, params[:relation_organization_ids])
+        present @organization, with: Entities::OrganizationForShow
       end
 
       desc '跟进情况（假）'

@@ -9,6 +9,15 @@ class Member < ApplicationRecord
       virtual: {value: 2, desc: '虚线汇报'},
   }
 
+  state_config :scale, config: {
+      lt_1000: {value: 1, desc: '1000万以下'},
+      gt_1000_lt_3000: {value: 2, desc: '1000万-3000万'},
+      gt_3000_lt_5000: {value: 3, desc: '3000万-5000万'},
+      gt_5000_lt_10000: {value: 4, desc: '5000万-1亿'},
+      gt_10000_lt_20000: {value: 5, desc: '1亿-2亿'},
+      gt_20000: {value: 6, desc: '2亿以上'},
+  }
+
   #todo after_create to dm
 
   belongs_to :organization, optional: true
@@ -16,6 +25,7 @@ class Member < ApplicationRecord
 
   has_many :member_user_relations
   has_many :users, through: :member_user_relations
+  has_many :member_resumes
 
   delegate :name, to: :organization, prefix: true
 
@@ -33,11 +43,11 @@ class Member < ApplicationRecord
     @lower_report_relation ||= Zombie::DmMemberReportRelation.where(superior_id: self.id).inspect
   end
 
-  def self.es_search(params)
+  def self.es_search(params, options = {})
     where_hash = {}
-    where_hash[:sector_ids] = {all: params[:sector]}
-    where_hash[:round_ids] = {all: params[:round]}
-    where_hash[:currency_ids] = {all: params[:currency]}
+    where_hash[:sector_ids] = {all: params[:sector]} if params[:sector].present?
+    where_hash[:round_ids] = {all: params[:round]} if params[:round].present?
+    where_hash[:currency_ids] = {all: params[:currency]} if params[:currency].present?
     where_hash[:level] = params[:level] if params[:level].present?
     where_hash[:scale_ids] = params[:scale] if params[:scale].present?
     where_hash[:position_rank_id] = params[:position_rank_id] if params[:position_rank_id]
@@ -45,12 +55,23 @@ class Member < ApplicationRecord
       range = (params[:amount_min] || 0)..(params[:amount_max] || 9999999)
       where_hash[:_or] = [{usd_amount_min: range}, {usd_amount_max: range}]
     end
-    if params[:investor_group_id] || params[:followed]
-      where_hash[:id] = (InvestorGroup.find(params[:investor_group_id]).member_ids & current_user.follows.member.pluck(:id))
+    if params[:investor_group_id]
+      if where_hash[:id]
+        where_hash[:id] &= InvestorGroup.find(params[:investor_group_id]).member_ids
+      else
+        where_hash[:id] = InvestorGroup.find(params[:investor_group_id]).member_ids
+      end
+    end
+    if params[:followed]
+      if where_hash[:id]
+        where_hash[:id] &= User.current.follows.member.pluck(:id)
+      else
+        where_hash[:id] = User.current.follows.member.pluck(:id)
+      end
     end
     #todo association
 
-    Member.search(params[:query], where: where_hash, page: params[:page], per_page: params[:per_page], highlight: DEFAULT_HL_TAG)
+    Member.search(params[:query], options.merge(where: where_hash, page: params[:page] || 1, per_page: params[:per_page] || 30, highlight: DEFAULT_HL_TAG))
   end
 
   def self.syn_by_dm_member(dm_member)

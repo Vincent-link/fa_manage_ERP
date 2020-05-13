@@ -64,6 +64,8 @@ class ApiBase < Grape::API
   mount UserTitleApi
   mount OrganizationTagApi
   mount OrganizationTagCategoryApi
+  mount TagApi
+  mount MemberResumeApi
 
   add_swagger_documentation
 end

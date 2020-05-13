@@ -9,7 +9,8 @@ module Entities
     expose :sector_ids, documentation: {type: 'integer', desc: '行业', is_array: true}
     expose :round_ids, documentation: {type: 'integer', desc: '轮次', is_array: true}
     expose :currency_ids, documentation: {type: 'integer', desc: '币种', is_array: true}
+    expose :any_round, documentation: {type: 'boolean', desc: '是否不限轮次', is_array: true}
 
-    expose :better_search_highlights, documentation: {type: 'hash', desc: 'es结果高亮'}
+    expose :t_search_highlights, as: :search_highlights, documentation: {type: 'hash', desc: 'es结果高亮'}
   end
 end

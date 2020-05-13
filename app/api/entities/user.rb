@@ -8,7 +8,7 @@ module Entities
     expose :user_title_id, documentation: {type: 'integer', desc: '对外Title', required: true}
     expose :grade_id, documentation: {type: 'integer', desc: '内部职务', required: true}
     expose :wechat, documentation: {type: 'string', desc: '微信', required: true}
-    
     expose :proxier_id
+    expose :avatar, documentation: {type: 'string', desc: '用户头像', required: true}
   end
 end

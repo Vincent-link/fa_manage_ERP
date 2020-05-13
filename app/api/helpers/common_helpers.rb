@@ -25,7 +25,7 @@ module Helpers
     def present(data, *options)
       is_paging = data.respond_to?(:total_entries)
       if is_paging
-        super :per_page, data.per_page
+        super :page_size, data.per_page
         super :total_pages, data.total_pages
         super :current_page, data.current_page
         super :total_entries, data.total_entries

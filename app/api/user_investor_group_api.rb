@@ -30,7 +30,17 @@ class UserInvestorGroupApi < Grape::API
         requires :is_public, type: Boolean, desc: '是否公开'
       end
       patch do
-        present @user_investor_group.update(declared(params)), with: Entities::UserInvestorGroup
+        @user_investor_group.update(declared(params))
+        present @user_investor_group, with: Entities::UserInvestorGroup
+      end
+
+      desc '添加到名单', entity: Entities::UserInvestorGroup
+      params do
+        requires :member_id, type: Integer, desc: '投资人id'
+      end
+      post :detail do
+        @user_investor_group.members << Member.find(params[:member_id])
+        present @user_investor_group, with: Entities::UserInvestorGroup
       end
     end
   end

@@ -10,6 +10,10 @@ class CommonApi < Grape::API
           locations: CacheBox.dm_locations,
           org_tier: Organization.tier_id_name,
           member_report_type: Member.report_type_id_name,
+          member_position_rank: CacheBox.dm_position_ranks,
+          org_invest_period: Organization.invest_period_id_name,
+          org_nature: Organization.org_nature_id_name,
+          member_scale: Member.scale_id_name,
       }
     end
 

@@ -1,0 +1,6 @@
+Time::DATE_FORMATS[:date] = '%Y-%m-%d'
+Time::DATE_FORMATS[:minute] = '%Y-%m-%d %H:%M'
+Time::DATE_FORMATS[:second] = '%Y-%m-%d %H:%M:%S'
+Time::DATE_FORMATS[:dot] = '%Y.%m.%d %H:%M'
+Time::DATE_FORMATS[:mini_second] = '%Y-%m-%d %H:%M:%S.%N'
+Time::DATE_FORMATS[:month] = '%Y-%m'
