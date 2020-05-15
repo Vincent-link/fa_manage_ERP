@@ -33,7 +33,7 @@ class OrganizationApi < Grape::API
 
     desc '检索公海机构', entity: Entities::DmOrganizationLite
     params do
-      requires :query, type: String, desc: '检索' #todo validation length
+      requires :query, type: String, desc: '检索', regexp: /..+/
     end
     get :dm_search do
       dm_orgs = Zombie::DmInvestor.search_by_query_assist(params[:query])._select(:id, :name).limit(10).inspect
@@ -63,14 +63,14 @@ class OrganizationApi < Grape::API
       optional :usd_amount_max, type: String, desc: '美元最大金额'
       optional :followed_location_ids, type: Array[Integer], desc: '关注地区'
       optional :intro, type: String, desc: '机构简介'
-      optional :logo, type: String, desc: '机构logo'
-
+      optional :logo, type: File, desc: '机构logo'
       optional :invest_period_id, type: Integer, desc: '投资周期'
       optional :decision_flow, type: String, desc: '投资决策流程'
       optional :ic_rule, type: String, desc: '投委会机制'
       optional :alias, type: Array[String], desc: '机构别名'
     end
     post do
+      params[:logo] = ActionDispatch::Http::UploadedFile.new(params[:logo]) if params[:logo]
       present Organization.create!(declared(params, include_missing: false)), with: Entities::OrganizationForShow
     end
 
@@ -143,7 +143,7 @@ class OrganizationApi < Grape::API
         optional :usd_amount_max, type: String, desc: '美元最大金额'
         optional :followed_location_ids, type: Array[Integer], desc: '关注地区'
         optional :intro, type: String, desc: '机构简介'
-        optional :logo, type: String, desc: '机构logo'
+        optional :logo, type: File, desc: '机构logo'
         requires :part, type: String, desc: '更新区域', values: ['basic', 'head']
 
         optional :invest_period, type: Integer, desc: '投资周期'
@@ -152,6 +152,7 @@ class OrganizationApi < Grape::API
         optional :alias, type: Array[String], desc: '机构别名'
       end
       patch do
+        params[:logo] = ActionDispatch::Http::UploadedFile.new(params[:logo]) if params[:logo]
         params.delete(:part) #todo part validate
         @organization.update!(declared(params, include_missing: false))
         present @organization, with: Entities::OrganizationForShow
@@ -166,9 +167,9 @@ class OrganizationApi < Grape::API
       patch :organization_relations do
         ids_name = case params[:relation_type]
                    when 1
-                     'lead_organization_ids'
+                     'lead_organization_ids='
                    when 2
-                     'mate_organization_ids'
+                     'mate_organization_ids='
                    end
         @organization.send(ids_name, params[:relation_organization_ids])
         present @organization, with: Entities::OrganizationForShow
@@ -195,4 +196,5 @@ class OrganizationApi < Grape::API
   mount AddressApi, with: {owner: 'organizations'}
   mount HistoryApi, with: {owner: 'organizations'}
   mount InvesteventApi, with: {owner: 'organizations'}
+  mount OrganizationTeamApi
 end

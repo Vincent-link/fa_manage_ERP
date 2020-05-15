@@ -17,7 +17,7 @@ class OrganizationTagApi < Grape::API
       patch do
         re = params if @organization_tag.update(declared(params))
         present re, with: Entities::OrganizationTag
-      end      
+      end
     end
   end
 end

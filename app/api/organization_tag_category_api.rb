@@ -49,7 +49,7 @@ class OrganizationTagCategoryApi < Grape::API
         present OrganizationTag.create!(params), with: Entities::OrganizationTag
       end
 
-            
+
     end
   end
 end

@@ -4,6 +4,9 @@ class Member < ApplicationRecord
   searchkick language: "chinese"
   include StateConfig
 
+  has_one_attached :avatar
+  has_one_attached :card
+
   state_config :report_type, config: {
       solid: {value: 1, desc: '实线汇报'},
       virtual: {value: 2, desc: '虚线汇报'},
@@ -19,6 +22,13 @@ class Member < ApplicationRecord
   }
 
   #todo after_create to dm
+  after_validation :save_to_dm
+
+  def save_to_dm
+    dm_org = Zombie::DmInvestor._by_id(self.organization_id)
+    dm_org.person_create
+
+  end
 
   belongs_to :organization, optional: true
   belongs_to :sponsor, class_name: 'User', optional: true
@@ -51,6 +61,7 @@ class Member < ApplicationRecord
     where_hash[:level] = params[:level] if params[:level].present?
     where_hash[:scale_ids] = params[:scale] if params[:scale].present?
     where_hash[:position_rank_id] = params[:position_rank_id] if params[:position_rank_id]
+    where_hash[:tel] = params[:tel] if params[:tel]
     if params[:amount_min].present? || params[:amount_max].present?
       range = (params[:amount_min] || 0)..(params[:amount_max] || 9999999)
       where_hash[:_or] = [{usd_amount_min: range}, {usd_amount_max: range}]
@@ -98,7 +109,7 @@ class Member < ApplicationRecord
 
   def self.syn(id)
     Member.transaction do
-      if dm_member = Zombie::DmMember.where(id: id).includes(:person)._select(:id, :investor_id, :name, :en_name, :contact_email, :contact_tel, :weixin_url, :logo, :team, :position_rank_id, :position, :address_id, :sectors, :currencies, :invest_stages, :is_dimission).first
+      if dm_member = Zombie::DmMember.where(id: id).includes(:person)._select(:id, :investor_id, :name, :en_name, :contact_email, :contact_tel, :weixin_url, :logo, :position_rank_id, :position, :address_id, :sectors, :currencies, :invest_stages, :is_dimission).first
         Member.syn_by_dm_member dm_member
       end
     end

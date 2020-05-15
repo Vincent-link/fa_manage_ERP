@@ -5,6 +5,8 @@ class Organization < ApplicationRecord
 
   include StateConfig
 
+  has_one_attached :logo
+
   has_many :members
   has_many :comments, as: :commentable
   has_many :ir_reviews, as: :commentable
@@ -14,6 +16,7 @@ class Organization < ApplicationRecord
   has_many :mate_organization_relations, -> {relation_type_mate}, class_name: 'OrganizationRelation'
   has_many :lead_organizations, through: :lead_organization_relations, source: :relation_organization, class_name: 'Organization'
   has_many :mate_organizations, through: :mate_organization_relations, source: :relation_organization, class_name: 'Organization'
+  has_many :organization_teams
 
   #todo after_create to dm
 
@@ -42,6 +45,10 @@ class Organization < ApplicationRecord
       a: {value: 1, desc: 'PE'},
       b: {value: 2, desc: 'VC'},
   }
+
+  def logo_url
+    self.logo.service_url
+  end
 
   def search_data
     attributes.merge last_investevent_date: self.last_investevent&.birth_date
@@ -117,7 +124,7 @@ class Organization < ApplicationRecord
 
     if include_member && dm_organization
       Member.transaction do
-        Zombie::DmMember.by_investor(id).includes(:person)._select(:id, :investor_id, :name_without_prefix, :en_name, :contact_email, :contact_tel, :weixin_url, :logo, :team, :position_rank_id, :position, :address_id, :sectors, :currencies, :invest_stages, :is_dimission).each do |dm_member|
+        Zombie::DmMember.by_investor(id).includes(:person)._select(:id, :investor_id, :name_without_prefix, :en_name, :contact_email, :contact_tel, :weixin_url, :logo, :position_rank_id, :position, :address_id, :sectors, :currencies, :invest_stages, :is_dimission).each do |dm_member|
           Member.syn_by_dm_member(dm_member)
         end
       end

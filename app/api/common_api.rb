@@ -17,6 +17,30 @@ class CommonApi < Grape::API
       }
     end
 
+    desc 'oss upload url'
+    params do
+      requires :is_static, type: Boolean, desc: '是否静态文件', default: false
+      optional :upload_type, type: String, desc: '上传类型', values: ['organization_logo', 'member_logo']
+    end
+    get :oss_upload_url do
+      s = Aws::S3::Presigner.new
+      bucket = params[:is_static] ? 'arrow-fa' : 'arrow-fa'
+      key = case params[:upload_type]
+            when 'organization_logo'
+              'organizations/logo'
+            when 'member_logo'
+              'members/logo'
+            else
+              'temp'
+            end
+      key = "#{key}/#{SecureRandom.hex(32)}"
+      url = s.presigned_url :put_object, bucket: bucket, key: key
+      {
+          url: url,
+          path: "#{bucket}/#{key}"
+      }
+    end
+
     desc '顶部搜索（假）'
     get :head_search do
 

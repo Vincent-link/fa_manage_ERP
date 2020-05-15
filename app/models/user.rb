@@ -2,10 +2,12 @@ class User < ApplicationRecord
   include RoleExtend
   attr_accessor :proxier_id
 
+  has_one_attached :avatar
+
   has_many :investor_groups
   has_many :follows
   has_many :user_roles, dependent: :destroy
-  belongs_to :user_title
+  belongs_to :user_title, optional: true
 
   def self.find_or_create_user(auth_user_hash)
     self.find_or_create_by(:id => auth_user_hash.id) do |user|
