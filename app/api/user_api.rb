@@ -50,7 +50,6 @@ class UserApi < Grape::API
 
       desc '已选权限组'
       get :selected_roles do
-        # binding.pry
         selected_roles = Role.joins(:user_roles).where(user_roles: {user_id: params[:id], deleted_at: nil})
         present selected_roles, with: Entities::Roles
       end
@@ -60,7 +59,6 @@ class UserApi < Grape::API
         optional 'ids', type: Array[String], desc: "权限组"
       end
       patch :roles do
-        # binding.pry
         @roles = Role.all.select { |e| params[:ids].include?(e.id.to_s) } unless params[:ids].nil?
         @user.role_ids = @roles.map(&:id) unless @roles.nil?
 
@@ -108,4 +106,6 @@ class UserApi < Grape::API
 
     end
   end
+
+  mount VerificationApi, with: {owner: 'users'}
 end
