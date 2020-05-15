@@ -8,7 +8,6 @@ class UserApi < Grape::API
     desc '登出'
     post :logout do
       logout
-      present 200
     end
 
     desc '退出代理'
@@ -20,18 +19,35 @@ class UserApi < Grape::API
     desc '获取所有用户'
     params do
       optional :bu_id, type: Integer, desc: '部门id'
+      optional :query, type: String, desc: '检索姓名'
+      optional :layout, type: String, desc: '样式', values: ['lite', 'index'], default: 'index'
     end
     get do
-      if params[:bu_id].nil?
-        present User.all, with: Entities::User
-      else
-        present User.where(bu_id: params[:bu_id]), with: Entities::User
+      users = User.all
+      users = users.where(bu_id: params[:bu_id]) if params[:bu_id].present?
+      users = users.where('name like ?', "%#{params[:query]}%") if params[:query].present?
+
+      case params[:layout]
+      when 'index'
+        present users, with: Entities::UserForIndex
+      when 'lite'
+        present users, with: Entities::UserLite
       end
     end
 
     resource ':id' do
       before do
         @user = User.find(params[:id])
+      end
+
+      desc '更新用户'
+      params do
+        requires :avatar, type: File, desc: '头像'
+      end
+      patch do
+        params[:avatar] = ActionDispatch::Http::UploadedFile.new(params[:avatar]) if params[:avatar]
+        @user.update! declared(params)
+        present @user, with: Entities::UserForShow
       end
 
       desc '登录'
@@ -82,7 +98,7 @@ class UserApi < Grape::API
         @user.delete_role_by_id(params[:role_id])
 
         present @user.user_roles, with: Entities::UserRole
-      end      
+      end
 
       desc '更新上级负责人'
       params do

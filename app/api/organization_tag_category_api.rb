@@ -32,7 +32,6 @@ class OrganizationTagCategoryApi < Grape::API
         @organization_tag_category.update(declared(params))
         present @organization_tag_category, with: Entities::OrganizationTagCategory
       end
-
     end
   end
 

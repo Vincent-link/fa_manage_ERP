@@ -98,6 +98,7 @@ class InvesteventApi < Grape::API
       optional :member_id, type: Integer, desc: '投资人id'
       at_least_one_of :organization_id, :member_id
       optional :sectors, type: Array[Integer], desc: '行业'
+      optional :rounds, type: Array[Integer], desc: '轮次'
       optional :start_date, type: String, desc: '案例起始时间'
       optional :end_date, type: String, desc: '案例结束时间'
       requires :page, type: Integer, desc: '页数', default: 1
@@ -109,7 +110,8 @@ class InvesteventApi < Grape::API
                else
                  Zombie::DmInvestevent
                end
-      events = events.search(sectors: params[:sectors]) if params[:sectors]
+      events = events.search(sector: params[:sectors]) if params[:sectors]
+      events = events.search(round: params[:rounds]) if params[:rounds]
       if params[:member_id]
         events = events.by_member(params[:member_id]).order_by_date.paginate(page: params[:page], per_page: params[:per_page])
       else

@@ -53,6 +53,9 @@ gem 'will_paginate'
 # es
 gem 'searchkick'
 
+# oss
+gem 'aws-sdk', '~> 3'
+
 # excel
 # gem 'spreadsheet'
 # gem 'axlsx'

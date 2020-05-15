@@ -4,8 +4,8 @@ class MemberApi < Grape::API
       desc '投资人列表', entity: Entities::MemberForIndex
       params do
         requires :layout, type: String, desc: 'index/select', default: 'index'
-        requires :page, type: Integer, desc: '页数', default: 1
-        requires :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 30
+        optional :page, type: Integer, desc: '页数', default: 1
+        optional :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 30
       end
       get :members do
         organization = Organization.find(params[:id])
@@ -25,7 +25,8 @@ class MemberApi < Grape::API
         optional :email, type: String, desc: '投资人邮箱'
         optional :tel, type: String, desc: '手机号'
         optional :wechat, type: String, desc: '微信'
-        optional :card, type: String, desc: '名片'
+        optional :card, type: File, desc: '名片'
+        optional :avatar, type: File, desc: '头像'
         optional :tel, type: String, desc: '手机号'
         optional :sponsor_id, type: Integer, desc: '来源'
         optional :position, type: Integer, desc: '职级'
@@ -36,7 +37,7 @@ class MemberApi < Grape::API
         optional :round_ids, type: Array[Integer], desc: '关注轮次'
         optional :currency_ids, type: Array[Integer], desc: '可投币种'
         optional :scale_ids, type: Array[Integer], desc: '投资规模'
-        optional :team, type: String, desc: '团队'
+        optional :team_ids, type: Array[Integer], desc: '团队'
         optional :covered_by, type: Array[Integer], desc: '对接成员'
         optional :is_head, type: Boolean, desc: '是否高层'
         optional :is_ic, type: Boolean, desc: '是否投委会'
@@ -51,6 +52,8 @@ class MemberApi < Grape::API
         optional :intro, type: String, desc: '简介'
       end
       post :members do
+        params[:card] = ActionDispatch::Http::UploadedFile.new(params[:card]) if params[:card]
+        params[:avatar] = ActionDispatch::Http::UploadedFile.new(params[:avatar]) if params[:avatar]
         present Member.create!(params), with: Entities::MemberForShow
       end
     end
@@ -70,11 +73,12 @@ class MemberApi < Grape::API
       optional :level, type: Array[String], desc: '分级'
       optional :investor_group_id, type: Integer, desc: '投资人名单id'
       optional :covered_by, type: Integer, desc: '对接人id' #todo es_search
-      requires :layout, type: String, desc: '数据样式', default: 'index', values: ['index', 'select', 'export', 'ecm_group']
-      requires :page, type: Integer, desc: '页数', default: 1
-      requires :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 30
+      requires :layout, type: String, desc: '数据样式', default: 'index', values: ['index', 'card', 'select', 'export', 'ecm_group']
+      optional :page, type: Integer, desc: '页数', default: 1
+      optional :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 30
       optional :order_by, type: String, values: ['level', 'last_investevent_date'], desc: '排序字段'
       optional :order_type, type: String, values: ['asc', 'desc'], desc: '排序类型', default: 'desc'
+      optional :tel, type: String, desc: '手机号'
     end
     get do
       members = Member.es_search(params, includes: :organization)
@@ -83,6 +87,8 @@ class MemberApi < Grape::API
         present members, with: Entities::MemberForIndex
       when 'select'
         present members, with: Entities::MemberLite
+      when 'card'
+        present members, with: Entities::MemberForCard
       when 'export'
         present members.limit 300 #todo export
       when 'ecm_group'
@@ -90,6 +96,19 @@ class MemberApi < Grape::API
         present members, with: Entities::MemberForEcmGroup
       end
     end
+
+    desc '检索公海投资人', entity: Entities::DmOrganizationLite
+    params do
+      optional :query, type: String, desc: '检索', regexp: /..+/
+      optional :tel, type: String, desc: '手机号', regexp: /\d{8}\d+/
+    end
+    get :dm_search do
+      dm_orgs = Zombie::DmInvestor.search_by_query_assist(params[:query])._select(:id, :name).limit(10).inspect
+      org_hash = Organization.where(id: dm_orgs.map(&:id)).index_by(&:id)
+
+      present dm_orgs, with: Entities::DmOrganizationLite, org_hash: org_hash
+    end
+
 
     resource ':id' do
       desc '投资人详情', entity: Entities::MemberForShow
@@ -104,7 +123,8 @@ class MemberApi < Grape::API
         optional :email, type: String, desc: '投资人邮箱'
         optional :tel, type: String, desc: '手机号'
         optional :wechat, type: String, desc: '微信'
-        optional :card, type: String, desc: '名片'
+        optional :card, type: File, desc: '名片'
+        optional :avatar, type: File, desc: '头像'
         optional :tel, type: String, desc: '手机号'
         optional :organization_id, type: String, desc: '机构id'
         optional :sponsor_id, type: Integer, desc: '来源'
@@ -116,7 +136,7 @@ class MemberApi < Grape::API
         optional :round_ids, type: Array[Integer], desc: '关注轮次'
         optional :currency_ids, type: Array[Integer], desc: '可投币种'
         optional :scale_ids, type: Array[Integer], desc: '投资规模'
-        optional :team, type: String, desc: '团队'
+        optional :team_ids, type: Array[Integer], desc: '团队'
         optional :covered_by, type: Array[Integer], desc: '对接成员'
         optional :is_head, type: Boolean, desc: '是否高层'
         optional :is_ic, type: Boolean, desc: '是否投委会'
@@ -132,6 +152,10 @@ class MemberApi < Grape::API
         requires :part, type: String, desc: '更新区域', values: ['head', 'info']
       end
       patch do
+        params[:card] = ActionDispatch::Http::UploadedFile.new(params[:card]) if params[:card]
+        params[:avatar] = ActionDispatch::Http::UploadedFile.new(params[:avatar]) if params[:avatar]
+        #todo part validation
+        params.delete :part
         member = Member.find(params[:id])
         member.update!(params)
         present member, with: Entities::MemberForShow

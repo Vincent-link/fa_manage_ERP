@@ -89,6 +89,8 @@ Rails.application.configure do
       resource '*', headers: :any, methods: [:get, :post, :options], credentials: true
     end
   end
+
+  config.active_storage.service = :minio
 end
 
 
