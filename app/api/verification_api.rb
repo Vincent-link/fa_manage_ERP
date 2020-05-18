@@ -16,19 +16,24 @@ class VerificationApi < Grape::API
           optional :status, type: String, desc: '状态'
         end
         get :verified do
-          sponsored_verifications = Verification.where(status: params[:status], sponsor: params[:id])
-        end         
+          binding.pry
+          roles = Role.includes(:role_resources).where(role_resources: {name: 'admin_read_verification'})
+          can_verify_users = User.includes(:user_roles).where(role_resources: {name: 'admin_read_verification'})
+          can_verify_users.each do |user_id|
+            sponsored_verifications = Verification.where(status: params[:status], user_id: params[:id])
+          end
+        end
 
         resource :verifications do
           desc '提交审核'
           params do
-            requires :status, type: Boolean, values: [true, false], desc: "审核结果" 
+            requires :status, type: Boolean, values: [true, false], desc: "审核结果"
             given status: ->(val) { val == false } do
                 requires :rejection_reseaon, type: String, desc: "拒绝理由"
-            end            
-          end          
+            end
+          end
           post :verify do
-
+            Verification.update!(status: params[:status], rejection_reseaon: params[:rejection_reseaon])
           end
 
           desc '提交评分'
@@ -39,7 +44,7 @@ class VerificationApi < Grape::API
             requires :exchange, type: Integer, desc: "交易"
             requires :is_agree, type: Integer, desc: "是否通会"
             optional :other, type: Integer, desc: "其他建议"
-          end  
+          end
           post :evaluate do
 
           end
@@ -47,20 +52,20 @@ class VerificationApi < Grape::API
           desc '提交问题'
           params do
             requires :desc, type: String, desc: "描述"
-          end  
+          end
           post :question do
 
           end
 
-          desc '问题' 
+          desc '问题'
           get :questions do
 
           end
 
-          desc '评分' 
+          desc '评分'
           get :evaluations do
 
-          end 
+          end
 
         end
       end

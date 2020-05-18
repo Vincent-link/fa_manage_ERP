@@ -3,14 +3,14 @@ class OrganizationTagApi < Grape::API
     resource configuration[:owner] do
       resource :id do
 
-        desc '标签类别对应标签'
+        desc '标签类别对应标签', entity: Entities::OrganizationTag
         get :tags do
           @organization_tags = OrganizationTag.where(organization_tag_category_id: params[:id])
 
           present @organization_tags, with: Entities::OrganizationTag
         end
 
-        desc '新增标签'
+        desc '新增标签', entity: Entities::OrganizationTag
         params do
           optional :name, type: String, desc: '名称'
           optional :id, as: :organization_tag_category_id, type: Integer, desc: '标签类别ID'
@@ -34,7 +34,7 @@ class OrganizationTagApi < Grape::API
         @organization_tag.destroy!
       end
 
-      desc '更新标签'
+      desc '更新标签', entity: Entities::OrganizationTag
       params do
         requires :name, type: String, desc: '名称'
       end

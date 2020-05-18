@@ -1,12 +1,12 @@
 class OrganizationTagCategoryApi < Grape::API
   resource :organization_tag_categories do
 
-    desc '所有标签类别'
+    desc '所有标签类别', entity: Entities::OrganizationTagCategory
     get do
       present OrganizationTagCategory.all, with: Entities::OrganizationTagCategory
     end
 
-    desc "新增标签类别"
+    desc "新增标签类别", entity: Entities::OrganizationTagCategory
     params do
       optional :name, type: String, desc: '名称'
     end
@@ -24,7 +24,7 @@ class OrganizationTagCategoryApi < Grape::API
         @organization_tag_category.destroy!
       end
 
-      desc '更新标签类别'
+      desc '更新标签类别', entity: Entities::OrganizationTagCategory
       params do
         requires :name, type: String, desc: '名称'
       end

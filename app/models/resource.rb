@@ -15,6 +15,9 @@ class Resource
       can :update_ka, Company
       can :update_ka, 'system_config'
     end
+    resource 'read_verification', '查看审核' do
+      can :read, Verification
+    end
   end
 
   group 'workbench', '工作台' do

@@ -12,7 +12,7 @@ class CreateVerifications < ActiveRecord::Migration[6.0]
       t.timestamps
     end
 
-    add_index :user_id
-    add_index :sponsor
+    add_index :verifications, :user_id
+    add_index :verifications, :sponsor
   end
 end

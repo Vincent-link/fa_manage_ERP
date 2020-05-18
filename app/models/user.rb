@@ -9,6 +9,11 @@ class User < ApplicationRecord
   has_many :user_roles, dependent: :destroy
   belongs_to :user_title, optional: true
 
+  belongs_to :team, :class_name => 'Team', foreign_key: :team_id
+  belongs_to :grade, :class_name => 'Grade', foreign_key: :grade_id
+  delegate :name, to: :team, :prefix => true, allow_nil: true
+  delegate :name, to: :grade, :prefix => true, allow_nil: true
+
   def self.find_or_create_user(auth_user_hash)
     self.find_or_create_by(:id => auth_user_hash.id) do |user|
       user.name = auth_user_hash.name
@@ -51,10 +56,14 @@ class User < ApplicationRecord
   end
 
   def leader
-    User.find_by_id(self.leader_id).name unless self.leader_id.nil?
+    User.find_by_id(self.leader_id)
   end
 
-  def user_title_id
-    self.user_title.name unless self.user_title.nil?
+  def user_title_object
+    self.user_title
+  end
+
+  def role
+    Role.joins(:user_roles).where(user_roles: {user_id: self.id, deleted_at: nil})
   end
 end

@@ -1,6 +1,6 @@
 class UserApi < Grape::API
   resource :users do
-    desc '获取当前登录用户'
+    desc '获取当前登录用户', entity: Entities::User
     get :me do
       present current_user, with: Entities::User
     end
@@ -16,7 +16,7 @@ class UserApi < Grape::API
       present 200
     end
 
-    desc '获取所有用户'
+    desc '获取所有用户', entity: Entities::UserForIndex
     params do
       optional :bu_id, type: Integer, desc: '部门id'
       optional :query, type: String, desc: '检索姓名'
@@ -40,7 +40,7 @@ class UserApi < Grape::API
         @user = User.find(params[:id])
       end
 
-      desc '更新用户'
+      desc '更新用户', entity: Entities::UserForShow
       params do
         requires :avatar, type: File, desc: '头像'
       end
@@ -64,13 +64,13 @@ class UserApi < Grape::API
         present current_user, with: Entities::User
       end
 
-      desc '已选权限组'
-      get :selected_roles do
+      desc '已选权限组', entity: Entities::Role
+      get :roles do
         selected_roles = Role.joins(:user_roles).where(user_roles: {user_id: params[:id], deleted_at: nil})
-        present selected_roles, with: Entities::Roles
+        present selected_roles, with: Entities::Role
       end
 
-      desc '更新用户权限组'
+      desc '更新用户权限组', entity: Entities::UserRole
       params do
         optional 'ids', type: Array[String], desc: "权限组"
       end
@@ -78,29 +78,28 @@ class UserApi < Grape::API
         @roles = Role.all.select { |e| params[:ids].include?(e.id.to_s) } unless params[:ids].nil?
         @user.role_ids = @roles.map(&:id) unless @roles.nil?
 
-        present @user.user_roles, with: Entities::UserRole
+        present @role.user_roles, with: Entities::UserRole
       end
 
-      desc '增加一个权限组'
+      desc '增加一个权限组', entity: Entities::Role
       params do
         optional 'role_id', type: Integer, desc: "权限组"
       end
-      patch :role do
+      post :role do
         @user.add_role_by_id(params[:role_id])
-        present @user.user_roles, with: Entities::UserRole
+        present Role.find(params[:role_id]), with: Entities::Role
       end
 
-      desc '删除一个权限组'
+      desc '删除一个权限组', entity: Entities::Role
       params do
         optional 'role_id', type: Integer, desc: "权限组"
       end
       delete :role do
         @user.delete_role_by_id(params[:role_id])
-
-        present @user.user_roles, with: Entities::UserRole
+        present Role.find(params[:role_id]), with: Entities::Role
       end
 
-      desc '更新上级负责人'
+      desc '更新上级负责人', entity: Entities::UserLite
       params do
         requires 'leader_id', type: Integer, desc: "上级负责人"
       end
@@ -110,13 +109,17 @@ class UserApi < Grape::API
         present User.find_by(id: params[:leader_id]), with: Entities::UserLite
       end
 
-      desc '更新对外title'
+      desc '更新对外title', entity: Entities::UserTitle
       params do
         requires 'user_title_id', type: Integer, desc: "对外title"
+        requires 'user_title', type: String, desc: "对外title"
       end
       patch :user_title do
-        @user.update(declared(params))
-
+        result = @user.update(declared(params))
+        binding
+        if result
+          Verification.create(verification_type: "title_update", verifi: {kind: "title_update", change: [@user.user_title.name, params[:user_title]]})
+        end
         present @user.user_title, with: Entities::UserTitle
       end
 
