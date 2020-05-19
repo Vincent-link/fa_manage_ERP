@@ -185,4 +185,6 @@ class MemberApi < Grape::API
       end
     end
   end
+
+  mount CommentApi, with: {owner: 'members'}
 end
