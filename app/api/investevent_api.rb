@@ -63,7 +63,6 @@ class InvesteventApi < Grape::API
               optional :end_time, type: String, desc: '结束时间'
               optional :select, type: Array[String], desc: '图表数据白名单 sector/round/time/location/next_round/last_round 不传返回所有'
             end
-            desc '行业统计'
             get 'stat' do
               organization = Organization.find(params[:id])
               events = organization.dm_investevent #todo date_filter

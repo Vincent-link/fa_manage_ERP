@@ -21,6 +21,7 @@ module Entities
     expose :tag_desc, documentation: {type: String, desc: '标签', is_array: true} do |ins|
       ['阿斯顿发斯蒂芬', '阿蒂芬']
     end #todo 假数据
+    expose :followed_location_ids, documentation: {type: 'integer', desc: '关注地区', is_array: true}
 
     expose :users, as: :covered_by, using: Entities::UserLite, documentation: {type: 'Entities::UserLite', desc: '对接成员'}
 
@@ -39,6 +40,6 @@ module Entities
 
     expose :ir_review, documentation: {type: 'string', desc: 'IrReview'}
     expose :intro, documentation: {type: 'string', desc: '简介'}
-    expose :is_dismiss, documentation: {type: 'boolean', desc: '是否已离职'}
+    expose :is_dimission, documentation: {type: 'boolean', desc: '是否已离职'}
   end
 end

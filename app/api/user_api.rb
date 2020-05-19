@@ -1,6 +1,6 @@
 class UserApi < Grape::API
   resource :users do
-    desc '获取当前登录用户'
+    desc '获取当前登录用户', entity: Entities::User
     get :me do
       present current_user, with: Entities::User
     end

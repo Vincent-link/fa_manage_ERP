@@ -1,4 +1,25 @@
 zh-CN:
+  grape_api:
+    resources:
+      organization: 投资机构
+      address: 地址
+      comment: 评论/IRReview/Newsfeed
+      common: 通用
+      ecm_group: 细分赛道投资组
+      history: 字段历史
+      investevent: 融资事件
+      member: 投资人
+      member_resume: 投资人工作经历
+      organization_tag: 投资机构标签
+      organization_tag_category: 投资机构标签类别
+      organization_team: 投资机构团队
+      resource: 权限点
+      role: 角色
+      tag: 标签
+      user: 用户
+      user_investor_group: 个人投资组
+      user_title: 用户title
+
   activerecord:
     models:
       organization: 投资机构
