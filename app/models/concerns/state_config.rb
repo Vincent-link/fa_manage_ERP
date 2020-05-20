@@ -124,6 +124,10 @@ module StateConfig
           config.select {|k, v| v[:value] == self.send(_arg)}.keys.first.to_s
         end
 
+        define_method "#{_arg}_config" do
+          config.select {|k, v| v[:value] == self.send(_arg)}.values.first
+        end
+
         config.keys.each do |_key|
           define_singleton_method "#{_arg}_#{_key}" do
             self.where("#{self.table_name}.#{_arg} = #{config[_key][:value]}")
