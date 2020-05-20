@@ -2,6 +2,9 @@ zh-CN:
   activerecord:
     models:
       organization: 投资机构
+      user:  用户
+      evaluation: 评分
+      question: 问题
     attributes:
       organization:
         name: 机构名称
@@ -24,3 +27,36 @@ zh-CN:
         sector_ids: 行业id
         currency_ids: 币种id
         invest_stage_ids: 阶段id
+      user:
+        team_name: 团队
+        bu_id: 部门
+        leader: 负责人
+        user_title: 对外title
+        grade_name: 内部职务
+        role: 权限组
+        wechat: 微信
+        avatar: 头像
+        email: 邮箱
+        grade_id: 内部职务id
+        team_id: 团队id
+        enabled: 是否可用
+        deleted_at: 删除时间
+        leader_id: 负责人id
+        user_title_id: 对外title id
+        question: 问题
+      evaluation:
+        market: 市场
+        business: 业务
+        team: 团队
+        exchange: 交易
+        is_agree: 是否过会
+        other: 其他建议
+        user_name: 用户名称
+        avatar: 头像
+        created_at: 创建时间
+        user_id: 用户id
+        funding_id: 项目id
+      question:
+        desc: 描述
+        user_id: 用户id
+        funding_id: 项目id

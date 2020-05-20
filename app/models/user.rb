@@ -7,6 +7,8 @@ class User < ApplicationRecord
   has_many :investor_groups
   has_many :follows
   has_many :user_roles, dependent: :destroy
+  has_many :evaluations, dependent: :destroy
+  has_many :questions, dependent: :destroy
   belongs_to :user_title, optional: true
 
   belongs_to :team, :class_name => 'Team', foreign_key: :team_id
@@ -59,11 +61,26 @@ class User < ApplicationRecord
     User.find_by_id(self.leader_id)
   end
 
-  def user_title_object
-    self.user_title
-  end
-
   def role
     Role.joins(:user_roles).where(user_roles: {user_id: self.id, deleted_at: nil})
+  end
+
+  def is_admin?
+    roles = Role.includes(:role_resources).where(role_resources: {name: 'admin_manage_all'})
+    can_verify_users = UserRole.select { |e| roles.pluck(:id).include?(e.role_id) }
+    true if can_verify_users != nil && can_verify_users.pluck(:user_id).include?(self.id)
+  end
+
+  def update_title(params)
+    if self.is_admin?
+      self.update(params)
+    else
+      @user_title = UserTitle.find(params[:user_title_id])
+      Verification.create(user_id: params[:id], sponsor: params[:id], status: "processed", verification_type: "title_update", verifi: {kind: "title_update", change: [self.user_title.name, @user_title.name]})
+    end
+  end
+
+  def is_ic?
+    true
   end
 end

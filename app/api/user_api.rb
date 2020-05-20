@@ -112,14 +112,9 @@ class UserApi < Grape::API
       desc '更新对外title', entity: Entities::UserTitle
       params do
         requires 'user_title_id', type: Integer, desc: "对外title"
-        requires 'user_title', type: String, desc: "对外title"
       end
       patch :user_title do
-        result = @user.update(declared(params))
-        binding
-        if result
-          Verification.create(verification_type: "title_update", verifi: {kind: "title_update", change: [@user.user_title.name, params[:user_title]]})
-        end
+        current_user.update_title(declared(params))
         present @user.user_title, with: Entities::UserTitle
       end
 

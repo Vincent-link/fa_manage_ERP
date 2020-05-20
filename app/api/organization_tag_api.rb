@@ -1,12 +1,11 @@
 class OrganizationTagApi < Grape::API
   mounted do
     resource configuration[:owner] do
-      resource :id do
+      resource ':organization_tag_category_id' do
 
         desc '标签类别对应标签', entity: Entities::OrganizationTag
         get :tags do
-          @organization_tags = OrganizationTag.where(organization_tag_category_id: params[:id])
-
+          @organization_tags = OrganizationTag.where(organization_tag_category_id: params[:organization_tag_category_id])
           present @organization_tags, with: Entities::OrganizationTag
         end
 
@@ -18,7 +17,7 @@ class OrganizationTagApi < Grape::API
         post :tags do
           present OrganizationTag.create!(declared(params)), with: Entities::OrganizationTag
         end
-        
+
       end
     end
   end
@@ -42,7 +41,7 @@ class OrganizationTagApi < Grape::API
         @organization_tag.update(declared(params))
 
         present @organization_tag, with: Entities::OrganizationTag
-      end      
+      end
     end
   end
 end
