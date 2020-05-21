@@ -9,10 +9,11 @@ class User < ApplicationRecord
   has_many :user_roles, dependent: :destroy
   has_many :evaluations, dependent: :destroy
   has_many :questions, dependent: :destroy
+  has_many :notifications, dependent: :destroy
   belongs_to :user_title, optional: true
 
-  belongs_to :team, :class_name => 'Team', foreign_key: :team_id
-  belongs_to :grade, :class_name => 'Grade', foreign_key: :grade_id
+  belongs_to :team, optional: true
+  belongs_to :grade, optional: true
   delegate :name, to: :team, :prefix => true, allow_nil: true
   delegate :name, to: :grade, :prefix => true, allow_nil: true
 
@@ -76,7 +77,8 @@ class User < ApplicationRecord
       self.update(params)
     else
       @user_title = UserTitle.find(params[:user_title_id])
-      Verification.create(user_id: params[:id], sponsor: params[:id], status: "processed", verification_type: "title_update", verifi: {kind: "title_update", change: [self.user_title.name, @user_title.name]})
+      desc = Verification.verification_type_config[:title_update][:desc].call(self.user_title.name, @user_title.name)
+      Verification.create(user_id: self.id, sponsor: self.id, status: "processed", verification_type: "title_update", desc: desc, verifi: {kind: "title_update", change: [self.user_title.name, @user_title.name]})
     end
   end
 

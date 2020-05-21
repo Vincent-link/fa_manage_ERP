@@ -11,7 +11,6 @@ module StateConfig
           config.values.inject([]) do |result, element|
             if select_options.present? && !select_options.keys.map {|_key| element.has_key?(_key) && (select_options[_key].is_a?(Array) ? element[_key].in?(select_options[_key]) : element[_key] == select_options[_key])}.include?(false)
               result << [element[:desc], element[:value]]
-              binding.pry
             end
             result
           end
@@ -107,7 +106,6 @@ module StateConfig
         end
 
         define_singleton_method "#{_arg}_value_for_config" do |value|
-          binding.pry
           config.select {|k, v| v[:value] == value.to_i}
         end
 
@@ -125,6 +123,10 @@ module StateConfig
           config.select {|k, v| v[:value] == self.send(_arg)}.keys.first.to_s
         end
 
+        define_method "#{_arg}_config" do
+          config.select {|k, v| v[:value] == self.send(_arg)}.values.first
+        end
+
         config.keys.each do |_key|
           define_singleton_method "#{_arg}_#{_key}" do
             self.where("#{self.table_name}.#{_arg} = #{config[_key][:value]}")
@@ -135,7 +137,6 @@ module StateConfig
           end
 
           define_method "#{_arg}_#{_key}?" do
-            binding.pry
             self.send(_arg) == config[_key][:value]
           end
         end

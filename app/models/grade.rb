@@ -1,4 +1,4 @@
 class Grade < DefaultGrade
-  has_many :users, foreign_key: :grade_id
+  has_many :users
 
 end

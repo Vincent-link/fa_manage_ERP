@@ -67,5 +67,5 @@ class ApiBase < Grape::API
   mount TagApi
   mount MemberResumeApi
 
-  add_swagger_documentation
+  add_swagger_documentation array_use_braces: true
 end

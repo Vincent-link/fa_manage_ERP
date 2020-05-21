@@ -21,13 +21,12 @@ class Member < ApplicationRecord
       gt_20000: {value: 6, desc: '2亿以上'},
   }
 
-  #todo after_create to dm
   after_validation :save_to_dm
 
   def save_to_dm
     dm_org = Zombie::DmInvestor._by_id(self.organization_id)
-    dm_org.person_create
-
+    member = dm_org.person_create self.attributes_to_dm
+    self.id = member.id
   end
 
   belongs_to :organization, optional: true
@@ -47,6 +46,21 @@ class Member < ApplicationRecord
 
   def dm_member
     @dm_member ||= Zombie::DmMember.find(self.id)
+  end
+
+  def attributes_to_dm
+    dm_key_map = {
+        'name' => 'name',
+        'en_name' => 'en_name',
+        'tel' => 'contact_tel',
+        'email' => 'contact_email',
+        'wechat' => 'weixin_url',
+        'position_rank_id' => 'position_rank_id',
+        'position' => 'position',
+        'intro' => 'intro',
+        'wechat' => 'weixin_url'
+    }
+    self.attributes.transform_keys {|k| dm_key_map[k]}.compact
   end
 
   def dm_lower_report_relation

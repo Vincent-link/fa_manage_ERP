@@ -1,10 +1,33 @@
 zh-CN:
+  grape_api:
+    resources:
+      organization: 投资机构
+      address: 地址
+      comment: 评论/IRReview/Newsfeed
+      common: 通用
+      ecm_group: 细分赛道投资组
+      history: 字段历史
+      investevent: 融资事件
+      member: 投资人
+      member_resume: 投资人工作经历
+      organization_tag: 投资机构标签
+      organization_tag_category: 投资机构标签类别
+      organization_team: 投资机构团队
+      resource: 权限点
+      role: 角色
+      tag: 标签
+      user: 用户
+      user_investor_group: 个人投资组
+      user_title: 用户title
+
   activerecord:
     models:
       organization: 投资机构
       user:  用户
       evaluation: 评分
       question: 问题
+      team: 团队
+      grade: 职务
     attributes:
       organization:
         name: 机构名称
@@ -28,22 +51,17 @@ zh-CN:
         currency_ids: 币种id
         invest_stage_ids: 阶段id
       user:
-        team_name: 团队
         bu_id: 部门
-        leader: 负责人
-        user_title: 对外title
-        grade_name: 内部职务
         role: 权限组
         wechat: 微信
         avatar: 头像
         email: 邮箱
-        grade_id: 内部职务id
-        team_id: 团队id
         enabled: 是否可用
         deleted_at: 删除时间
         leader_id: 负责人id
         user_title_id: 对外title id
-        question: 问题
+        grade_id: 内部职务
+        team_id: 团队
       evaluation:
         market: 市场
         business: 业务
@@ -60,3 +78,7 @@ zh-CN:
         desc: 描述
         user_id: 用户id
         funding_id: 项目id
+      team:
+        name: 团队
+      grade:
+        name: 职级

@@ -16,6 +16,15 @@ class UserApi < Grape::API
       present 200
     end
 
+    desc '用户更新对外title', entity: Entities::UserTitle
+    params do
+      requires 'user_title_id', type: Integer, desc: "对外title"
+    end
+    patch :user_title do
+      current_user.update_title(declared(params))
+      present current_user.user_title, with: Entities::UserTitle
+    end
+
     desc '获取所有用户', entity: Entities::UserForIndex
     params do
       optional :bu_id, type: Integer, desc: '部门id'
@@ -117,9 +126,9 @@ class UserApi < Grape::API
         current_user.update_title(declared(params))
         present @user.user_title, with: Entities::UserTitle
       end
-
     end
   end
 
   mount VerificationApi, with: {owner: 'users'}
+  mount NotificationApi, with: {owner: 'users'}
 end

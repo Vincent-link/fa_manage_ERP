@@ -97,16 +97,22 @@ class MemberApi < Grape::API
       end
     end
 
-    desc '检索公海投资人', entity: Entities::DmOrganizationLite
+    desc '检索公海投资人', entity: Entities::DmMemberLite
     params do
       optional :query, type: String, desc: '检索', regexp: /..+/
       optional :tel, type: String, desc: '手机号', regexp: /\d{8}\d+/
+      optional :organization_id, type: Integer, desc: '限定机构id'
     end
     get :dm_search do
-      dm_orgs = Zombie::DmInvestor.search_by_query_assist(params[:query])._select(:id, :name).limit(10).inspect
-      org_hash = Organization.where(id: dm_orgs.map(&:id)).index_by(&:id)
+      dm_members = Zombie::DmMember
+      dm_members = dm_members.by_investor(params[:organization_id]) if params[:organization_id]
+      dm_members = dm_members.search_by_query_assist(params[:query], 'Investor') if params[:query]
+      dm_members = dm_members.where(contact_tel: params[:contact_tel]) if params[:contact_tel]
 
-      present dm_orgs, with: Entities::DmOrganizationLite, org_hash: org_hash
+      dm_members = dm_members.limit(10).inspect
+      member_hash = Member.where(id: dm_members.map(&:id)).index_by(&:id)
+
+      present dm_members, with: Entities::DmMemberLite, member_hash: member_hash
     end
 
 
@@ -170,7 +176,7 @@ class MemberApi < Grape::API
       desc '离职投资人'
       params do
         optional :organization_id, type: Integer, desc: '转移目标机构'
-        requires :is_dismiss, type: Boolean, desc: '是否离职'
+        requires :is_dimission, type: Boolean, desc: '是否离职'
       end
       patch :dismiss do
         member = Member.find(params[:id])
@@ -179,4 +185,6 @@ class MemberApi < Grape::API
       end
     end
   end
+
+  mount CommentApi, with: {owner: 'members'}
 end

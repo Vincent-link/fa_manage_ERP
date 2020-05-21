@@ -29,3 +29,22 @@ GrapeSwagger::Entity::Parser.class_eval do
     [parsed, required_params(params)]
   end
 end
+
+GrapeSwagger::DocMethods::TagNameDescription.class_eval do
+  def self.build_memo(tag)
+    {
+        name: tag,
+        description: I18n.t(tag.singularize, scope: [:grape_api, :resources], default: tag.pluralize)
+    }
+  end
+end
+
+Grape::Endpoint.class_eval do
+  def summary_object(route)
+    summary = route.options[:desc] if route.options.key?(:desc)
+    summary = route.description if route.description.present?
+    summary = route.options[:summary] if route.options.key?(:summary)
+
+    summary
+  end
+end
