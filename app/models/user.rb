@@ -72,13 +72,15 @@ class User < ApplicationRecord
     true if can_verify_users != nil && can_verify_users.pluck(:user_id).include?(self.id)
   end
 
-  def update_title(params, user)
-    if self.is_admin?
-      user.update(params)
+  def update_title(params)
+    if User.current.is_admin?
+      self.update(params)
     else
       @user_title = UserTitle.find(params[:user_title_id])
-      desc = Verification.verification_type_config[:title_update][:desc].call(self.user_title.name, @user_title.name)
-      Verification.create(user_id: self.id, sponsor: self.id, status: "processed", verification_type: "title_update", desc: desc, verifi: {kind: "title_update", change: [self.user_title.name, @user_title.name]})
+      user_title_before = self.user_title.name unless self.user_title.nil?
+
+      desc = Verification.verification_type_config[:title_update][:desc].call(user_title_before, @user_title.name)
+      Verification.create(user_id: self.id, sponsor: self.id, verification_type: "title_update", desc: desc, verifi: {kind: "title_update", change: [user_title_before, @user_title.name]})
     end
   end
 
