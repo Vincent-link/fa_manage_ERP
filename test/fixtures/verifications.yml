@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  verification_type: MyString
+  status: MyString
+  desc: MyString
+  rejection_reason: MyString
+  sponsor: 1
+  user_id: 1
+  verifi: 
+
+two:
+  verification_type: MyString
+  status: MyString
+  desc: MyString
+  rejection_reason: MyString
+  sponsor: 1
+  user_id: 1
+  verifi: 

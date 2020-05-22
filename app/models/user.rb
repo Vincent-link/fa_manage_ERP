@@ -7,7 +7,15 @@ class User < ApplicationRecord
   has_many :investor_groups
   has_many :follows
   has_many :user_roles, dependent: :destroy
+  has_many :evaluations, dependent: :destroy
+  has_many :questions, dependent: :destroy
+  has_many :notifications, dependent: :destroy
   belongs_to :user_title, optional: true
+
+  belongs_to :team, optional: true
+  belongs_to :grade, optional: true
+  delegate :name, to: :team, :prefix => true, allow_nil: true
+  delegate :name, to: :grade, :prefix => true, allow_nil: true
 
   def self.find_or_create_user(auth_user_hash)
     self.find_or_create_by(:id => auth_user_hash.id) do |user|
@@ -51,10 +59,32 @@ class User < ApplicationRecord
   end
 
   def leader
-    User.find_by_id(self.leader_id).name unless self.leader_id.nil?
+    User.find_by_id(self.leader_id)
   end
 
-  def user_title_id
-    self.user_title.name unless self.user_title.nil?
+  def role
+    Role.joins(:user_roles).where(user_roles: {user_id: self.id, deleted_at: nil})
+  end
+
+  def is_admin?
+    roles = Role.includes(:role_resources).where(role_resources: {name: 'admin_manage_all'})
+    can_verify_users = UserRole.select { |e| roles.pluck(:id).include?(e.role_id) }
+    true if can_verify_users != nil && can_verify_users.pluck(:user_id).include?(self.id)
+  end
+
+  def update_title(params)
+    if User.current.is_admin?
+      self.update(params)
+    else
+      @user_title = UserTitle.find(params[:user_title_id])
+      user_title_before = self.user_title.name unless self.user_title.nil?
+
+      desc = Verification.verification_type_config[:title_update][:desc].call(user_title_before, @user_title.name)
+      Verification.create(user_id: self.id, sponsor: self.id, verification_type: "title_update", desc: desc, verifi: {kind: "title_update", change: [user_title_before, @user_title.name]})
+    end
+  end
+
+  def is_ic?
+    true
   end
 end

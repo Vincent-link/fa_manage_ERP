@@ -6,7 +6,6 @@ module StateConfig
       options = args.extract_options!
 
       config = options[:config] || {}
-
       args.each do |_arg|
         define_singleton_method "#{_arg}_array_with_option" do |select_options = {}|
           config.values.inject([]) do |result, element|

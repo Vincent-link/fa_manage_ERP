@@ -1,0 +1,21 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  market: 1
+  business: 1
+  team: 1
+  exchange: 1
+  is_agree: false
+  other: MyString
+  user_id: 1
+  funding_id: 1
+
+two:
+  market: 1
+  business: 1
+  team: 1
+  exchange: 1
+  is_agree: false
+  other: MyString
+  user_id: 1
+  funding_id: 1

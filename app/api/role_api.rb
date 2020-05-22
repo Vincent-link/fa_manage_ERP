@@ -1,18 +1,18 @@
 class RoleApi < Grape::API
   resource :roles do
 
-    desc '所有权限组'
+    desc '所有权限组', entity: Entities::Role
     get do
-      present Role.all, with: Entities::RoleForShow
+      present Role.all, with: Entities::Role
     end
 
-    desc "新增权限组"
+    desc "新增权限组", entity: Entities::Role
     params do
       optional :name, type: String, desc: '权限组'
       optional :desc, type: String, desc: '说明'
     end
     post do
-      present Role.create!(params), with: Entities::RoleForShow
+      present Role.create!(declared(params)), with: Entities::Role
     end
 
     resources ':id' do
@@ -20,36 +20,37 @@ class RoleApi < Grape::API
         @role = Role.find(params[:id])
       end
 
-      desc '查看和编辑权限组', entity: Entities::RoleForShow
+      desc '查看和编辑权限组', entity: Entities::Role
       get do
-        present @role, with: Entities::RoleForShow
+        present @role, with: Entities::Role
       end
 
-      desc '获取单个权限组权限'
+      desc '获取单个权限组权限', entity: Entities::Resource
       get :resources do
         @role_resources = Resource.resources.select{|e| RoleResource.where(role_id: params[:id]).pluck(:name).include?(e.name)}        
-        present @role_resources, with: Entities::RoleResource
+        present @role_resources, with: Entities::Resource
       end
 
-      desc '更新单个权限组权限'
+      desc '更新单个权限组权限', entity: Entities::Resource
       params do
-        optional 'names[]', type: Array[String], desc: "权限"
+        optional 'name', type: String, desc: "权限"
       end
       patch :resources do
-        @resources = Resource.resources.select { |e| params[:names].include?(e.name) }
+        # binding.pry
+        @resources = Resource.resources.select { |e| params[:name] == e.name }
         @role.resource_ids = @resources.map(&:name)
-        present @role.role_resources, with: Entities::RoleResource
+        present @role.role_resources, with: Entities::Resource
       end
 
-      desc '获取权限组所有用户'
+      desc '获取权限组所有用户', entity: Entities::User
       get :users do
         @role_users = User.joins(:user_roles).where(user_roles: {role_id: params[:id], deleted_at: nil})
         present @role_users, with: Entities::User
       end
 
-      desc '更新权限组用户'
+      desc '更新权限组用户', entity: Entities::UserRole
       params do
-        optional 'ids[]', type: Array[String], desc: "用户ID"
+        optional 'ids', type: Array[String], desc: "用户ID"
       end
       patch :users do
         @users = User.all.select { |e| params[:ids].include?(e.id.to_s) }
@@ -62,22 +63,22 @@ class RoleApi < Grape::API
         @role.destroy!
       end
 
-      desc '更新权限组名称'
+      desc '更新权限组名称', entity: Entities::Role
       params do
         requires :name, type: String, desc: '名称'
       end
       patch :name do
-        re = params if @role.update(declared(params))
-        present re, with: Entities::RoleForShow
+        @role.update(declared(params))
+        present @role, with: Entities::Role
       end
 
-      desc '更新权限组说明'
+      desc '更新权限组说明', entity: Entities::Role
       params do
         requires :desc, type: String, desc: '说明'
       end
       patch :desc do
-        re = params if @role.update(declared(params))
-        present re, with: Entities::RoleForShow
+        @role.update(declared(params))
+        present @role, with: Entities::Role
       end
       
     end
