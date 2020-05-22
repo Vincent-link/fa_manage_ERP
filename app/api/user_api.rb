@@ -21,7 +21,7 @@ class UserApi < Grape::API
       requires 'user_title_id', type: Integer, desc: "对外title"
     end
     patch :user_title do
-      current_user.update_title(declared(params))
+      current_user.update_title(declared(params), current_user)
       present current_user.user_title, with: Entities::UserTitle
     end
 
@@ -123,7 +123,7 @@ class UserApi < Grape::API
         requires 'user_title_id', type: Integer, desc: "对外title"
       end
       patch :user_title do
-        current_user.update_title(declared(params))
+        current_user.update_title(declared(params), @user)
         present @user.user_title, with: Entities::UserTitle
       end
     end
