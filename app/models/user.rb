@@ -73,14 +73,23 @@ class User < ApplicationRecord
   end
 
   def update_title(params)
-    if User.current.is_admin?
-      self.update(params)
-    else
-      @user_title = UserTitle.find(params[:user_title_id])
-      user_title_before = self.user_title.name unless self.user_title.nil?
+    verifications = Verification.where(user_id: self.id, verification_type: "title_update")
 
-      desc = Verification.verification_type_config[:title_update][:desc].call(user_title_before, @user_title.name)
-      Verification.create(user_id: self.id, sponsor: self.id, verification_type: "title_update", desc: desc, verifi: {kind: "title_update", change: [user_title_before, @user_title.name]})
+    if User.current.is_admin?
+      User.transaction do
+        verifications.destroy_all unless verifications.nil?
+        self.update(params)
+      end
+    else
+      User.transaction do
+        verifications.destroy_all unless verifications.nil?
+
+        @user_title = UserTitle.find(params[:user_title_id])
+        user_title_before = self.user_title.name unless self.user_title.nil?
+
+        desc = Verification.verification_type_config[:title_update][:desc].call(user_title_before, @user_title.name)
+        Verification.create(user_id: self.id, sponsor: self.id, verification_type: "title_update", desc: desc, verifi: {kind: "title_update", change: [user_title_before, @user_title.name]})
+      end
     end
   end
 
