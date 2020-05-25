@@ -11,7 +11,7 @@ gem 'rails', '~> 6.0.2', '>= 6.0.2.2'
 gem 'puma', '~> 4.1'
 
 # Use Redis adapter to run Action Cable in production
-# gem 'redis-rails'
+gem 'redis-rails'
 
 gem 'pg'
 
@@ -86,6 +86,9 @@ group :development do
   gem 'capistrano-bundler'
   gem 'capistrano-rvm'
   gem 'capistrano-passenger'
+
+  gem 'ed25519', '>= 1.2', '< 2.0'
+  gem 'bcrypt_pbkdf', '>= 1.0', '< 2.0'
 end
 
 group :test do
