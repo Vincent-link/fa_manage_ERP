@@ -1,4 +1,3 @@
-*
 一、通知 notification
 
 内容 content 							string
@@ -28,13 +27,13 @@ company：company_id
 三、BSC评分 evaluation
 
 市场 market							integer
-业务 business							integer
-团队 team							integer
+业务 business						integer
+团队 team							  integer
 交易 exchange						integer
-是否通会 is_agree						boolean
-其他建议 other						string
-评分人 user_id							integer
-项目id funding_id						integer
+是否通会 is_agree				 boolean
+其他建议 other					 string
+评分人 user_id					  integer
+项目id funding_id				integer
 
 四、question
 
@@ -109,40 +108,37 @@ funding has_many bsc
 bsc has_one 投委会、上会团队
 bsc has_many evaluate、question
 
-状态
-初始化、已启动bsc、已启动bsc投票
-
-
 模型
 
 1、bsc
 status								string
 
-值：[“active”, “evaluating”, “”]
+状态
+已启动bsc、已启动bsc投票、已完成bsc
+值：[“actived”, “evaluated”, “finished”]
 
 2、投委会investment committee
 opinion							  text
 user_ids							array[integer]
-funding_id							integer
+funding_id						integer
 
 3、上会团队conference team
-opinion							text
+opinion							  text
 team_ids							array[integer]
-funding_id							integer
+funding_id						integer
 
 5、answer
-content							text
-question_id							integer
+content							  text
+question_id						integer
 user_id								integer
 
 6、evaluate
 user_id								integer
-funding_id							integer
+funding_id						integer
 
 7、question
-
 user_id								integer
-funding_id							integer
+funding_id						integer
 
 
 
