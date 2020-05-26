@@ -37,10 +37,11 @@ class FundingApi < Grape::API
       #todo 上传文档（暂时数量未定）（阮丽楠）
     end
     post do
-      #todo 上传附件（目前没有文档的表）
-      #todo 约见
-      auth_funding_code(params)
-      Funding.create(params.slice(:category))
+      # todo 上传附件（目前没有文档的表）
+      # todo 约见
+      # todo auth_funding_code(params)
+
+      Funding.create(params.slice(:category, :company_id, :round_id, :currency_id))
     end
 
     desc '项目列表'

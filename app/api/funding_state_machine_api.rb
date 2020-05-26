@@ -1,4 +1,4 @@
-class V2::FundingStateMachineApi < Grape::API
+class FundingStateMachineApi < Grape::API
   resource :fundings, desc: '项目' do
 
     resource ':id' do

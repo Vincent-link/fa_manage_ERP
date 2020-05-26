@@ -1,4 +1,6 @@
 class Funding < ApplicationRecord
+  include Concerns::Funding::Status
+
   belongs_to :company
 
   has_many :time_lines, class_name: 'TimeLine'
@@ -12,4 +14,5 @@ class Funding < ApplicationRecord
 
   has_many :funding_execution_leader, -> {kind_execution_leader}, class_name: 'FundingUser'
   has_many :execution_leader, through: :funding_execution_leader, source: :user
+
 end
