@@ -115,7 +115,8 @@ class UserApi < Grape::API
       end
       patch :user_title do
         @user.update_title(declared(params))
-        present @user.user_title, with: Entities::UserTitle
+        @user_title = UserTitle.find(params[:user_title_id])
+        present @user_title, with: Entities::UserTitle
       end
     end
   end

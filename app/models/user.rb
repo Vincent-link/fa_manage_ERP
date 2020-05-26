@@ -1,4 +1,6 @@
 class User < ApplicationRecord
+  scope :user_title_id, -> { where(user_title_id: 2) }
+
   include RoleExtend
   attr_accessor :proxier_id
 
@@ -9,6 +11,7 @@ class User < ApplicationRecord
   has_many :user_roles, dependent: :destroy
   has_many :evaluations, dependent: :destroy
   has_many :questions, dependent: :destroy
+  has_many :answers, dependent: :destroy
   has_many :notifications, dependent: :destroy
   belongs_to :user_title, optional: true
 
@@ -73,22 +76,32 @@ class User < ApplicationRecord
   end
 
   def update_title(params)
-    verifications = Verification.where(user_id: self.id, verification_type: "title_update")
+    verification = Verification.find_by(user_id: self.id, verification_type: "title_update", status: nil)
+    @user_title = UserTitle.find(params[:user_title_id])
 
     if User.current.is_admin?
       User.transaction do
-        verifications.destroy_all unless verifications.nil?
+         if !verification.nil?
+          if verification.verifi["change"][1] == @user_title.name
+            verification.update(status: true)
+          else
+            verification.update(status: false)
+          end
+        end
         self.update(params)
       end
     else
       User.transaction do
-        verifications.destroy_all unless verifications.nil?
-
-        @user_title = UserTitle.find(params[:user_title_id])
+        binding.pry
         user_title_before = self.user_title.name unless self.user_title.nil?
 
-        desc = Verification.verification_type_config[:title_update][:desc].call(user_title_before, @user_title.name)
-        Verification.create(user_id: self.id, sponsor: self.id, verification_type: "title_update", desc: desc, verifi: {kind: "title_update", change: [user_title_before, @user_title.name]})
+        if !verification.nil?
+          verification.update(verifi: {kind: "title_update", change: [user_title_before, @user_title.name]}) unless verification.verifi["change"][1] == @user_title.name
+        else
+          binding.pry
+          desc = Verification.verification_type_config[:title_update][:desc].call(user_title_before, @user_title.name)
+          Verification.create(user_id: self.id, sponsor: self.id, verification_type: "title_update", desc: desc, verifi: {kind: "title_update", change: [user_title_before, @user_title.name]})
+        end
       end
     end
   end

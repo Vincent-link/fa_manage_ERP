@@ -56,9 +56,8 @@ class VerificationApi < Grape::API
               requires :business, type: Integer, desc: "业务"
               requires :team, type: Integer, desc: "团队"
               requires :exchange, type: Integer, desc: "交易"
-              requires :is_agree, type: Boolean, desc: "是否通会"
+              requires :is_agree, type: String, desc: "是否过会", values: ["yes", "no", "fence"]
               optional :other, type: Integer, desc: "其他建议"
-              requires :is_agree, type: Boolean, desc: "是否通会"
             end
             post :evaluate do
               funding_id = @verification.verifi[:funding_id]

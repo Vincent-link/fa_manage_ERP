@@ -12,10 +12,9 @@ class OrganizationTagApi < Grape::API
         desc '新增标签', entity: Entities::OrganizationTag
         params do
           optional :name, type: String, desc: '名称'
-          optional :id, as: :organization_tag_category_id, type: Integer, desc: '标签类别ID'
         end
         post :tags do
-          present OrganizationTag.create!(declared(params)), with: Entities::OrganizationTag
+          present OrganizationTag.create!(declared(params).merge(organization_tag_category_id: params[:organization_tag_category_id])), with: Entities::OrganizationTag
         end
 
       end

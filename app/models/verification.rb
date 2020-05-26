@@ -21,6 +21,4 @@ class Verification < ApplicationRecord
         Question.create!(params) if user.is_ic?
       }},
   }
-
-  # enum verification_type: [:title_update, :bsc_evaluate, :ka_apply, :appointment_apply]
 end
