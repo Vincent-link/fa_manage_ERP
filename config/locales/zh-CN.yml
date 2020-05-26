@@ -19,6 +19,7 @@ zh-CN:
       user: 用户
       user_investor_group: 个人投资组
       user_title: 用户title
+      funding: 项目
 
   activerecord:
     models:
