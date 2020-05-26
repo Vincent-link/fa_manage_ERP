@@ -31,9 +31,14 @@ class BscApi < Grape::API
           # 开启BSC投票后，相关投委成员会收到该项目的评分审核
         end
 
-        desc '获取投委会和上会团队'
-        get :investment_committee_and_team do
-          User.includes(:evaluations).where(funding_id: @funding.id)
+        desc '获取投委会'
+        get :investment_committee do
+          @investment_committee = User.includes(:evaluations).where(funding_id: @funding.id)
+        end
+
+        desc '获取上会团队'
+        get :team do
+          @conference_team = Team.where(id: @funding.conference_team_ids)
         end
 
         desc '更新投委会和上会团队'
