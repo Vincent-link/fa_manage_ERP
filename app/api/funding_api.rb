@@ -41,7 +41,11 @@ class FundingApi < Grape::API
       # todo 约见
       # todo auth_funding_code(params)
 
-      Funding.create(params.slice(:category, :company_id, :round_id, :currency_id))
+      Funding.create(params.slice(:category, :company_id, :round_id, :currency_id, :target_amount_min,
+                                  :target_amount_max, :shares_min, :shares_max, :shiny_word, :com_desc,
+                                  :products_and_business, :financial, :operational, :market_competition,
+                                  :financing_plan, :other_desc, :sources_type, :sources_member, :sources_detail,
+                                  :funding_score))
     end
 
     desc '项目列表'

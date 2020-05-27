@@ -97,6 +97,10 @@ module StateConfig
           config[key.to_sym]&.fetch(:value, nil)
         end
 
+        define_singleton_method "#{_arg}_value_code" do |value, code|
+          config.values.map{|each_config| each_config[code.to_sym] if each_config[:value] == value}.compact.flatten.uniq
+        end
+
         define_singleton_method "#{_arg}_filter" do |*filter_array|
           if filter_array.is_a?(Array)
             filter_array = filter_array.map(&:to_sym)

@@ -1,6 +1,6 @@
 class FundingUser < ApplicationRecord
 
-  include Concerns::StateConfig
+  include StateConfig
 
   state_config :kind, config: {
       funding_project_users: {value: 1, desc: '项目成员'},

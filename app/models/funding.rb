@@ -1,5 +1,5 @@
 class Funding < ApplicationRecord
-  include Concerns::Funding::Status
+  include ModelState::FundingState
 
   belongs_to :company
 
