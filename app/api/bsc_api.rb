@@ -14,10 +14,14 @@ class BscApi < Grape::API
         post :start_bsc do
           params[:investment_committee_ids].map {|e| @funding.evaluations.create(user_id: e)}
           @funding.update(conference_team_ids: params[:conference_team_ids], bsc_status: "started")
+          # 项目成员会收到通知
+          binding.pry
+          content = Notification.project_type_config[:bsc_started][:desc].call(@funding)
+          Notification.create(notification_type: "project", content:content)
 
           # 启动BSC后，投委会成员会收到对该项目的comments征集（提问）的邀请通知
-          content = Notification.project_type_config[:pass][:desc].call(user_title_before, @user_title.name)
-          Notification.create(notification_type: "project", content:)
+          # content = Notification.project_type_config[:passed][:desc].call(user_title_before, @user_title.name)
+          # Notification.create(notification_type: "project", content:content)
         end
 
         desc '启动bsc投票'
@@ -33,6 +37,7 @@ class BscApi < Grape::API
 
         desc '获取投委会'
         get :investment_committee do
+          binding.pry
           @investment_committee = User.includes(:evaluations).where(funding_id: @funding.id)
         end
 
@@ -46,8 +51,9 @@ class BscApi < Grape::API
           requires :investment_committee_ids, type: Array[Integer]
           requires :conference_team_ids, type: Array[Integer]
         end
-        patch :investment_committee_and_team do
-          User.includes(:evaluations).where(funding_id: @funding.id)
+        post :investment_committee_and_team do
+          @funding.investment_committee_ids = params[:investment_committee_ids]
+          @funding.update(conference_team_ids: params[:conference_team_ids])
         end
 
         desc '讨论意见'
@@ -57,8 +63,24 @@ class BscApi < Grape::API
 
         desc '获取评分'
         get :evaluations do
-          evaluations = Evaluation.where(funding_id: params["id"])
-          # 判断投票结果
+          if @funding.evaluations.count == @funding.evaluations.where.not(is_agree: nil).count
+            # 反对票里面是否存在谁投了一票否决权
+            if !@funding.evaluations.where(is_agree: 'no').nil? && @funding.evaluations.where(is_agree: 'no').pluck(:user_id).is_one_vote_veto?
+              # 项目自动 pass，并给项目成员及管理员发送通知；
+            else
+              result = @funding.evaluations.where(is_agree: 'yes').count - @funding.evaluations.where(is_agree: 'no').count
+              case result
+              when 0
+                # 给项目成员及管理员发送通知；线下决策，决策后管理员到线上进行手动推进；推进后，给项目成员发通知
+              when result < 0
+                # 项目自动 pass，并给项目成员及管理员发送通知；
+              when result > 0
+                # 项目自动推进到Pursue，并给项目成员及管理员发送通知；
+              end
+            end
+          end
+          type = User.current.is_admin? ? "yes" : "no"
+          present @funding.evaluations, with: Entities::Evaluation, type: type
         end
 
         desc '提醒投票'
@@ -85,10 +107,11 @@ class BscApi < Grape::API
 
         desc '提交当前用户答案'
         params do
-          requires :desc, type: String
+          requires :question_id, type: Integer, desc: "问题id"
+          requires :desc, type: String, desc: "答案内容"
         end
         post :answer do
-          Answer.create
+          Answer.create(desc: params[:desc], question_id: params[:question_id])
         end
 
         desc '获取问题和答案'

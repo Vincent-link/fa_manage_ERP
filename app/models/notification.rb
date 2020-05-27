@@ -4,21 +4,16 @@ class Notification < ApplicationRecord
   include StateConfig
 
   state_config :project_type, config: {
-      pass: {
+      passed: {
         value: 1,
-        desc: -> (before, after){"Title由\"#{before}\"改为\"#{after}\""},
-        op: -> (user, verification){
-          @user_title = UserTitle.find_by(name: verification.verifi["change"][1])
-          user.update!(user_title_id: @user_title.id)
+        desc: -> (project){"#{project}项目还有3天将会被Pass"
       }},
-      pursue: {
+      pursued: {
         value: 2,
-        desc: -> (funding){"#{funding}已启动BSC评分"},
-        op: -> (user, params){
-          Evaluation.create!(params) if user.is_ic?
+        desc: -> (project){"#{project}项目已经被管理员移动到Pursue阶段"
       }},
-      start_bsc: {value: 3, desc: -> (company){"#{company}申请进入KA"}, op: -> {}},
-      asked: {value: 3, desc: -> (company){"#{company}申请进入KA"}, op: -> {}},
-      answered: {value: 3, desc: -> (company){"#{company}申请进入KA"}, op: -> {}},
+      bsc_started: {value: 3, desc: -> (project){"【#{project}】项目已启动BSC"}},
+      answered: {value: 3, desc: -> (project){"您在【#{project}】项目发起的提问已被回答，去查看"}, op: -> {}},
+      ask_to_review: {value: 3, desc: -> (project){"【#{project}】项目已启动BSC，去查看详情"}, op: -> {}},
   }
 end
