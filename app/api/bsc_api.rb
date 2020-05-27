@@ -14,14 +14,15 @@ class BscApi < Grape::API
         post :start_bsc do
           params[:investment_committee_ids].map {|e| @funding.evaluations.create(user_id: e)}
           @funding.update(conference_team_ids: params[:conference_team_ids], bsc_status: "started")
-          # 项目成员会收到通知
+
           binding.pry
-          content = Notification.project_type_config[:bsc_started][:desc].call(@funding)
-          Notification.create(notification_type: "project", content:content)
+          # 项目成员会收到通知
+          content = Notification.project_type_config[:bsc_started][:desc].call(@funding.company.name)
+          @funding.funding_users.map {|e| Notification.create(notification_type: "project", content: content, user_id: e.user_id)}
 
           # 启动BSC后，投委会成员会收到对该项目的comments征集（提问）的邀请通知
-          # content = Notification.project_type_config[:passed][:desc].call(user_title_before, @user_title.name)
-          # Notification.create(notification_type: "project", content:content)
+          content = Notification.project_type_config[:ask_to_review][:desc].call(@funding.company.name)
+          params[:investment_committee_ids].map {|e| Notification.create(notification_type: "project", content: content, user_id: e)}
         end
 
         desc '启动bsc投票'
@@ -31,6 +32,8 @@ class BscApi < Grape::API
         end
         post :start_bsc_evaluate do
           # 保存投委会和上会团队
+          params[:investment_committee_ids].map {|e| @funding.evaluations.create(user_id: e)}
+          @funding.update(conference_team_ids: params[:conference_team_ids], bsc_status: "evaluated")
           # 状态转换
           # 开启BSC投票后，相关投委成员会收到该项目的评分审核
         end
