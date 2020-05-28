@@ -28,4 +28,14 @@ class Funding < ApplicationRecord
       self.execution_leader_ids = [params[:execution_leader_id]]
     end
   end
+
+  def gen_funding_company_contacts(params)
+    if params[:fudning_company_contacts].present?
+      params[:fudning_company_contacts].each do |fudning_company_contact|
+        self.create(fudning_company_contact.slice(:name, :position_id, :email,
+                                                  :mobile, :wechat, :is_attend,
+                                                  :is_open, :description))
+      end
+    end
+  end
 end

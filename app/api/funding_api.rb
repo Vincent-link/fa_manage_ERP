@@ -31,9 +31,24 @@ class FundingApi < Grape::API
       optional :bd_leader_id, type: Integer, desc: 'BD负责人id'
       optional :execution_leader_id, type: Integer, desc: '执行负责人id'
 
-      #todo 约见（5个字段的swagger）（李靖超）
+      optional :teaser, type: File, desc: 'Teaser'
+      optional :bp, type: File, desc: 'BP'
+      optional :nda, type: File, desc: 'NDA'
+      optional :model, type: File, desc: 'Model'
+      optional :el, type: File, desc: 'EL'
 
-      #todo 上传文档（暂时数量未定）（阮丽楠）
+      optional :fudning_company_contacts, type: Array[JSON] do
+        requires :name, type: String, desc: '成员名称'
+        optional :position_id, type: Integer, desc: '职位'
+        optional :email, type: String, desc: '邮箱'
+        optional :mobile, type: String, desc: '手机号码'
+        optional :wechat, type: String, desc: '微信号'
+        optional :is_attend, type: Boolean, desc: '是否参会'
+        optional :is_open, type: Boolean, desc: '是否公开名片'
+        optional :description, type: String, desc: '简介'
+      end
+
+      #todo 约见（5个字段的swagger）（李靖超）
     end
     post do
       auth_funding_code(params)
@@ -44,9 +59,10 @@ class FundingApi < Grape::API
                                               :financing_plan, :other_desc, :sources_type, :sources_member, :sources_detail,
                                               :funding_score))
         funding.add_project_follower(params)
-        # todo 上传附件（目前没有文档的表）
+        funding.gen_funding_company_contacts(params)
+        # todo 上传附件
         # todo 约见
-        # todo 上传文档（暂时数量未定）（阮丽楠）
+        # todo 上传文档
       end
       present funding, with: Entities::FundingLite
     end

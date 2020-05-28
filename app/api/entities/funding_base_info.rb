@@ -1,12 +1,8 @@
 module Entities
   class FundingBaseInfo < Base
     expose :id, documentation: {type: 'integer', desc: '项目id'}
-    expose :status, documentation: {type: 'json', desc: '状态'} do |ins|
-      {
-          id: ins.status,
-          name: ins.status_desc
-      }
-    end
+    expose :name, documentation: {type: 'string', desc: '项目名称'}
+    expose :shiny_word, documentation: {type: 'string', desc: '一句话两点'}
     expose :category, documentation: {type: 'json', desc: '项目类型'} do |ins|
       {
           id: ins.category,
@@ -22,6 +18,7 @@ module Entities
     expose :operating_days do |ins|
       (Date.today - ins.time_lines.first.created_at.to_date).to_i
     end
-    expose :company, with: Entities::CompanyLite, documentation: {type: 'Entities::CompanyLite', desc: '公司信息'}
+    expose :company, with: Entities::CompanyBaseInfo, documentation: {type: 'Entities::CompanyBaseInfo', desc: '公司信息'}
+    expose :target_amount, documentation: {type: 'float', desc: '交易金额'}
   end
 end
