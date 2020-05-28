@@ -1,4 +1,6 @@
 class Verification < ApplicationRecord
+  belongs_to :user
+  
   include StateConfig
 
   state_config :verification_type, config: {
@@ -11,7 +13,7 @@ class Verification < ApplicationRecord
       }},
       bsc_evaluate: {
         value: 2,
-        desc: -> (funding){"#{funding}已启动BSC评分"},
+        desc: -> (funding){"【#{funding}】已启动BSC评分"},
         op: -> (user, params){
           Evaluation.create!(params) if user.is_ic?
       }},

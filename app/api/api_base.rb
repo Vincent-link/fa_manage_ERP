@@ -67,6 +67,8 @@ class ApiBase < Grape::API
   mount TagApi
   mount MemberResumeApi
   mount FundingApi
+  mount VerificationApi
+  mount NotificationApi
 
   add_swagger_documentation array_use_braces: true
 end

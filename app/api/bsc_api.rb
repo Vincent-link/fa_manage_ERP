@@ -15,7 +15,6 @@ class BscApi < Grape::API
           params[:investment_committee_ids].map {|e| @funding.evaluations.create(user_id: e)}
           @funding.update(conference_team_ids: params[:conference_team_ids], bsc_status: "started")
 
-          binding.pry
           # 项目成员会收到通知
           content = Notification.project_type_config[:bsc_started][:desc].call(@funding.company.name)
           @funding.funding_users.map {|e| Notification.create(notification_type: "project", content: content, user_id: e.user_id)}
@@ -32,21 +31,23 @@ class BscApi < Grape::API
         end
         post :start_bsc_evaluate do
           # 保存投委会和上会团队
-          params[:investment_committee_ids].map {|e| @funding.evaluations.create(user_id: e)}
+          @funding.investment_committee_ids = params[:investment_committee_ids]
           @funding.update(conference_team_ids: params[:conference_team_ids], bsc_status: "evaluated")
-          # 状态转换
           # 开启BSC投票后，相关投委成员会收到该项目的评分审核
+          desc = Verification.verification_type_config[:bsc_evaluate][:desc].call(@funding.company.name)
+          @funding.funding_users.map {|e| Verification.create(verification_type: "bsc_evaluate", desc: desc, user_id: e.user_id, verifi: {funding_id: @funding.id})}
         end
 
-        desc '获取投委会'
+        desc '获取投委会', entity: Entities::UserLite
         get :investment_committee do
-          binding.pry
-          @investment_committee = User.includes(:evaluations).where(funding_id: @funding.id)
+          @investment_committee = User.includes(:evaluations).where({evaluations: {funding_id: @funding.id}})
+          present @investment_committee, with: Entities::UserLite
         end
 
-        desc '获取上会团队'
+        desc '获取上会团队', entity: Entities::UserLite
         get :team do
           @conference_team = Team.where(id: @funding.conference_team_ids)
+          present @conference_team, with: Entities::UserLite
         end
 
         desc '更新投委会和上会团队'
@@ -59,9 +60,25 @@ class BscApi < Grape::API
           @funding.update(conference_team_ids: params[:conference_team_ids])
         end
 
-        desc '讨论意见'
+        desc '获取讨论意见'
         get :opinion do
-          @funding.investment_committee_opinion
+          opinion = Hash.new
+          opinion["投委会意见"] = @funding.investment_committee_opinion
+          opinion["项目组意见"] = @funding.project_team_opinion
+          present opinion, with: Grape::Presenters::Presenter
+        end
+
+        desc '更新讨论意见'
+        params do
+          requires :investment_committee_opinion, type: String, desc: "投委会意见"
+          requires :project_team_opinion, type: String, desc: "项目组意见"
+        end
+        patch :opinion do
+          @funding.update(declared(params))
+          opinion = Hash.new
+          opinion["投委会意见"] = params[:investment_committee_opinion]
+          opinion["项目组意见"] = params[:project_team_opinion]
+          present opinion, with: Grape::Presenters::Presenter
         end
 
         desc '获取评分'
@@ -70,15 +87,38 @@ class BscApi < Grape::API
             # 反对票里面是否存在谁投了一票否决权
             if !@funding.evaluations.where(is_agree: 'no').nil? && @funding.evaluations.where(is_agree: 'no').pluck(:user_id).is_one_vote_veto?
               # 项目自动 pass，并给项目成员及管理员发送通知；
+              Funding.transaction do
+                @funding.update(status: 9)
+                content = Notification.project_type_config[:passed][:desc].call(@funding.company.name)
+                @funding.funding_users.map {|e| Notification.create(notification_type: "project", content: content, user_id: e.user_id)}
+              end
             else
               result = @funding.evaluations.where(is_agree: 'yes').count - @funding.evaluations.where(is_agree: 'no').count
               case result
               when 0
                 # 给项目成员及管理员发送通知；线下决策，决策后管理员到线上进行手动推进；推进后，给项目成员发通知
+                content = Notification.project_type_config[:waitting][:desc].call(@funding.company.name)
+                @funding.funding_users.map {|e| Notification.create(notification_type: "project", content: content, user_id: e.user_id)}
+
+                roles = Role.includes(:role_resources).where(role_resources: {name: 'admin_read_verification'})
+                can_verify_users = UserRole.select { |e| roles.pluck(:id).include?(e.role_id) }
+
+                desc = Verification.verification_type_config[:bsc_evaluate][:desc].call(@funding.company.name)
+                can_verify_users.pluck(:user_id).map {|e| Verification.create(verification_type: "bsc_evaluate", desc: desc, user_id: e.user_id, verifi: {funding_id: @funding.id})} unless can_verify_users.nil?
               when result < 0
                 # 项目自动 pass，并给项目成员及管理员发送通知；
+                Funding.transaction do
+                  @funding.update(status: 9)
+                  content = Notification.project_type_config[:passed][:desc].call(@funding.company.name)
+                  @funding.funding_users.map {|e| Notification.create(notification_type: "project", content: content, user_id: e.user_id)}
+                end
               when result > 0
                 # 项目自动推进到Pursue，并给项目成员及管理员发送通知；
+                Funding.transaction do
+                  @funding.update(status: 3)
+                  content = Notification.project_type_config[:pursued][:desc].call(@funding.company.name)
+                  @funding.funding_users.map {|e| Notification.create(notification_type: "project", content: content, user_id: e.user_id)}
+                end
               end
             end
           end
@@ -88,7 +128,8 @@ class BscApi < Grape::API
 
         desc '提醒投票'
         post :remind_to_vote do
-          # 创建通知
+          content = Notification.project_type_config[:ask_to_review][:desc].call(@funding.company.name)
+          @funding.evaluations.where(is_agree: nil).map {|e| Notification.create(notification_type: "project", content: content, user_id: e.user_id)}
         end
 
         desc '删除当前用户答案'

@@ -7,5 +7,6 @@ module Entities
 
     expose :rejection_reason, documentation: {type: 'string', desc: '拒绝理由', required: true}
     expose :sponsor, documentation: {type: 'string', desc: '发起人', required: true}
+    expose :verifi, documentation: {type: 'string', desc: '发起人', required: true}
   end
 end

@@ -13,6 +13,7 @@ class User < ApplicationRecord
   has_many :questions, dependent: :destroy
   has_many :answers, dependent: :destroy
   has_many :notifications, dependent: :destroy
+  has_many :verifications, dependent: :destroy
   belongs_to :user_title, optional: true
 
   belongs_to :team, optional: true

@@ -120,7 +120,4 @@ class UserApi < Grape::API
       end
     end
   end
-
-  mount VerificationApi, with: {owner: 'users'}
-  mount NotificationApi, with: {owner: 'users'}
 end

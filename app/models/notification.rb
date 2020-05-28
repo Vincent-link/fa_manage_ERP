@@ -6,7 +6,7 @@ class Notification < ApplicationRecord
   state_config :project_type, config: {
       passed: {
         value: 1,
-        desc: -> (project){"#{project}项目还有3天将会被Pass"
+        desc: -> (project){"#{project}未通过BSC投票，项目移动到Pass"
       }},
       pursued: {
         value: 2,
@@ -15,5 +15,6 @@ class Notification < ApplicationRecord
       bsc_started: {value: 3, desc: -> (project){"【#{project}】项目已启动BSC"}},
       answered: {value: 3, desc: -> (project){"您在【#{project}】项目发起的提问已被回答，去查看"}, op: -> {}},
       ask_to_review: {value: 3, desc: -> (project){"【#{project}】项目已启动BSC，去查看详情"}, op: -> {}},
+      waitting: {value: 3, desc: -> (project){"【#{project}】已完成BSC投票，赞成票+中立票数之和=反对票，待管理员手动推进"}, op: -> {}},
   }
 end
