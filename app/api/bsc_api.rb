@@ -1,6 +1,36 @@
 class BscApi < Grape::API
   mounted do
     resource configuration[:owner] do
+
+      desc '删除当前用户答案', entity: Entities::Answer
+      params do
+        requires :answer_id, type: Integer
+      end
+      delete :answer do
+        Answer.find(params[:answer_id]).destroy
+      end
+
+      desc '更新当前用户答案', entity: Entities::Answer
+      params do
+        requires :answer_id, type: Integer
+        requires :desc, type: String
+      end
+      patch :answer do
+        @answer = Answer.find(params[:answer_id])
+        @answer.update(desc: params[:desc])
+        present @answer, with: Entities::Answer
+      end
+
+      desc '提交当前用户答案', entity: Entities::Answer
+      params do
+        requires :question_id, type: Integer, desc: "问题id"
+        requires :desc, type: String, desc: "答案内容"
+      end
+      post :answer do
+        @answer = Answer.create(desc: params[:desc], question_id: params[:question_id], user_id: User.current.id)
+        present @answer, with: Entities::Answer
+      end
+
       resource ':id' do
         before do
           @funding = Funding.find(params[:id])
@@ -132,35 +162,10 @@ class BscApi < Grape::API
           @funding.evaluations.where(is_agree: nil).map {|e| Notification.create(notification_type: "project", content: content, user_id: e.user_id)}
         end
 
-        desc '删除当前用户答案'
-        params do
-          requires :answer_id, type: Integer
-        end
-        delete :answer do
-          Answer.find(params[:answer_id]).destroy
-        end
-
-        desc '更新当前用户答案'
-        params do
-          requires :answer_id, type: Integer
-          requires :desc, type: String
-        end
-        patch :answer do
-          Answer.find(params[:answer_id]).update(desc: params[:desc])
-        end
-
-        desc '提交当前用户答案'
-        params do
-          requires :question_id, type: Integer, desc: "问题id"
-          requires :desc, type: String, desc: "答案内容"
-        end
-        post :answer do
-          Answer.create(desc: params[:desc], question_id: params[:question_id])
-        end
-
-        desc '获取问题和答案'
+        desc '获取问题和答案', entity: Entities::Question
         get :questions do
-          questions_answers = Question.joins(:answers).where(funding_id: params[:funding_id])
+          questions = Question.joins(:answers).where(funding_id: params[:id])
+          present questions, with: Entities::Question
         end
 
       end

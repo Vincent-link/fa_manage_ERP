@@ -59,7 +59,7 @@ class VerificationApi < Grape::API
         present @verification, with: Entities::Verification
       end
 
-      desc '提交评分'
+      desc '提交评分', entity: Entities::Evaluation
       params do
         requires :market, type: Integer, desc: "市场"
         requires :business, type: Integer, desc: "业务"
@@ -69,32 +69,21 @@ class VerificationApi < Grape::API
         optional :other, type: Integer, desc: "其他建议"
       end
       post :evaluate do
-        funding_id = @verification.verifi[:funding_id]
-        present Verification.verification_type_config[:bsc_evaluate][:op].call(@user, declared(params).merge(user_id: User.current.id, funding_id: funding_id)), with: Entities::Evaluation
+        funding_id = @verification.verifi["funding_id"]
+        evaluation = Verification.verification_type_config[:bsc_evaluate][:op].call(User.current, declared(params).merge(user_id: User.current.id, funding_id: funding_id))
+        present evaluation, with: Entities::Evaluation
       end
 
-      desc '提交问题'
+      desc '提交问题', entity: Entities::Question
       params do
         requires :desc, type: String, desc: "描述"
       end
       post :question do
-        funding_id = @verification.verifi[:funding_id]
-        present Verification.verification_type_config[:post_question][:op].call(@user, declared(params).merge(user_id: User.current.id, funding_id: funding_id)), with: Entities::Question
+        funding_id = @verification.verifi["funding_id"]
+        question = Verification.verification_type_config[:post_question][:op].call(User.current, declared(params).merge(user_id: User.current.id, funding_id: funding_id))
+        present question, with: Entities::Question
       end
 
-      desc '问题'
-      get :questions do
-        @questions = Question.all
-
-        present @questions, with: Entities::Question
-      end
-
-      desc '评分'
-      get :evaluations do
-        @evaluations = Evaluation.all
-
-        present @evaluations, with: Entities::Evaluation
-      end
     end
   end
 end
