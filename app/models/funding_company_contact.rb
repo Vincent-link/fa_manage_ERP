@@ -1,4 +1,5 @@
 class FundingCompanyContact < ApplicationRecord
+  acts_as_paranoid
 
   include StateConfig
 

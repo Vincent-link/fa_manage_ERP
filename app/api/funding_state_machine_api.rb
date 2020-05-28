@@ -1,10 +1,11 @@
 class FundingStateMachineApi < Grape::API
+  helpers ::Helpers::FundingBigHelpers
+
   resource :fundings, desc: '项目' do
 
     resource ':id' do
       before do
         @funding = Funding.find params[:id]
-        authorize! :secret, @funding
       end
 
       after do
@@ -18,30 +19,40 @@ class FundingStateMachineApi < Grape::API
         optional :financial, type: String, desc: '财务数据'
         optional :operational, type: String, desc: '运营数据'
         optional :market_competition, type: String, desc: '市场竞争分析'
-        # todo 确定BP的文件数量（阮丽楠）
-        # todo 可能还有修改！
+        optional :financing_plan, type: String, desc: '融资计划'
+        optional :other_desc, type: String, desc: '其他'
+        optional :bp, type: File, desc: 'BP'
       end
       post 'interesting' do
-        # todo 修改
+        @funding.auth_status(Funding.status_reviewing_value)
+        if params[:bp].present?
+          # todo 上传bp文件
+        end
+        @funding.update(params.slice(:com_desc, :products_and_business, :financial, :operational, :market_competition,
+                                     :financing_plan, :other_desc).merge(status: Funding.status_interesting_value))
       end
 
       desc '进入Voting阶段'
       params do
         requires :is_list, type: Boolean, desc: '是否为上市/新三板公司'
         optional :ticker, type: String, desc: '上市公司股票信息'
-        requires :pre_investment_valuation, type: Float, desc: '本轮投前估值'
-        requires :bd_leader_id, type: Integer, desc: 'BD负责人id'
-        requires :execution_leader_id, type: Integer, desc: '执行负责人id'
+        requires :post_investment_valuation, type: Float, desc: '本轮投后估值'
+        requires :currency_id, type: Integer, desc: '币种'
 
         requires :com_desc, type: String, desc: '公司简介（不少于400字）'
         requires :products_and_business, type: String, desc: '产品与商业模式'
         requires :financial, type: String, desc: '财务数据'
         requires :operational, type: String, desc: '运营数据'
         requires :market_competition, type: String, desc: '市场竞争分析'
-        # todo 可能还有修改！
+        requires :financing_plan, type: String, desc: '融资计划'
+        optional :other_desc, type: String, desc: '其他'
       end
       post 'voting' do
-        # todo 判断com_desc 400字
+        if ActiveModel::Type::Boolean.new.cast params[:is_list]
+          raise '未传股票信息' unless params[:ticker].present?
+        end
+        raise '公司简介不少于400字' if params[:com_desc].size < 400
+
         # todo 修改
       end
 
@@ -116,6 +127,8 @@ class FundingStateMachineApi < Grape::API
         # todo 修改
         # todo 填理由到TimeLine(除了 reviewing和interesting其他状态都必填)
       end
+
+
     end
   end
 end
