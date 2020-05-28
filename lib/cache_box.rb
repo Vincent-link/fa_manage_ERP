@@ -14,6 +14,12 @@ class CacheBox
     end
   end
 
+  def self.dm_single_rounds
+    Rails.cache.fetch('dm_single_rounds') do
+      Zombie::DmInvestRound.all.map{|ins| [ins.id, ins.name]}.to_h
+    end
+  end
+
   def self.dm_currencies
     Rails.cache.fetch('dm_currencies') do
       Zombie::DmCurrency.all.as_json.map do |ins|
