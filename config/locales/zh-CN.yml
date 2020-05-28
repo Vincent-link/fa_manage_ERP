@@ -20,6 +20,8 @@ zh-CN:
       user_investor_group: 个人投资组
       user_title: 用户title
       funding: 项目
+      verification: 审核
+      notification: 通知
 
   activerecord:
     models:

@@ -93,13 +93,11 @@ class User < ApplicationRecord
       end
     else
       User.transaction do
-        binding.pry
         user_title_before = self.user_title.name unless self.user_title.nil?
 
         if !verification.nil?
           verification.update(verifi: {kind: "title_update", change: [user_title_before, @user_title.name]}) unless verification.verifi["change"][1] == @user_title.name
         else
-          binding.pry
           desc = Verification.verification_type_config[:title_update][:desc].call(user_title_before, @user_title.name)
           Verification.create(user_id: self.id, sponsor: self.id, verification_type: "title_update", desc: desc, verifi: {kind: "title_update", change: [user_title_before, @user_title.name]})
         end

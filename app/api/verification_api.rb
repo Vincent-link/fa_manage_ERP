@@ -15,7 +15,6 @@ class VerificationApi < Grape::API
       optional :status, type: Boolean, desc: '状态', values: [true, false]
     end
     get :verified do
-      binding.pry
       roles = Role.includes(:role_resources).where(role_resources: {name: 'admin_read_verification'})
       can_verify_users = UserRole.select { |e| roles.pluck(:id).include?(e.role_id) }
       # 如果有查看权限，判断该管理员是否是某些项目的投委会成员

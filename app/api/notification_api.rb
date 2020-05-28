@@ -6,7 +6,6 @@ class NotificationApi < Grape::API
       optional :is_read, type: Boolean, desc: '是否已读', values: [true, false]
     end
     get do
-      binding.pry
       notifications = User.current.notifications.where(notification_type: params[:notification_type])
       notifications = notifications.where(is_read: params[:is_read]) unless params[:is_read].nil?
       present notifications, with: Entities::Notification
