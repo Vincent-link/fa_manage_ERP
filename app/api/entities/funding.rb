@@ -45,5 +45,8 @@ module Entities
     expose :other_desc, documentation: {type: 'string', desc: '其他'}
     expose :sources_type, documentation: {type: 'integer', desc: '融资来源类型'}
     expose :sources_detail, documentation: {type: 'string', desc: '融资来源明细'}
+    expose :confidentiality_level, documentation: {type: 'integer', desc: '保密等级'}
+    expose :confidentiality_reason, documentation: {type: 'string', desc: '保密原因'}
+    expose :is_reportable, documentation: {type: 'boolean', desc: '是否出现在周报/日报'}
   end
 end

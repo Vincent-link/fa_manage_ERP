@@ -73,7 +73,7 @@ class FundingApi < Grape::API
       optional :sector_id, type: Array[Integer], desc: '行业'
       optional :round_id, type: Array[Integer], desc: '轮次'
       optional :pipeline, type: Array[Integer], desc: 'Pipeline阶段'
-      # todo Pipeline阶段暂时没有
+      # todo Pipeline阶段暂时没有（李靖超）
     end
     get do
 
@@ -132,7 +132,7 @@ class FundingApi < Grape::API
         when 'pop'
           present @funding, with: Entities::Funding
         when 'page'
-
+          present @funding, with: Entities::FundingComprehensive
         end
       end
     end
