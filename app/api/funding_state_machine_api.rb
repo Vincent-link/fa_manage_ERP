@@ -9,7 +9,8 @@ class FundingStateMachineApi < Grape::API
       end
 
       after do
-        # todo 所有状态修改全生成TimeLine
+        @funding.reload
+        @funding.time_lines.create(status: @funding.status, reason: params[:reason], user_id: current_user.id)
       end
 
       desc '进入Interesting阶段'

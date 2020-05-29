@@ -1,7 +1,15 @@
 class Funding < ApplicationRecord
   acts_as_paranoid
+  searchkick
 
   include ModelState::FundingState
+
+  has_many_attached :funding_materials
+  has_one_attached :funding_teaser
+  has_one_attached :funding_bp
+  has_one_attached :funding_nda
+  has_one_attached :funding_model
+  has_one_attached :funding_el
 
   belongs_to :company
 
@@ -16,6 +24,30 @@ class Funding < ApplicationRecord
 
   has_many :funding_execution_leader, -> { kind_execution_leader }, class_name: 'FundingUser'
   has_many :execution_leader, through: :funding_execution_leader, source: :user
+
+  def self.es_search(params)
+    where_hash = {}
+    where_hash[:sector_ids] = {all: params[:sector]} if params[:sector].present?
+    where_hash[:round_ids] = {all: params[:round]} if !params[:any_round] && params[:round].present?
+    where_hash[:currency_ids] = {all: params[:currency]} if params[:currency].present?
+    where_hash[:level] = params[:level] if params[:level].present?
+    if params[:amount_min].present? || params[:amount_max].present?
+      range = (params[:amount_min] || 0)..(params[:amount_max] || 9999999)
+      where_hash[:_or] = [{usd_amount_min: range}, {usd_amount_max: range}]
+    end
+    if params[:investor_group_id]
+      where_hash[:id] = InvestorGroup.find(params[:investor_group_id]).organization_ids
+    end
+
+    order_hash = {}
+    if params[:order_by]
+      order_hash = {params[:order_by] => params[:order_type]}
+    end
+
+    #todo association
+
+    Organization.search(params[:query], where: where_hash, order: order_hash, page: params[:page], per_page: params[:per_page], highlight: DEFAULT_HL_TAG)
+  end
 
   def add_project_follower(params)
     if params[:project_user_ids].present?
@@ -45,6 +77,29 @@ class Funding < ApplicationRecord
     self.create(params.slice(:name, :position_id, :email,
                              :mobile, :wechat, :is_attend,
                              :is_open, :description))
+  end
+
+  def funding_various_file(params)
+    if params[:attachments].present?
+      self.funding_materials = params[:attachments].map do |attachment|
+        ActionDispatch::Http::UploadedFile.new(attachment)
+      end
+    end
+    if params[:teaser].present?
+      self.funding_teaser = ActionDispatch::Http::UploadedFile.new(params[:teaser])
+    end
+    if params[:bp].present?
+      self.funding_bp = ActionDispatch::Http::UploadedFile.new(params[:bp])
+    end
+    if params[:nda].present?
+      self.funding_nda = ActionDispatch::Http::UploadedFile.new(params[:nda])
+    end
+    if params[:model].present?
+      self.funding_model = ActionDispatch::Http::UploadedFile.new(params[:model])
+    end
+    if params[:el].present?
+      self.funding_el = ActionDispatch::Http::UploadedFile.new(params[:el])
+    end
   end
 
   def funding_status_auth(status, go_to, params)

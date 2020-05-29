@@ -25,7 +25,7 @@ class FundingApi < Grape::API
       optional :sources_detail, type: String, desc: '来源明细'
       optional :funding_score, type: Integer, desc: '项目评分'
 
-      optional :attachment, type: Array[File], desc: '附件'
+      optional :attachments, type: Array[File], desc: '附件'
 
       optional :project_user_ids, type: Array[Integer], desc: '项目成员id'
       optional :bd_leader_id, type: Integer, desc: 'BD负责人id'
@@ -60,9 +60,8 @@ class FundingApi < Grape::API
                                               :funding_score))
         funding.add_project_follower(params)
         funding.gen_funding_company_contacts(params)
-        # todo 上传附件
+        funding.funding_various_file(params)
         # todo 约见
-        # todo 上传文档
       end
       present funding, with: Entities::FundingLite
     end
@@ -108,7 +107,7 @@ class FundingApi < Grape::API
         optional :sources_detail, type: String, desc: '来源明细'
         optional :funding_score, type: Integer, desc: '项目评分'
 
-        optional :attachment, type: Array[File], desc: '附件'
+        optional :attachments, type: Array[File], desc: '附件'
 
         optional :project_user_ids, type: Array[Integer], desc: '项目成员id'
         optional :bd_leader_id, type: Integer, desc: 'BD负责人id'
@@ -124,12 +123,17 @@ class FundingApi < Grape::API
         Funding.create(params.slice(:category))
       end
 
-      desc '项目详情'
+      desc '项目详情', entity: Entities::Funding
       params do
-
+        requires :type, type: String, desc: '样式：弹窗：pop、页面：page'
       end
       get do
-        present @funding, with: Entities::Funding
+        case params[:type]
+        when 'pop'
+          present @funding, with: Entities::Funding
+        when 'page'
+
+        end
       end
     end
   end
