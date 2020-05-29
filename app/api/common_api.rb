@@ -15,6 +15,7 @@ class CommonApi < Grape::API
           org_nature: Organization.org_nature_id_name,
           member_scale: Member.scale_id_name,
           funding_contact_position: FundingCompanyContact.position_id_id_name,
+          funding_status: Funding.status_id_name
       }
     end
 

@@ -47,6 +47,31 @@ class Funding < ApplicationRecord
                              :is_open, :description))
   end
 
+  def funding_status_auth(status, go_to, params)
+    self.auth_status(status, go_to)
+    self.auth_data(go_to, params)
+  end
+
+  def auth_data(go_to, params)
+    case go_to
+    when Funding.status_voting_value
+      if ActiveModel::Type::Boolean.new.cast params[:is_list]
+        raise '未传股票信息' unless params[:ticker].present?
+      end
+      raise '公司简介不少于400字' if params[:com_desc].size < 400
+    when Funding.status_execution_value
+      # todo 判断是否上传EL
+      # todo 判断是否有收入预测（李靖超）
+    when Funding.status_closing_value
+      # todo 判断是否有TS tracklog
+      # todo 判断是否有TS状态换过的 tracklog
+    when Funding.status_closed_value
+      # todo 判断是否有SPA tracklog
+    when Funding.status_paid_value
+      # todo 判断是否提交财务确认收款（李靖超）
+    end
+  end
+
   def auth_status(status, go_to)
     if !([Funding.status_hold_value, Funding.status_pass_value].include? go_to) && !([Funding.status_hold_value, Funding.status_pass_value].include? status) && self.status != status
       raise "项目不是#{Funding.status_desc_for_value(status)}阶段不能移动到#{Funding.status_desc_for_value(go_to)}阶段"
@@ -67,6 +92,14 @@ class Funding < ApplicationRecord
       end
     end
 
-    # todo 认领还需要审批那块（柳辉）
+    case self.status
+    when Funding.status_pass_value
+      # todo 认领还需要审批那块（柳辉）
+    when Funding.status_hold_value
+      can_move = [Funding.status_pass_value, self.time_lines.last(2).first.status]
+      unless can_move.include? go_to
+        raise "只能移动到#{Funding.status_desc_for_value(Funding.status_pass_value)}阶段或#{Funding.status_desc_for_value(self.time_lines.last(2).first.status)}阶段"
+      end
+    end
   end
 end
