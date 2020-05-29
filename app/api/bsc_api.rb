@@ -36,25 +36,29 @@ class BscApi < Grape::API
           @funding = Funding.find(params[:id])
         end
 
-        desc '启动bsc'
+        desc '启动bsc', entity: Entities::Bsc
         params do
           requires 'investment_committee_ids', type: Array[Integer], desc: "投委会成员id"
           requires 'conference_team_ids', type: Array[Integer], desc: "上会团队成员id"
         end
         post :start_bsc do
-          params[:investment_committee_ids].map {|e| @funding.evaluations.create(user_id: e)}
+          @funding.evaluations.destroy_all unless @funding.evaluations.nil?
+          @funding.questions.destroy_all unless @funding.evaluations.nil?
+          # Verification.where()
+          params[:investment_committee_ids].map {|e| @funding.evaluations.create(user_id: e) unless User.find(e).nil?}
           @funding.update(conference_team_ids: params[:conference_team_ids], bsc_status: "started")
 
           # 项目成员会收到通知
           content = Notification.project_type_config[:bsc_started][:desc].call(@funding.company.name)
           @funding.funding_users.map {|e| Notification.create(notification_type: "project", content: content, user_id: e.user_id)}
-
           # 启动BSC后，投委会成员会收到对该项目的comments征集（提问）的邀请通知
           content = Notification.project_type_config[:ask_to_review][:desc].call(@funding.company.name)
           params[:investment_committee_ids].map {|e| Notification.create(notification_type: "project", content: content, user_id: e)}
+
+          present @funding, with: Entities::Bsc
         end
 
-        desc '启动bsc投票'
+        desc '启动bsc投票', entity: Entities::Bsc
         params do
           requires 'investment_committee_ids', type: Array[Integer], desc: "投委会成员id"
           requires 'conference_team_ids', type: Array[Integer], desc: "上会团队成员id"
@@ -66,6 +70,8 @@ class BscApi < Grape::API
           # 开启BSC投票后，相关投委成员会收到该项目的评分审核
           desc = Verification.verification_type_config[:bsc_evaluate][:desc].call(@funding.company.name)
           @funding.funding_users.map {|e| Verification.create(verification_type: "bsc_evaluate", desc: desc, user_id: e.user_id, verifi: {funding_id: @funding.id})}
+
+          present @funding, with: Entities::Bsc
         end
 
         desc '获取投委会', entity: Entities::UserLite
@@ -113,9 +119,12 @@ class BscApi < Grape::API
 
         desc '获取评分'
         get :evaluations do
+          binding.pry
           if @funding.evaluations.count == @funding.evaluations.where.not(is_agree: nil).count
             # 反对票里面是否存在谁投了一票否决权
-            if !@funding.evaluations.where(is_agree: 'no').nil? && @funding.evaluations.where(is_agree: 'no').pluck(:user_id).is_one_vote_veto?
+            binding.pry
+            evaluations = @funding.evaluations.where(is_agree: 'no').map {|e| e.user.is_one_vote_veto?}
+            if !evaluations.empty?
               # 项目自动 pass，并给项目成员及管理员发送通知；
               Funding.transaction do
                 @funding.update(status: 9)
@@ -126,13 +135,14 @@ class BscApi < Grape::API
               result = @funding.evaluations.where(is_agree: 'yes').count - @funding.evaluations.where(is_agree: 'no').count
               case result
               when 0
-                # 给项目成员及管理员发送通知；线下决策，决策后管理员到线上进行手动推进；推进后，给项目成员发通知
+                # 给项目成员及管理员发送通知；（线下决策，决策后管理员到线上进行手动推进；推进后，给项目成员发通知，待商议）
+                # 给项目成员发通知
                 content = Notification.project_type_config[:waitting][:desc].call(@funding.company.name)
                 @funding.funding_users.map {|e| Notification.create(notification_type: "project", content: content, user_id: e.user_id)}
 
                 roles = Role.includes(:role_resources).where(role_resources: {name: 'admin_read_verification'})
                 can_verify_users = UserRole.select { |e| roles.pluck(:id).include?(e.role_id) }
-
+                #给管理员发审核
                 desc = Verification.verification_type_config[:bsc_evaluate][:desc].call(@funding.company.name)
                 can_verify_users.pluck(:user_id).map {|e| Verification.create(verification_type: "bsc_evaluate", desc: desc, user_id: e.user_id, verifi: {funding_id: @funding.id})} unless can_verify_users.nil?
               when result < 0
@@ -164,8 +174,17 @@ class BscApi < Grape::API
 
         desc '获取问题和答案', entity: Entities::Question
         get :questions do
-          questions = Question.joins(:answers).where(funding_id: params[:id])
+          questions = Question.where(funding_id: params[:id])
           present questions, with: Entities::Question
+        end
+
+        desc '提交问题', entity: Entities::Question
+        params do
+          requires :desc, type: String, desc: "描述"
+        end
+        post :question do
+          question = Verification.verification_type_config[:post_question][:op].call(User.current, declared(params).merge(user_id: User.current.id, funding_id: params[:id]))
+          present question, with: Entities::Question
         end
 
       end

@@ -49,10 +49,10 @@ class RoleApi < Grape::API
 
       desc '更新权限组用户', entity: Entities::UserRole
       params do
-        optional 'ids', type: Array[String], desc: "用户ID"
+        optional :ids, type: Array[Integer], desc: "用户ID"
       end
       patch :users do
-        @users = User.all.select { |e| params[:ids].include?(e.id.to_s) }
+        @users = User.select { |e| params[:ids].include?(e.id) }
         @role.user_ids = @users.map(&:id)
         present @role.user_roles, with: Entities::UserRole
       end

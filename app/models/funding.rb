@@ -23,4 +23,8 @@ class Funding < ApplicationRecord
   def delete_investment_committee_by_id id
     self.evaluations.find_by(user_id: id).destroy
   end
+
+  def conference_team
+    Team.where(id: self.conference_team_ids)
+  end
 end

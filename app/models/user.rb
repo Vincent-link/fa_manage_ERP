@@ -105,7 +105,10 @@ class User < ApplicationRecord
     end
   end
 
-  def is_ic?
-    true
+  def is_one_vote_veto?
+    binding.pry
+    roles = Role.includes(:role_resources).where(role_resources: {name: 'admin_one_vote_veto'})
+    user_roles = UserRole.select { |e| roles.pluck(:id).include?(e.role_id) }
+    true if !user_roles.nil? && user_roles.pluck(:user_id).include?(self.id)
   end
 end

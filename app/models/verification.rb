@@ -15,12 +15,15 @@ class Verification < ApplicationRecord
         value: 2,
         desc: -> (funding){"【#{funding}】已启动BSC评分"},
         op: -> (user, params){
-          Evaluation.create!(params) if user.is_ic?
+          evaluation = Evaluation.find_by(user_id: user.id, funding_id: params[:funding_id])
+          evaluation.update(params) unless evaluation.nil?
+          evaluation
       }},
       ka_apply: {value: 3, desc: -> (company){"#{company}申请进入KA"}, op: -> {}},
       appointment_apply: {value: 4, desc: -> (company, appoint_time){"#{company}申请约见（#{appoint_time}）"}, op: -> {}},
       post_question: {value: 5, desc: '提交问题', op: -> (user, params){
-        Question.create!(params) if user.is_ic?
+        evaluation = Evaluation.find_by(user_id: user.id, funding_id: params[:funding_id])
+        Question.create!(params) unless evaluation.nil?
       }},
   }
 end
