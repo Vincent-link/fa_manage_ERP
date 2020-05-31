@@ -18,7 +18,6 @@ class VerificationApi < Grape::API
       params[:status] ||= nil
       roles = Role.includes(:role_resources).where(role_resources: {name: 'admin_read_verification'})
       can_verify_users = UserRole.select { |e| roles.pluck(:id).include?(e.role_id) }
-      binding.pry
       # 如果有查看权限，判断该管理员是否是某些项目的投委会成员
       if can_verify_users != nil && can_verify_users.pluck(:user_id).include?(User.current.id)
         # 如果管理员不在某些项目的投委会
@@ -31,7 +30,6 @@ class VerificationApi < Grape::API
           present a+b, with: Entities::Verification
         end
       else
-        binding.pry
         # 如果不是管理员，判断是不是投资委员会成员，默认投委会成员都是有权限查看被邀请查看的项目
         verified_verifications = User.current.verifications.where(status: params[:status], verification_type: "bsc_evaluate")
         present verified_verifications, with: Entities::Verification
