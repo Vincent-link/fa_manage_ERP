@@ -10,7 +10,7 @@ class Funding < ApplicationRecord
   has_many :questions
 
   def investment_committee_ids=(*ids)
-    self.evaluations.delete_all
+    self.evaluations.destroy_all
     ids.flatten.each do |id|
       add_investment_committee_by_id id
     end

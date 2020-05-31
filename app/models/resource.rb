@@ -18,6 +18,9 @@ class Resource
     resource 'read_verification', '查看审核' do
       can :read, Verification
     end
+    resource 'one_vote_veto', '查看审核' do
+      can :read, Verification
+    end
   end
 
   group 'workbench', '工作台' do
@@ -491,7 +494,7 @@ class Resource
   end
 
 
-  
+
   def self.authorize_questionnaire(sso_id, action, target) #获取权限
     if target.is_a? Array
       target = target[0].constantize.find_by_id target[1]

@@ -15,6 +15,7 @@ class VerificationApi < Grape::API
       optional :status, type: Boolean, desc: '状态', values: [true, false]
     end
     get :verified do
+      params[:status] ||= nil
       roles = Role.includes(:role_resources).where(role_resources: {name: 'admin_read_verification'})
       can_verify_users = UserRole.select { |e| roles.pluck(:id).include?(e.role_id) }
       binding.pry
@@ -30,6 +31,7 @@ class VerificationApi < Grape::API
           present a+b, with: Entities::Verification
         end
       else
+        binding.pry
         # 如果不是管理员，判断是不是投资委员会成员，默认投委会成员都是有权限查看被邀请查看的项目
         verified_verifications = User.current.verifications.where(status: params[:status], verification_type: "bsc_evaluate")
         present verified_verifications, with: Entities::Verification
@@ -65,12 +67,12 @@ class VerificationApi < Grape::API
         requires :team, type: Integer, desc: "团队"
         requires :exchange, type: Integer, desc: "交易"
         requires :is_agree, type: String, desc: "是否过会", values: ["yes", "no", "fence"]
-        optional :other, type: Integer, desc: "其他建议"
+        optional :other, type: String, desc: "其他建议"
       end
       post :evaluate do
         funding_id = @verification.verifi["funding_id"]
         Verification.transaction do
-          evaluation = Verification.verification_type_config[:bsc_evaluate][:op].call(User.current, declared(params).merge(user_id: User.current.id, funding_id: funding_id))
+          evaluation = Verification.verification_type_config[:bsc_evaluate][:op].call(declared(params).merge(funding_id: funding_id))
           @verification.update(status: true)
 
           present evaluation, with: Entities::Evaluation

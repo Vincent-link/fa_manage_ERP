@@ -10,7 +10,6 @@ class User < ApplicationRecord
   has_many :follows
   has_many :user_roles, dependent: :destroy
   has_many :evaluations, dependent: :destroy
-  has_many :questions, dependent: :destroy
   has_many :answers, dependent: :destroy
   has_many :notifications, dependent: :destroy
   has_many :verifications, dependent: :destroy
@@ -92,23 +91,13 @@ class User < ApplicationRecord
         self.update(params)
       end
     else
-      User.transaction do
-        user_title_before = self.user_title.name unless self.user_title.nil?
-
-        if !verification.nil?
-          verification.update(verifi: {kind: "title_update", change: [user_title_before, @user_title.name]}) unless verification.verifi["change"][1] == @user_title.name
-        else
-          desc = Verification.verification_type_config[:title_update][:desc].call(user_title_before, @user_title.name)
-          Verification.create(user_id: self.id, sponsor: self.id, verification_type: "title_update", desc: desc, verifi: {kind: "title_update", change: [user_title_before, @user_title.name]})
-        end
-      end
+      Verification.verification_type_config[:title_update][:op].call(params, verification)
     end
   end
 
   def is_one_vote_veto?
-    binding.pry
     roles = Role.includes(:role_resources).where(role_resources: {name: 'admin_one_vote_veto'})
     user_roles = UserRole.select { |e| roles.pluck(:id).include?(e.role_id) }
-    true if !user_roles.nil? && user_roles.pluck(:user_id).include?(self.id)
+    true if !user_roles.empty? && user_roles.pluck(:user_id).include?(self.id)
   end
 end
