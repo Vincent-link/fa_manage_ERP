@@ -1,7 +1,7 @@
 class Organization < ApplicationRecord
   acts_as_paranoid
   has_paper_trail
-  searchkick
+  searchkick language: "chinese"
 
   include StateConfig
 
@@ -17,10 +17,13 @@ class Organization < ApplicationRecord
   has_many :lead_organizations, through: :lead_organization_relations, source: :relation_organization, class_name: 'Organization'
   has_many :mate_organizations, through: :mate_organization_relations, source: :relation_organization, class_name: 'Organization'
   has_many :organization_teams
+  has_many :calendars
 
-  #todo after_create to dm
+  after_validation :save_to_dm
 
   delegate :addresses, to: :dm_organization, prefix: false
+
+  scope :search_import, -> {includes(:ir_reviews, :newsfeeds, :comments, :members, :organization_tags)}
 
   state_config :level, config: {
       a: {value: 'a', desc: 'A'},
@@ -51,7 +54,12 @@ class Organization < ApplicationRecord
   end
 
   def search_data
-    attributes.merge last_investevent_date: self.last_investevent&.birth_date
+    attributes.merge last_investevent_date: self.last_investevent&.birth_date,
+                     ir_reviews: "#{self.ir_reviews.map(&:content).join(' ')}",
+                     newsfeeds: "#{self.newsfeeds.map(&:content).join(' ')}",
+                     comments: "#{self.comments.map(&:content).join(' ')}",
+                     members: "#{self.members.map(&:name).join(' ')}",
+                     organization_tags: "#{self.organization_tags.map(&:name).join(' ')}"
   end
 
   def self.es_search(params)
@@ -73,9 +81,23 @@ class Organization < ApplicationRecord
       order_hash = {params[:order_by] => params[:order_type]}
     end
 
-    #todo association
-
     Organization.search(params[:query], where: where_hash, order: order_hash, page: params[:page], per_page: params[:per_page], highlight: DEFAULT_HL_TAG)
+  end
+
+  def save_to_dm
+    dm_org = Zombie::DmInvestor.create_from_attribute self.attributes_for_dm
+    self.id = dm_org.id
+  end
+
+  def attributes_for_dm
+    dm_key_map = {
+        'name' => 'name',
+        'en_name' => 'en_name',
+        'logo' => 'logo',
+        'intro' => 'org_des',
+        'site' => 'url'
+    }
+    self.attributes.transform_keys {|k| dm_key_map[k]}.compact
   end
 
   def last_investevent

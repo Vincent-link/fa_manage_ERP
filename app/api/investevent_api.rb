@@ -25,14 +25,15 @@ class InvesteventApi < Grape::API
       hash.map {|k, v| {name: k, value: v}}
     end
 
-    def stat_role(event_relations)
-      hash = event_relations.group_by(&:lead_type)
+    def stat_role(events)
+      hash = events.group_by {|e| e.investevent_investor_rels&.first&.lead_type}.compact
       hash.transform_values! {|v| v.size}
       hash.transform_keys! {|k| k == 1 ? '领投' : '跟投'}
       hash.map {|k, v| {name: k, value: v}}
     end
 
     def stat_next_round(events)
+      #todo 假数据
       [{
            name: '是',
            value: 123
@@ -64,9 +65,13 @@ class InvesteventApi < Grape::API
               optional :select, type: Array[String], desc: '图表数据白名单 sector/round/time/location/next_round/last_round 不传返回所有'
             end
             get 'stat' do
-              organization = Organization.find(params[:id])
-              events = organization.dm_investevent #todo date_filter
-              event_relations = organization.dm_investevent_relation #todo date_filter
+              events = Zombie::DmInvestevent.includes(:investevent_investor_relations).where(investevent_investor_relations: {investor_id: params[:id]})._select(:id, :birth_date, :company_category_id, :invest_round_id, :company_location_province_id, :lead_type, :investevent_investor_rels)
+
+              if params[:start_time] || params[:end_time]
+                params[:start_time] ||= '1970-01-01'
+                params[:end_time] ||= '2099-01-01'
+                events = events.by_birth_date_range(params[:start_time], params[:end_time])
+              end
 
               if params[:select].present?
                 res = {}
@@ -80,7 +85,7 @@ class InvesteventApi < Grape::API
                     next_round: stat_next_round(events),
                     last_round: stat_last_round(events),
                     location: stat_location(events),
-                    role: stat_role(event_relations),
+                    role: stat_role(events),
                 }
               end
             end
@@ -93,7 +98,7 @@ class InvesteventApi < Grape::API
   resource :investevents do
     desc '案例列表', entity: Entities::InvesteventForIndex
     params do
-      optional :organization_id, as: :investor_id, type: Integer, desc: '机构id'
+      optional :organization_id, type: Integer, desc: '机构id'
       optional :member_id, type: Integer, desc: '投资人id'
       at_least_one_of :organization_id, :member_id
       optional :sectors, type: Array[Integer], desc: '行业'
@@ -112,9 +117,9 @@ class InvesteventApi < Grape::API
       events = events.search(sector: params[:sectors]) if params[:sectors]
       events = events.search(round: params[:rounds]) if params[:rounds]
       if params[:member_id]
-        events = events.by_member(params[:member_id]).order_by_date.paginate(page: params[:page], per_page: params[:per_page])
+        events = events.by_member(params[:member_id]).order_by_date._select(:id, :birth_date, :company_name, :company_category_id, :invest_round_id, :company_location_province_id, :lead_type, :investevent_investors, :invest_type_id, :company_id, :detail_money_des, :overview).paginate(page: params[:page], per_page: params[:per_page])
       else
-        events = events.by_investor(params[:organization_id]).order_by_date.paginate(page: params[:page], per_page: params[:per_page])
+        events = events.by_investor(params[:organization_id]).order_by_date._select(:id, :birth_date, :company_name, :company_category_id, :invest_round_id, :company_location_province_id, :lead_type, :investevent_investors, :invest_type_id, :company_id, :detail_money_des, :overview).paginate(page: params[:page], per_page: params[:per_page])
       end
 
       present events.inspect, with: Entities::InvesteventForIndex

@@ -7,6 +7,15 @@ class Member < ApplicationRecord
   has_one_attached :avatar
   has_one_attached :card
 
+  belongs_to :organization, optional: true
+  belongs_to :sponsor, class_name: 'User', optional: true
+
+  has_many :member_user_relations
+  has_many :users, through: :member_user_relations
+  has_many :member_resumes
+
+  delegate :name, to: :organization, prefix: true
+
   state_config :report_type, config: {
       solid: {value: 1, desc: '实线汇报'},
       virtual: {value: 2, desc: '虚线汇报'},
@@ -23,20 +32,19 @@ class Member < ApplicationRecord
 
   after_validation :save_to_dm
 
-  def save_to_dm
-    dm_org = Zombie::DmInvestor._by_id(self.organization_id)
-    member = dm_org.person_create self.attributes_to_dm
-    self.id = member.id
+  # searchkick scope and config
+  scope :search_import, -> {includes(:organization, :users)}
+
+  def search_data
+    attributes.merge organization_name: self.organization_name,
+                     user_ids: self.user_ids
   end
 
-  belongs_to :organization, optional: true
-  belongs_to :sponsor, class_name: 'User', optional: true
-
-  has_many :member_user_relations
-  has_many :users, through: :member_user_relations
-  has_many :member_resumes
-
-  delegate :name, to: :organization, prefix: true
+  def save_to_dm
+    dm_org = Zombie::DmInvestor._by_id(self.organization_id)
+    member = dm_org.person_create self.attributes_for_dm
+    self.id = member.id
+  end
 
   [:address, :report_relations].each do |attribute_name|
     define_method(attribute_name) do
@@ -48,7 +56,7 @@ class Member < ApplicationRecord
     @dm_member ||= Zombie::DmMember.find(self.id)
   end
 
-  def attributes_to_dm
+  def attributes_for_dm
     dm_key_map = {
         'name' => 'name',
         'en_name' => 'en_name',
@@ -76,6 +84,7 @@ class Member < ApplicationRecord
     where_hash[:scale_ids] = params[:scale] if params[:scale].present?
     where_hash[:position_rank_id] = params[:position_rank_id] if params[:position_rank_id]
     where_hash[:tel] = params[:tel] if params[:tel]
+    where_hash[:user_ids] = params[:covered_by] if params[:covered_by]
     if params[:amount_min].present? || params[:amount_max].present?
       range = (params[:amount_min] || 0)..(params[:amount_max] || 9999999)
       where_hash[:_or] = [{usd_amount_min: range}, {usd_amount_max: range}]
@@ -94,7 +103,6 @@ class Member < ApplicationRecord
         where_hash[:id] = User.current.follows.member.pluck(:id)
       end
     end
-    #todo association
 
     Member.search(params[:query], options.merge(where: where_hash, page: params[:page] || 1, per_page: params[:per_page] || 30, highlight: DEFAULT_HL_TAG))
   end

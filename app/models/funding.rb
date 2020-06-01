@@ -5,4 +5,5 @@ class Funding < ApplicationRecord
   has_many :funding_company_contacts
 
   has_many :funding_users
+  has_many :calendars
 end
