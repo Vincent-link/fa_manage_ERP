@@ -91,13 +91,27 @@ class User < ApplicationRecord
         self.update(params)
       end
     else
-      Verification.verification_type_config[:title_update][:op].call(params, verification)
+      user_title_before = User.current.user_title.name unless User.current.user_title.nil?
+      desc = Verification.verification_type_config[:title_update][:desc].call(user_title_before, @user_title.name)
+      binding.pry
+      if !verification.nil?
+        verification.update(desc: desc, verifi: {kind: "title_update", change: [user_title_before, @user_title.name]}) unless verification.verifi["change"][1] == @user_title.name
+      else
+        Verification.create(user_id: User.current.id, sponsor: User.current.id, verification_type: "title_update", desc: desc, verifi: {kind: "title_update", change: [user_title_before, @user_title.name]})
+      end
+
     end
   end
 
   def is_one_vote_veto?
     roles = Role.includes(:role_resources).where(role_resources: {name: 'admin_one_vote_veto'})
     user_roles = UserRole.select { |e| roles.pluck(:id).include?(e.role_id) }
-    true if !user_roles.empty? && user_roles.pluck(:user_id).include?(self.id)
+    true if user_roles.pluck(:user_id).include?(self.id)
+  end
+
+  def can_read_verification?
+    roles = Role.includes(:role_resources).where(role_resources: {name: 'admin_read_verification'})
+    user_roles = UserRole.select { |e| roles.pluck(:id).include?(e.role_id) }
+    true if user_roles.pluck(:user_id).include?(self.id)
   end
 end
