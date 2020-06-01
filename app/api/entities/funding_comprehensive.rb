@@ -1,6 +1,6 @@
 module Entities
   class FundingComprehensive < Base
-    expose :funding, merge: true do |ins|
+    expose :funding, documentation: {type: Entities::Funding, desc: '项目', merge: true}, merge: true do |ins|
       Entities::Funding.represent ins
     end
     expose :funding_company_contacts, with: Entities::FundingCompanyContact, documentation: {type: Entities::FundingCompanyContact, desc: '团队成员', is_array: true}

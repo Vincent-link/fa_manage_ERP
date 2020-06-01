@@ -66,8 +66,8 @@ class Funding < ApplicationRecord
   end
 
   def gen_funding_company_contacts(params)
-    if params[:fudning_company_contacts].present?
-      params[:fudning_company_contacts].each do |fudning_company_contact|
+    if params[:funding_company_contacts].present?
+      params[:funding_company_contacts].each do |fudning_company_contact|
         self.gen_funding_company_contact(fudning_company_contact.slice(:name, :position_id, :email,
                                                                        :mobile, :wechat, :is_attend,
                                                                        :is_open, :description))

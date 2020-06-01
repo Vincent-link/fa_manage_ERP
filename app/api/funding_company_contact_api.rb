@@ -7,20 +7,22 @@ class FundingCompanyContactApi < Grape::API
         @funding = Funding.find params[:id]
       end
 
-      desc '新增团队成员', entity: Entities::FundingCompanyContact
-      params do
-        requires :name, type: String, desc: '成员名称'
-        optional :position_id, type: Integer, desc: '职位'
-        optional :email, type: String, desc: '邮箱'
-        optional :mobile, type: String, desc: '手机号码'
-        optional :wechat, type: String, desc: '微信号'
-        optional :is_attend, type: Boolean, desc: '是否参会'
-        optional :is_open, type: Boolean, desc: '是否公开名片'
-        optional :description, type: String, desc: '简介'
-      end
-      post do
-        funding_company_contact = @funding.gen_funding_company_contact(params)
-        present funding_company_contact, with: Entities::FundingCompanyContact
+      resource :funding_company_contacts do
+        desc '新增团队成员', entity: Entities::FundingCompanyContact
+        params do
+          requires :name, type: String, desc: '成员名称'
+          optional :position_id, type: Integer, desc: '职位（字典funding_contact_position）'
+          optional :email, type: String, desc: '邮箱'
+          optional :mobile, type: String, desc: '手机号码'
+          optional :wechat, type: String, desc: '微信号'
+          optional :is_attend, type: Boolean, desc: '是否参会'
+          # optional :is_open, type: Boolean, desc: '是否公开名片'
+          optional :description, type: String, desc: '简介'
+        end
+        post do
+          funding_company_contact = @funding.gen_funding_company_contact(params)
+          present funding_company_contact, with: Entities::FundingCompanyContact
+        end
       end
     end
   end
@@ -34,12 +36,12 @@ class FundingCompanyContactApi < Grape::API
       desc '编辑团队成员', entity: Entities::FundingCompanyContact
       params do
         optional :name, type: String, desc: '成员名称'
-        optional :position_id, type: Integer, desc: '职位'
+        optional :position_id, type: Integer, desc: '职位（字典funding_contact_position）'
         optional :email, type: String, desc: '邮箱'
         optional :mobile, type: String, desc: '手机号码'
         optional :wechat, type: String, desc: '微信号'
         optional :is_attend, type: Boolean, desc: '是否参会'
-        optional :is_open, type: Boolean, desc: '是否公开名片'
+        # optional :is_open, type: Boolean, desc: '是否公开名片'
         optional :description, type: String, desc: '简介'
       end
       patch do

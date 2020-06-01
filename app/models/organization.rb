@@ -51,7 +51,7 @@ class Organization < ApplicationRecord
   end
 
   def search_data
-    attributes.merge last_investevent_date: self.last_investevent&.birth_date
+attributes.merge last_investevent_date: self.last_investevent&.birth_date
   end
 
   def self.es_search(params)

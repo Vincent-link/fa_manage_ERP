@@ -20,9 +20,9 @@ class FundingApi < Grape::API
       optional :market_competition, type: String, desc: '市场竞争分析'
       optional :financing_plan, type: String, desc: '融资计划'
       optional :other_desc, type: String, desc: '其他'
-      optional :sources_type, type: Integer, desc: '融资来源类型'
-      optional :sources_member, type: Integer, desc: '投资者'
-      optional :sources_detail, type: String, desc: '来源明细'
+      optional :source_type, type: Integer, desc: '融资来源类型'
+      optional :source_member, type: Integer, desc: '投资者'
+      optional :source_detail, type: String, desc: '来源明细'
       optional :funding_score, type: Integer, desc: '项目评分'
 
       optional :attachments, type: Array[File], desc: '附件'
@@ -37,9 +37,9 @@ class FundingApi < Grape::API
       optional :model, type: File, desc: 'Model'
       optional :el, type: File, desc: 'EL'
 
-      optional :fudning_company_contacts, type: Array[JSON] do
+      optional :funding_company_contacts, type: Array[JSON] do
         requires :name, type: String, desc: '成员名称'
-        optional :position_id, type: Integer, desc: '职位'
+        optional :position_id, type: Integer, desc: '职位（字典funding_contact_position）'
         optional :email, type: String, desc: '邮箱'
         optional :mobile, type: String, desc: '手机号码'
         optional :wechat, type: String, desc: '微信号'
@@ -53,11 +53,10 @@ class FundingApi < Grape::API
     post do
       auth_funding_code(params)
       Funding.transaction do
-        funding = Funding.create(params.slice(:categroy, :company_id, :round_id, :currency_id, :target_amount_min,
-                                              :target_amount_max, :shares_min, :shares_max, :shiny_word, :com_desc,
-                                              :products_and_business, :financial, :operational, :market_competition,
-                                              :financing_plan, :other_desc, :sources_type, :sources_member, :sources_detail,
-                                              :funding_score))
+        funding = Funding.create(params.slice(:categroy, :company_id, :round_id, :target_amount_currency, :target_amount,
+                                              :share, :shiny_word, :com_desc, :products_and_business, :financial,
+                                              :operational, :market_competition, :financing_plan, :other_desc, :source_type,
+                                              :source_member, :source_detail, :funding_score))
         funding.add_project_follower(params)
         funding.gen_funding_company_contacts(params)
         funding.funding_various_file(params)
@@ -69,9 +68,9 @@ class FundingApi < Grape::API
     desc '项目列表', entity: Entities::FundingBaseInfo
     params do
       optional :keyword, type: String, desc: '关键字'
-      optional :location_ids, type: Array[Integer], desc: '地点'
-      optional :sector_ids, type: Array[Integer], desc: '行业'
-      optional :round_ids, type: Array[Integer], desc: '轮次'
+      optional :location_ids, type: Array[Integer], desc: '地点（字典locations）'
+      optional :sector_ids, type: Array[Integer], desc: '行业（字典sector_tree）'
+      optional :round_ids, type: Array[Integer], desc: '轮次(字典rounds)'
       optional :pipeline, type: Array[Integer], desc: 'Pipeline阶段'
       # todo Pipeline阶段暂时没有（李靖超）
     end
@@ -104,9 +103,9 @@ class FundingApi < Grape::API
         optional :market_competition, type: String, desc: '市场竞争分析'
         optional :financing_plan, type: String, desc: '融资计划'
         optional :other_desc, type: String, desc: '其他'
-        optional :sources_type, type: Integer, desc: '融资来源类型'
-        optional :sources_member, type: Integer, desc: '投资者'
-        optional :sources_detail, type: String, desc: '来源明细'
+        optional :source_type, type: Integer, desc: '融资来源类型'
+        optional :source_member, type: Integer, desc: '投资者'
+        optional :source_detail, type: String, desc: '来源明细'
         optional :funding_score, type: Integer, desc: '项目评分'
 
         optional :attachments, type: Array[File], desc: '附件'
@@ -128,7 +127,7 @@ class FundingApi < Grape::API
         raise '咨询类型的项目不能修改类型' if @funding.categroy == Funding.categroy_advisory_value && @funding.categroy != params[:categroy]
         Funding.transaction do
           @funding.update(params.slice(:categroy, :name, :round_id, :shiny_word, :post_investment_valuation, :post_valuation_currency,
-                                       :target_amount, :target_amount_currency, :share, :sources_type, :sources_member, :sources_detail,
+                                       :target_amount, :target_amount_currency, :share, :source_type, :source_member, :source_detail,
                                        :is_complicated, :funding_score, :confidentiality_level, :confidentiality_reason, :is_reportable,
                                        :com_desc, :products_and_business, :financial, :operational, :market_competition, :financing_plan,
                                        :other_desc))
@@ -138,9 +137,9 @@ class FundingApi < Grape::API
         present funding, with: Entities::FundingComprehensive
       end
 
-      desc '项目详情', entity: Entities::Funding
+      desc '项目详情', entity: Entities::FundingComprehensive
       params do
-        requires :type, type: String, desc: '样式：弹窗：pop、页面：page'
+        requires :type, type: String, desc: '样式：弹窗：pop、页面：page、状态流转相关字段: status'
       end
       get do
         case params[:type]
@@ -148,6 +147,8 @@ class FundingApi < Grape::API
           present @funding, with: Entities::Funding
         when 'page'
           present @funding, with: Entities::FundingComprehensive
+        when 'status'
+          present @funding, with: Entities::FundingStatus
         end
       end
     end
