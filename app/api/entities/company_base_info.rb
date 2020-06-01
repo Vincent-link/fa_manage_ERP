@@ -8,7 +8,9 @@ module Entities
       }
     end
     expose :registered_name, documentation: {type: 'string', desc: '工商名'}
+    expose :com_desc, documentation: {type: 'string', desc: '公司简介'}
     expose :logo, documentation: {type: 'string', desc: '公司logo'}
-    expose :address, with: Entities::Address, documentation: {type: 'string', desc: '地址'}
+    expose :location_id, documentation: {type: 'integer', desc: '行业'}
+    # expose :address, with: Entities::Address, documentation: {type: 'string', desc: '地址'}
   end
 end

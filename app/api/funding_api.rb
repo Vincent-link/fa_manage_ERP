@@ -2,14 +2,14 @@ class FundingApi < Grape::API
   helpers ::Helpers::FundingBigHelpers
 
   resource :fundings do
-    desc '创建项目', entity: Entities::FundingLite
+    desc '创建项目', entity: Entities::FundingComprehensive
     params do
-      requires :category, type: Integer, desc: '项目类型'
+      requires :categroy, type: Integer, desc: '项目类型'
       requires :company_id, type: Integer, desc: '公司id'
       requires :name, type: String, desc: '项目名称'
 
       optional :round_id, type: Integer, desc: '轮次'
-      optional :currency_id, type: Integer, desc: '币种'
+      optional :target_amount_currency, type: Integer, desc: '交易金额币种'
       optional :target_amount, type: Float, desc: '交易金额'
       optional :share, type: Float, desc: '出让股份'
       optional :shiny_word, type: String, desc: '一句话亮点'
@@ -53,7 +53,7 @@ class FundingApi < Grape::API
     post do
       auth_funding_code(params)
       Funding.transaction do
-        funding = Funding.create(params.slice(:category, :company_id, :round_id, :currency_id, :target_amount_min,
+        funding = Funding.create(params.slice(:categroy, :company_id, :round_id, :currency_id, :target_amount_min,
                                               :target_amount_max, :shares_min, :shares_max, :shiny_word, :com_desc,
                                               :products_and_business, :financial, :operational, :market_competition,
                                               :financing_plan, :other_desc, :sources_type, :sources_member, :sources_detail,
@@ -63,20 +63,21 @@ class FundingApi < Grape::API
         funding.funding_various_file(params)
         # todo 约见
       end
-      present funding, with: Entities::FundingLite
+      present funding, with: Entities::FundingComprehensive
     end
 
-    desc '项目列表'
+    desc '项目列表', entity: Entities::FundingBaseInfo
     params do
       optional :keyword, type: String, desc: '关键字'
-      optional :address_id, type: Array[Integer], desc: '地点'
-      optional :sector_id, type: Array[Integer], desc: '行业'
-      optional :round_id, type: Array[Integer], desc: '轮次'
+      optional :location_ids, type: Array[Integer], desc: '地点'
+      optional :sector_ids, type: Array[Integer], desc: '行业'
+      optional :round_ids, type: Array[Integer], desc: '轮次'
       optional :pipeline, type: Array[Integer], desc: 'Pipeline阶段'
       # todo Pipeline阶段暂时没有（李靖超）
     end
     get do
-
+      fundings = Funding.es_search(params)
+      present fundings, with: Entities::FundingBaseInfo
     end
 
     resource ':id' do
@@ -84,14 +85,15 @@ class FundingApi < Grape::API
         @funding = Funding.find params[:id]
       end
 
-      desc '编辑项目'
+      desc '编辑项目', entity: Entities::FundingComprehensive
       params do
-        optional :category, type: Integer, desc: '项目类型'
-        optional :company_id, type: Integer, desc: '公司id'
+        optional :categroy, type: Integer, desc: '项目类型'
         optional :name, type: String, desc: '项目名称'
 
         optional :round_id, type: Integer, desc: '轮次'
-        optional :currency_id, type: Integer, desc: '币种'
+        optional :post_valuation_currency, type: Integer, desc: '本轮投后估值币种'
+        optional :post_investment_valuation, type: Float, desc: '本轮投后估值'
+        optional :target_amount_currency, type: Integer, desc: '交易金额币种'
         optional :target_amount, type: Float, desc: '交易金额'
         optional :share, type: Float, desc: '出让股份'
         optional :shiny_word, type: String, desc: '一句话亮点'
@@ -108,19 +110,32 @@ class FundingApi < Grape::API
         optional :funding_score, type: Integer, desc: '项目评分'
 
         optional :attachments, type: Array[File], desc: '附件'
+        optional :attachment_ids, type: Array[Integer], desc: '附件id'
 
         optional :project_user_ids, type: Array[Integer], desc: '项目成员id'
         optional :bd_leader_id, type: Integer, desc: 'BD负责人id'
         optional :execution_leader_id, type: Integer, desc: '执行负责人id'
 
-        #todo 约见（5个字段的swagger）（李靖超）
+        optional :confidentiality_level, type: Integer, desc: '保密等级'
+        optional :confidentiality_reason, type: String, desc: '保密原因'
+        optional :is_reportable, type: Boolean, desc: '是否出现周日报'
+        optional :is_complicated, type: Boolean, desc: '是否复杂项目'
 
-        #todo 上传文档（暂时数量未定）（阮丽楠）
+        #todo 约见（5个字段的swagger）（李靖超）
       end
       patch do
         #todo 约见
-        auth_funding_code(params)
-        Funding.create(params.slice(:category))
+        raise '咨询类型的项目不能修改类型' if @funding.categroy == Funding.categroy_advisory_value && @funding.categroy != params[:categroy]
+        Funding.transaction do
+          @funding.update(params.slice(:categroy, :name, :round_id, :shiny_word, :post_investment_valuation, :post_valuation_currency,
+                                       :target_amount, :target_amount_currency, :share, :sources_type, :sources_member, :sources_detail,
+                                       :is_complicated, :funding_score, :confidentiality_level, :confidentiality_reason, :is_reportable,
+                                       :com_desc, :products_and_business, :financial, :operational, :market_competition, :financing_plan,
+                                       :other_desc))
+          @funding.add_project_follower(params)
+          @funding.funding_various_file(params)
+        end
+        present funding, with: Entities::FundingComprehensive
       end
 
       desc '项目详情', entity: Entities::Funding

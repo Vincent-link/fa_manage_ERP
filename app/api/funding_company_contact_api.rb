@@ -7,7 +7,7 @@ class FundingCompanyContactApi < Grape::API
         @funding = Funding.find params[:id]
       end
 
-      desc '新增团队成员'
+      desc '新增团队成员', entity: Entities::FundingCompanyContact
       params do
         requires :name, type: String, desc: '成员名称'
         optional :position_id, type: Integer, desc: '职位'
@@ -31,7 +31,7 @@ class FundingCompanyContactApi < Grape::API
         @funding_company_contact = FundingCompanyContact.find params[:id]
       end
 
-      desc '编辑团队成员'
+      desc '编辑团队成员', entity: Entities::FundingCompanyContact
       params do
         optional :name, type: String, desc: '成员名称'
         optional :position_id, type: Integer, desc: '职位'

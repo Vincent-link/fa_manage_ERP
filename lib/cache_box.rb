@@ -5,6 +5,12 @@ class CacheBox
     end
   end
 
+  def self.dm_single_sector_tree
+    Rails.cache.fetch('dm_single_sector_tree') do
+      Zombie::DmSector.root_sectors.as_json.map{|ins| [ins['id'], ins['name']]}.to_h
+    end
+  end
+
   def self.dm_rounds
     Rails.cache.fetch('dm_rounds') do
       Zombie::DmInvestRound.all.as_json.map do |ins|

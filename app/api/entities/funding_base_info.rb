@@ -9,16 +9,14 @@ module Entities
           name: ins.category_desc
       }
     end
-    expose :round, documentation: {type: 'json', desc: '轮次'} do |ins|
-      {
-          id: ins.round_id,
-          name: CacheBox.dm_single_rounds[ins.round_id]
-      }
-    end
+    expose :round_id, documentation: {type: 'integer', desc: '轮次'}
     expose :operating_days do |ins|
       (Date.today - ins.time_lines.first.created_at.to_date).to_i
     end
+    expose :project_users, with: Entities::User, documentation: {type: 'Entities::User', desc: '项目成员', is_array: true}
     expose :company, with: Entities::CompanyBaseInfo, documentation: {type: 'Entities::CompanyBaseInfo', desc: '公司信息'}
     expose :target_amount, documentation: {type: 'float', desc: '交易金额'}
+    # todo tracklog
+    # todo 约见
   end
 end

@@ -17,16 +17,14 @@ module Entities
           name: ins.category_desc
       }
     end
-    expose :round, documentation: {type: 'json', desc: '轮次'} do |ins|
-      {
-          id: ins.round_id,
-          name: CacheBox.dm_single_rounds[ins.round_id]
-      }
-    end
+    expose :round_id, documentation: {type: 'integer', desc: '轮次'}
     expose :target_amount, documentation: {type: 'float', desc: '交易金额'}
+    expose :target_amount_currency, documentation: {type: 'integer', desc: '交易金额币种'}
+    expose :post_investment_valuation, documentation: {type: 'float', desc: '本轮投后估值'}
+    expose :post_valuation_currency, documentation: {type: 'integer', desc: '本轮投后估值币种'}
     expose :is_ka, documentation: {type: 'boolean', desc: '是否是KA项目'}
     expose :is_complicated, documentation: {type: 'boolean', desc: '是否是复杂项目'}
-    expose :project_users, with: Entities::User, documentation: {type: 'Entities::User', desc: '项目成员'}
+    expose :project_users, with: Entities::User, documentation: {type: 'Entities::User', desc: '项目成员', is_array: true}
     expose :bd_leader, documentation: {type: 'Entities::User', desc: 'BD负责人'} do |ins|
       Entities::User.represent ins.bd_leader.first
     end

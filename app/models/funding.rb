@@ -25,34 +25,30 @@ class Funding < ApplicationRecord
   has_many :funding_execution_leader, -> { kind_execution_leader }, class_name: 'FundingUser'
   has_many :execution_leader, through: :funding_execution_leader, source: :user
 
+  before_create :gen_serial_number
+
+  def gen_serial_number
+    current_year = Time.now.year
+    pre_index = Funding.with_deleted.where("created_at > ?", Time.new(current_year))
+                    .order(:serial_number => :desc).first
+                    .serial_number&.slice(-6..-1).to_i || 0 rescue 0
+    self.serial_number = "E#{current_year.slice(-2..-1)}#{format('%06d', pre_index)}"
+  end
+
+  def search_data
+    attributes.merge company_name: self.company&.name,
+                     company_sector_names: self.company&.sector_ids.map{|ins| CacheBox.dm_single_sector_tree[ins]},
+    # todo 约见
+    # todo Tracklog
+  end
+
   def self.es_search(params)
     where_hash = {}
-
-
-
-
-
-
     where_hash[:sector_ids] = {all: params[:sector]} if params[:sector].present?
     where_hash[:round_ids] = {all: params[:round]} if !params[:any_round] && params[:round].present?
-    where_hash[:currency_ids] = {all: params[:currency]} if params[:currency].present?
-    where_hash[:level] = params[:level] if params[:level].present?
-    if params[:amount_min].present? || params[:amount_max].present?
-      range = (params[:amount_min] || 0)..(params[:amount_max] || 9999999)
-      where_hash[:_or] = [{usd_amount_min: range}, {usd_amount_max: range}]
-    end
-    if params[:investor_group_id]
-      where_hash[:id] = InvestorGroup.find(params[:investor_group_id]).organization_ids
-    end
-
-    order_hash = {}
-    if params[:order_by]
-      order_hash = {params[:order_by] => params[:order_type]}
-    end
-
-    #todo association
-
-    Organization.search(params[:query], where: where_hash, order: order_hash, page: params[:page], per_page: params[:per_page], highlight: DEFAULT_HL_TAG)
+    where_hash[:location_ids] = {all: params[:round]} if !params[:any_round] && params[:round].present?
+    # todo 搜索还没好
+    Funding.all.limit 10
   end
 
   def add_project_follower(params)
@@ -86,9 +82,14 @@ class Funding < ApplicationRecord
   end
 
   def funding_various_file(params)
-    if params[:attachments].present?
-      self.funding_materials = params[:attachments].map do |attachment|
-        ActionDispatch::Http::UploadedFile.new(attachment)
+    if params[:attachments].present? || params[attachment_ids].present?
+      self.funding_materials.each do |funding_material|
+        unless params[attachment_ids].map{|ins| ins.to_i}.include? funding_material.id
+          funding_material.purge
+        end
+      end
+      params[:attachments].each do |attachment|
+        self.funding_materials << ActionDispatch::Http::UploadedFile.new(attachment)
       end
     end
     if params[:teaser].present?
