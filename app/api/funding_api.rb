@@ -2,7 +2,7 @@ class FundingApi < Grape::API
   helpers ::Helpers::FundingBigHelpers
 
   resource :fundings do
-    desc '创建项目', entity: Entities::FundingComprehensive
+    desc '创建项目', entity: Entities::FundingLite
     params do
       requires :categroy, type: Integer, desc: '项目类型'
       requires :company_id, type: Integer, desc: '公司id'
@@ -62,7 +62,7 @@ class FundingApi < Grape::API
         funding.funding_various_file(params)
         # todo 约见
       end
-      present funding, with: Entities::FundingComprehensive
+      present funding, with: Entities::FundingLite
     end
 
     desc '项目列表', entity: Entities::FundingBaseInfo
@@ -84,7 +84,7 @@ class FundingApi < Grape::API
         @funding = Funding.find params[:id]
       end
 
-      desc '编辑项目', entity: Entities::FundingComprehensive
+      desc '编辑项目', entity: Entities::FundingLite
       params do
         optional :categroy, type: Integer, desc: '项目类型'
         optional :name, type: String, desc: '项目名称'
@@ -134,7 +134,7 @@ class FundingApi < Grape::API
           @funding.add_project_follower(params)
           @funding.funding_various_file(params)
         end
-        present funding, with: Entities::FundingComprehensive
+        present funding, with: Entities::FundingLite
       end
 
       desc '项目详情', entity: Entities::FundingComprehensive
