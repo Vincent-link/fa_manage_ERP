@@ -41,9 +41,11 @@ class Member < ApplicationRecord
   end
 
   def save_to_dm
-    dm_org = Zombie::DmInvestor._by_id(self.organization_id)
-    member = dm_org.person_create self.attributes_for_dm
-    self.id = member.id
+    if self.new_record?
+      dm_org = Zombie::DmInvestor._by_id(self.organization_id)
+      member = dm_org.person_create self.attributes_for_dm
+      self.id = member.id
+    end
   end
 
   [:address, :report_relations].each do |attribute_name|
