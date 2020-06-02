@@ -11,8 +11,6 @@ module Entities
     expose :email, documentation: {type: 'string', desc: '邮箱'}
     expose :mobile, documentation: {type: 'string', desc: '手机号码'}
     expose :wechat, documentation: {type: 'string', desc: '微信号'}
-    expose :is_attend, documentation: {type: 'boolean', desc: '是否参会'}
-    expose :is_open, documentation: {type: 'boolean', desc: '是否公开名片'}
     expose :description, documentation: {type: 'string', desc: '简介'}
   end
 end
