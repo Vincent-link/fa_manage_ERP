@@ -8,7 +8,11 @@ class NotificationApi < Grape::API
       optional :page_size, as: :per_page, type: Integer, desc: '页数', default: 10
     end
     get do
-      params[:notification_type] ||= ["ir_review", "project", "investor"]
+      params[:notification_type] ||= [
+        Notification.notification_type_config[:ir_review][:desc],
+        Notification.notification_type_config[:project][:desc],
+        Notification.notification_type_config[:investor][:desc]
+      ]
       params[:is_read] ||= [true, false]
       notifications = User.current.notifications.where(notification_type: params[:notification_type], is_read: params[:is_read]).paginate(page: params[:page], per_page: params[:per_page])
       present notifications, with: Entities::Notification
