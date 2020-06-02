@@ -7,23 +7,34 @@ module Entities
     expose :birth_date, as: :date, documentation: {type: 'date', desc: '案例时间', required: true}
     expose :company_id, documentation: {type: 'integer', desc: '公司id'}
 
-    #todo add_company_round
-    expose :invest_round_id, as: :company_round_id, documentation: {type: 'integer', desc: '最新轮次id', required: true}
+    expose :company_round_id, documentation: {type: 'integer', desc: '最新轮次id', required: true} do |ins|
+      ins.overview&.current_invest_round_id
+    end
 
     expose :detail_money_des, documentation: {type: 'string', desc: '融资额度'}
     expose :company_category_id, as: :sector_id, documentation: {type: 'integer', desc: '行业id'}
 
-    #todo add_investors
+    expose :investor_relation do |ins|
+      rel = ins.investevent_investors&.first
+      if rel
+        {
+            investment_money: rel.investment_money,
+            investment_ratio: rel.investment_ratio,
+            investor_id: rel.investor_id,
+            investor_name: rel.investor_name
+        }
+      end
+    end
+
     expose :investors, documentation: {type: 'string', desc: '投资方'} do |ins|
-      [{
-           id: 4,
-           name: '假数据'
-       },
-       {
-           id: 2,
-           name: '假数据2'
-       }
-      ]
+      if ins.investevent_investors
+        ins.investevent_investors.map do |rel|
+          {
+              id: rel.investor_id,
+              name: rel.investor_name
+          }
+        end
+      end
     end
   end
 end

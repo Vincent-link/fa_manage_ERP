@@ -14,6 +14,8 @@ class CommonApi < Grape::API
           org_invest_period: Organization.invest_period_id_name,
           org_nature: Organization.org_nature_id_name,
           member_scale: Member.scale_id_name,
+          calendar_meeting_type: Calendar.meeting_type_id_name,
+          calendar_meeting_category: Calendar.meeting_category_id_name,
       }
     end
 

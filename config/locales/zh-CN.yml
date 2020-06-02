@@ -19,6 +19,7 @@ zh-CN:
       user: 用户
       user_investor_group: 个人投资组
       user_title: 用户title
+      calendar: 日程
 
   activerecord:
     models:
@@ -50,6 +51,12 @@ zh-CN:
         sector_ids: 行业id
         currency_ids: 币种id
         invest_stage_ids: 阶段id
+        ir_reviews: IrReview
+        newsfeeds: Newsfeed
+        comments: 评论
+        members: 机构成员
+        organization_tags: 机构标签
+
       user:
         bu_id: 部门
         role: 权限组

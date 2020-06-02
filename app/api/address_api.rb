@@ -4,8 +4,14 @@ class AddressApi < Grape::API
       resource ':id' do
         desc '机构地址', entity: Entities::Address
         get :addresses do
-          raise '不支持非机构的地址' unless configuration[:owner] == 'organizations'
-          present Zombie::DmAddress.where(owner_type: 'Investor', owner_id: params[:id]).inspect, with: Entities::Address
+          case configuration[:owner]
+          when 'organizations'
+            present Zombie::DmAddress.where(owner_type: 'Investor', owner_id: params[:id]).inspect, with: Entities::Address
+          when 'companies'
+            present Zombie::DmAddress.where(owner_type: 'Company', owner_id: params[:id]).inspect, with: Entities::Address
+          else
+            raise '不支持该类型的地址'
+          end
         end
 
         desc '创建地址', entity: Entities::Address
@@ -14,9 +20,14 @@ class AddressApi < Grape::API
           requires :address_desc, type: String, desc: '地址详细'
         end
         post :addresses do
-          # Dm新增method：DmAddress.create_address owner_type, owner_id, iso_location_id, location_id, address_desc
-          raise '不支持非机构的地址' unless configuration[:owner] == 'organizations'
-          address = Zombie::DmAddress.create_address('Investor', params[:id], nil, params[:location_id], params[:address_desc])
+          case configuration[:owner]
+          when 'organizations'
+            address = Zombie::DmAddress.create_address('Investor', params[:id], nil, params[:location_id], params[:address_desc])
+          when 'companies'
+            address = Zombie::DmAddress.create_address('Company', params[:id], nil, params[:location_id], params[:address_desc])
+          else
+            raise '不支持该类型的地址'
+          end
           present address, with: Entities::Address
         end
       end
