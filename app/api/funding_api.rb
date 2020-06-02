@@ -43,8 +43,6 @@ class FundingApi < Grape::API
         optional :email, type: String, desc: '邮箱'
         optional :mobile, type: String, desc: '手机号码'
         optional :wechat, type: String, desc: '微信号'
-        optional :is_attend, type: Boolean, desc: '是否参会'
-        optional :is_open, type: Boolean, desc: '是否公开名片'
         optional :description, type: String, desc: '简介'
       end
 
