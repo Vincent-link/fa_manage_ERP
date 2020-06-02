@@ -17,7 +17,8 @@ class CommonApi < Grape::API
           calendar_meeting_type: Calendar.meeting_type_id_name,
           calendar_meeting_category: Calendar.meeting_category_id_name,
           funding_contact_position: FundingCompanyContact.position_id_id_name,
-          funding_status: Funding.status_id_name
+          funding_status: Funding.status_id_name,
+          funding_categroy: Funding.categroy_id_name,
       }
     end
 
