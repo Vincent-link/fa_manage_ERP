@@ -13,14 +13,15 @@ class NotificationApi < Grape::API
         Notification.notification_type_config[:project][:desc],
         Notification.notification_type_config[:investor][:desc]
       ]
-      params[:is_read] ||= [true, false]
+      params[:is_read] = [true, false] if params[:is_read].nil?
+
       notifications = User.current.notifications.where(notification_type: params[:notification_type], is_read: params[:is_read]).paginate(page: params[:page], per_page: params[:per_page])
       present notifications, with: Entities::Notification
     end
 
     desc '所有通知标记为已读', entity: Entities::Notification
     patch :read_all_notification do
-      notifications = User.current.notifications.where(is_read: nil)
+      notifications = User.current.notifications.where(is_read: false)
       notifications.update_all(is_read: true)
       present notifications, with: Entities::Notification
     end

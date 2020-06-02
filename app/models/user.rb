@@ -15,6 +15,12 @@ class User < ApplicationRecord
   has_many :verifications, dependent: :destroy
   has_many :questions, dependent: :destroy
   belongs_to :user_title, optional: true
+  has_many :calendar_members, as: :memberable
+  has_many :calendars, through: :calendar_members
+  has_many :created_calendars, foreign_key: :user_id, class_name: 'Calendar'
+  belongs_to :leader, class_name: 'User'
+  has_many :sub_users, class_name: 'User', foreign_key: :leader_id
+  has_many :sub_user_calendars, through: :sub_users, source: :calendars
 
   belongs_to :team, optional: true
   belongs_to :grade, optional: true
@@ -62,17 +68,13 @@ class User < ApplicationRecord
     self.user_roles.find_by(role_id: id).destroy
   end
 
-  def leader
-    User.find_by_id(self.leader_id)
-  end
-
   def role
     Role.joins(:user_roles).where(user_roles: {user_id: self.id, deleted_at: nil})
   end
 
   def is_admin?
     roles = Role.includes(:role_resources).where(role_resources: {name: 'admin_manage_all'})
-    can_verify_users = UserRole.select { |e| roles.pluck(:id).include?(e.role_id) }
+    can_verify_users = UserRole.select {|e| roles.pluck(:id).include?(e.role_id)}
     true if can_verify_users != nil && can_verify_users.pluck(:user_id).include?(self.id)
   end
 

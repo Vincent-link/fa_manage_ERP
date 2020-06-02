@@ -2,7 +2,6 @@ class OrganizationTagApi < Grape::API
   mounted do
     resource configuration[:owner] do
       resource ':id' do
-
         desc '标签类别对应标签', entity: Entities::OrganizationTag
         get :tags do
           @organization_tags = OrganizationTag.where(organization_tag_category_id: params[:id])

@@ -20,8 +20,10 @@ zh-CN:
       user_investor_group: 个人投资组
       user_title: 用户title
       funding: 项目
+      funding_company_contact: 项目成员
       verification: 审核
       notification: 通知
+      calendar: 日程
 
   activerecord:
     models:
@@ -31,6 +33,7 @@ zh-CN:
       question: 问题
       team: 团队
       grade: 职务
+      funding: 项目
     attributes:
       organization:
         name: 机构名称
@@ -53,6 +56,11 @@ zh-CN:
         sector_ids: 行业id
         currency_ids: 币种id
         invest_stage_ids: 阶段id
+        ir_reviews: IrReview
+        newsfeeds: Newsfeed
+        comments: 评论
+        members: 机构成员
+        organization_tags: 机构标签
       user:
         bu_id: 部门
         role: 权限组
@@ -85,3 +93,27 @@ zh-CN:
         name: 团队
       grade:
         name: 职级
+      funding:
+        category: 项目类型
+        round_id: 轮次
+        company_id: 公司
+        currency_id: 币种
+        target_amount_min: 交易金额下限
+        target_amount_max: 交易金额上限
+        shares_min: 出让股份下限
+        shares_max: 出让股份上限
+        shiny_word: 一句话亮点
+        com_desc: 公司简介
+        products_and_business: 产品与商业模式
+        financial: 财务数据
+        operational: 运营数据
+        market_competition: 市场竞争分析
+        financing_plan: 融资计划
+        other_desc: 其他
+        sources_type: 融资来源类型
+        sources_member: 投资者
+        sources_detail: 来源明细
+        funding_score: 项目评分
+        project_user_ids: 项目成员
+        bd_leader_id: BD负责人
+        execution_leader_id: 执行负责人
