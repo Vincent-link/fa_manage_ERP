@@ -4,7 +4,7 @@ class FundingApi < Grape::API
   resource :fundings do
     desc '创建项目', entity: Entities::FundingLite
     params do
-      requires :categroy, type: Integer, desc: '项目类型'
+      requires :categroy, type: Integer, desc: '项目类型（字典）'
       requires :company_id, type: Integer, desc: '公司id'
       requires :name, type: String, desc: '项目名称'
 
