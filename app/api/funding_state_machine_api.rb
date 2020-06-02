@@ -39,7 +39,7 @@ class FundingStateMachineApi < Grape::API
         requires :is_list, type: Boolean, desc: '是否为上市/新三板公司'
         optional :ticker, type: String, desc: '上市公司股票信息'
         requires :post_investment_valuation, type: Float, desc: '本轮投后估值'
-        requires :currency_id, type: Integer, desc: '币种'
+        requires :post_valuation_currency, type: Integer, desc: '本轮投后估值币种'
 
         requires :com_desc, type: String, desc: '公司简介（不少于400字）'
         requires :products_and_business, type: String, desc: '产品与商业模式'

@@ -148,7 +148,7 @@ class FundingApi < Grape::API
         when 'page'
           present @funding, with: Entities::FundingComprehensive
         when 'status'
-          present @funding, with: Entities::FundingStatus
+          present @funding, with: Entities::FundingStatusTransition
         end
       end
     end
