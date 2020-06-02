@@ -1,6 +1,6 @@
 class Funding < ApplicationRecord
   acts_as_paranoid
-  searchkick
+  # searchkick
 
   include ModelState::FundingState
 
@@ -13,16 +13,16 @@ class Funding < ApplicationRecord
 
   belongs_to :company
 
-  has_many :time_lines, -> {order(created_at: :desc)}, class_name: 'TimeLine'
+  has_many :time_lines, -> { order(created_at: :desc) }, class_name: 'TimeLine'
   has_many :funding_company_contacts, class_name: 'FundingCompanyContact'
 
-  has_many :funding_project_users, -> {kind_funding_project_users}, class_name: 'FundingUser'
+  has_many :funding_project_users, -> { kind_funding_project_users }, class_name: 'FundingUser'
   has_many :project_users, through: :funding_project_users, source: :user
 
-  has_many :funding_bd_leader, -> {kind_bd_leader}, class_name: 'FundingUser'
+  has_many :funding_bd_leader, -> { kind_bd_leader }, class_name: 'FundingUser'
   has_many :bd_leader, through: :funding_bd_leader, source: :user
 
-  has_many :funding_execution_leader, -> {kind_execution_leader}, class_name: 'FundingUser'
+  has_many :funding_execution_leader, -> { kind_execution_leader }, class_name: 'FundingUser'
   has_many :execution_leader, through: :funding_execution_leader, source: :user
 
   has_many :calendars
@@ -35,7 +35,7 @@ class Funding < ApplicationRecord
     pre_index = Funding.with_deleted.where("created_at > ?", Time.new(current_year))
                     .order(:serial_number => :desc).first
                     .serial_number&.slice(-6..-1).to_i || 0 rescue 0
-    self.serial_number = "E#{current_year.slice(-2..-1)}#{format('%06d', pre_index)}"
+    self.serial_number = "E#{current_year.to_s.slice(-2..-1)}#{format('%06d', pre_index)}"
   end
 
   def base_time_line
@@ -43,9 +43,9 @@ class Funding < ApplicationRecord
   end
 
   def search_data
-    attributes.merge company_name: self.company&.name,
-                     company_sector_names: self.company&.sector_ids.map{|ins| CacheBox.dm_single_sector_tree[ins]},
-                     sector_ids: self.company&.sector_ids
+    # attributes.merge company_name: self.company&.name,
+    #                  company_sector_names: self.company&.sector_ids.map { |ins| CacheBox.dm_single_sector_tree[ins] },
+    #                  sector_ids: self.company&.sector_ids
     # todo 约见
     # todo Tracklog
   end
@@ -61,7 +61,7 @@ class Funding < ApplicationRecord
 
   def add_project_follower(params)
     if params[:project_user_ids].present?
-      self.project_users_ids = params[:project_users_ids]
+      self.project_user_ids = params[:project_users_ids]
     end
 
     if params[:bd_leader_id].present?
@@ -84,15 +84,15 @@ class Funding < ApplicationRecord
   end
 
   def gen_funding_company_contact(params)
-    self.create(params.slice(:name, :position_id, :email,
-                             :mobile, :wechat, :is_attend,
-                             :is_open, :description))
+    self.funding_company_contacts.create(params.slice(:name, :position_id, :email,
+                                                      :mobile, :wechat, :is_attend,
+                                                      :is_open, :description))
   end
 
   def funding_various_file(params)
-    if params[:attachments].present? || params[attachment_ids].present?
+    if params[:attachments].present? || params[:attachment_ids].present?
       self.funding_materials.each do |funding_material|
-        unless params[attachment_ids].map {|ins| ins.to_i}.include? funding_material.id
+        unless params[:attachment_ids].map { |ins| ins.to_i }.include? funding_material.id
           funding_material.purge
         end
       end

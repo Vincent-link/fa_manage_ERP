@@ -51,16 +51,16 @@ class FundingApi < Grape::API
     post do
       auth_funding_code(params)
       Funding.transaction do
-        funding = Funding.create(params.slice(:category, :company_id, :round_id, :target_amount_currency, :target_amount,
+        @funding = Funding.create(params.slice(:category, :company_id, :round_id, :target_amount_currency, :target_amount,
                                               :share, :shiny_word, :com_desc, :products_and_business, :financial,
                                               :operational, :market_competition, :financing_plan, :other_desc, :source_type,
-                                              :source_member, :source_detail, :funding_score).merge(operating_day: Date.today))
-        funding.add_project_follower(params)
-        funding.gen_funding_company_contacts(params)
-        funding.funding_various_file(params)
+                                              :source_member, :source_detail, :funding_score, :name).merge(operating_day: Date.today))
+        @funding.add_project_follower(params)
+        @funding.gen_funding_company_contacts(params)
+        @funding.funding_various_file(params)
         # todo 约见
       end
-      present funding, with: Entities::FundingLite
+      present @funding, with: Entities::FundingLite
     end
 
     desc '项目列表', entity: Entities::FundingBaseInfo
