@@ -9,7 +9,7 @@ class FundingStateMachineApi < Grape::API
       end
 
       after do
-        @funding.reload
+        @funding.update(operating_day: Date.today)
         @funding.time_lines.create(status: @funding.status, reason: params[:reason], user_id: current_user.id)
       end
 

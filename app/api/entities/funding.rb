@@ -5,13 +5,13 @@ module Entities
     expose :serial_number, documentation: {type: 'string', desc: '项目编号'}
     expose :funding_score, documentation: {type: 'integer', desc: '项目评分'}
     expose :company, with: Entities::CompanyBaseInfo, documentation: {type: 'Entities::CompanyBaseInfo', desc: '公司信息'}
-    expose :status, documentation: {type: 'json', desc: '状态'} do |ins|
+    expose :status, documentation: {type: 'Entities::IdName', desc: '状态'} do |ins|
       {
           id: ins.status,
           name: ins.status_desc
       }
     end
-    expose :category, documentation: {type: 'json', desc: '项目类型'} do |ins|
+    expose :category, documentation: {type: 'Entities::IdName', desc: '项目类型'} do |ins|
       {
           id: ins.category,
           name: ins.category_desc
@@ -31,8 +31,8 @@ module Entities
     expose :execution_leader, documentation: {type: 'Entities::User', desc: '执行负责人'} do |ins|
       Entities::User.represent ins.bd_leader.first
     end
-    expose :operating_days do |ins|
-      (Date.today - ins.time_lines.first.created_at.to_date).to_i
+    with_options(format_with: :time_to_s_date) do
+      expose :operating_day, documentation: {type: 'string', desc: '状态开始时间'}
     end
     expose :com_desc, documentation: {type: 'string', desc: '公司简介'}
     expose :products_and_business, documentation: {type: 'string', desc: '产品与商业模式'}

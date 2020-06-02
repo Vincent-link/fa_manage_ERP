@@ -26,6 +26,7 @@ class Funding < ApplicationRecord
   has_many :execution_leader, through: :funding_execution_leader, source: :user
 
   before_create :gen_serial_number
+  after_create :base_time_line
 
   def gen_serial_number
     current_year = Time.now.year
@@ -33,6 +34,10 @@ class Funding < ApplicationRecord
                     .order(:serial_number => :desc).first
                     .serial_number&.slice(-6..-1).to_i || 0 rescue 0
     self.serial_number = "E#{current_year.slice(-2..-1)}#{format('%06d', pre_index)}"
+  end
+
+  def base_time_line
+    self.time_lines.create(status: self.status)
   end
 
   def search_data

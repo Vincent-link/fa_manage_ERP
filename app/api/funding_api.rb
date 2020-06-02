@@ -56,7 +56,7 @@ class FundingApi < Grape::API
         funding = Funding.create(params.slice(:categroy, :company_id, :round_id, :target_amount_currency, :target_amount,
                                               :share, :shiny_word, :com_desc, :products_and_business, :financial,
                                               :operational, :market_competition, :financing_plan, :other_desc, :source_type,
-                                              :source_member, :source_detail, :funding_score))
+                                              :source_member, :source_detail, :funding_score).merge(operating_day: Date.today))
         funding.add_project_follower(params)
         funding.gen_funding_company_contacts(params)
         funding.funding_various_file(params)
