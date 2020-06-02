@@ -45,6 +45,8 @@ class Funding < ApplicationRecord
   def search_data
     attributes.merge company_name: self.company&.name,
                      company_sector_names: self.company&.sector_ids.map{|ins| CacheBox.dm_single_sector_tree[ins]},
+                     sector_ids: self.company&.sector_ids
+
     # todo 约见
     # todo Tracklog
   end
@@ -96,7 +98,7 @@ class Funding < ApplicationRecord
         end
       end
       params[:attachments].each do |attachment|
-        self.funding_materials << ActionDispatch::Http::UploadedFile.new(attachment)
+        self.funding_materials.attach ActionDispatch::Http::UploadedFile.new(attachment)
       end
     end
     if params[:teaser].present?
