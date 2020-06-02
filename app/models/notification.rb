@@ -17,4 +17,19 @@ class Notification < ApplicationRecord
       ask_to_review: {value: 3, desc: -> (project){"【#{project}】项目已启动BSC，去查看详情"}, op: -> {}},
       waitting: {value: 3, desc: -> (project){"【#{project}】已完成BSC投票，赞成票+中立票数之和=反对票，待管理员手动推进"}, op: -> {}},
   }
+
+  state_config :notification_type, config: {
+      ir_review: {
+        value: 1,
+        desc: "ir_review"
+      },
+      project: {
+        value: 2,
+        desc: "project"
+      },
+      investor: {
+        value: 3,
+        desc: "investor"
+      }
+  }
 end

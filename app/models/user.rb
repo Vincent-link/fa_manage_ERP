@@ -13,6 +13,7 @@ class User < ApplicationRecord
   has_many :answers, dependent: :destroy
   has_many :notifications, dependent: :destroy
   has_many :verifications, dependent: :destroy
+  has_many :questions, dependent: :destroy
   belongs_to :user_title, optional: true
 
   belongs_to :team, optional: true
@@ -93,7 +94,6 @@ class User < ApplicationRecord
     else
       user_title_before = User.current.user_title.name unless User.current.user_title.nil?
       desc = Verification.verification_type_config[:title_update][:desc].call(user_title_before, @user_title.name)
-      binding.pry
       if !verification.nil?
         verification.update(desc: desc, verifi: {kind: "title_update", change: [user_title_before, @user_title.name]}) unless verification.verifi["change"][1] == @user_title.name
       else

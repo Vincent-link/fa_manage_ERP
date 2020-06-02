@@ -9,7 +9,7 @@ class NotificationApi < Grape::API
     end
     get do
       params[:notification_type] ||= ["ir_review", "project", "investor"]
-      params[:is_read] ||= nil
+      params[:is_read] ||= [true, false]
       notifications = User.current.notifications.where(notification_type: params[:notification_type], is_read: params[:is_read]).paginate(page: params[:page], per_page: params[:per_page])
       present notifications, with: Entities::Notification
     end
