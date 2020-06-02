@@ -4,7 +4,7 @@ class FundingApi < Grape::API
   resource :fundings do
     desc '创建项目', entity: Entities::FundingLite
     params do
-      requires :categroy, type: Integer, desc: '项目类型（字典）'
+      requires :category, type: Integer, desc: '项目类型（字典）'
       requires :company_id, type: Integer, desc: '公司id'
       requires :name, type: String, desc: '项目名称'
 
@@ -51,7 +51,7 @@ class FundingApi < Grape::API
     post do
       auth_funding_code(params)
       Funding.transaction do
-        funding = Funding.create(params.slice(:categroy, :company_id, :round_id, :target_amount_currency, :target_amount,
+        funding = Funding.create(params.slice(:category, :company_id, :round_id, :target_amount_currency, :target_amount,
                                               :share, :shiny_word, :com_desc, :products_and_business, :financial,
                                               :operational, :market_competition, :financing_plan, :other_desc, :source_type,
                                               :source_member, :source_detail, :funding_score).merge(operating_day: Date.today))
@@ -84,7 +84,7 @@ class FundingApi < Grape::API
 
       desc '编辑项目', entity: Entities::FundingLite
       params do
-        optional :categroy, type: Integer, desc: '项目类型'
+        optional :category, type: Integer, desc: '项目类型'
         optional :name, type: String, desc: '项目名称'
 
         optional :round_id, type: Integer, desc: '轮次'
@@ -122,9 +122,9 @@ class FundingApi < Grape::API
       end
       patch do
         #todo 约见
-        raise '咨询类型的项目不能修改类型' if @funding.categroy == Funding.categroy_advisory_value && @funding.categroy != params[:categroy]
+        raise '咨询类型的项目不能修改类型' if @funding.category == Funding.category_advisory_value && @funding.category != params[:category]
         Funding.transaction do
-          @funding.update(params.slice(:categroy, :name, :round_id, :shiny_word, :post_investment_valuation, :post_valuation_currency,
+          @funding.update(params.slice(:category, :name, :round_id, :shiny_word, :post_investment_valuation, :post_valuation_currency,
                                        :target_amount, :target_amount_currency, :share, :source_type, :source_member, :source_detail,
                                        :is_complicated, :funding_score, :confidentiality_level, :confidentiality_reason, :is_reportable,
                                        :com_desc, :products_and_business, :financial, :operational, :market_competition, :financing_plan,
