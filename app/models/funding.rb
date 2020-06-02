@@ -13,16 +13,16 @@ class Funding < ApplicationRecord
 
   belongs_to :company
 
-  has_many :time_lines, -> { order(created_at: :desc) }, class_name: 'TimeLine'
+  has_many :time_lines, -> {order(created_at: :desc)}, class_name: 'TimeLine'
   has_many :funding_company_contacts, class_name: 'FundingCompanyContact'
 
-  has_many :funding_project_users, -> { kind_funding_project_users }, class_name: 'FundingUser'
+  has_many :funding_project_users, -> {kind_funding_project_users}, class_name: 'FundingUser'
   has_many :project_users, through: :funding_project_users, source: :user
 
-  has_many :funding_bd_leader, -> { kind_bd_leader }, class_name: 'FundingUser'
+  has_many :funding_bd_leader, -> {kind_bd_leader}, class_name: 'FundingUser'
   has_many :bd_leader, through: :funding_bd_leader, source: :user
 
-  has_many :funding_execution_leader, -> { kind_execution_leader }, class_name: 'FundingUser'
+  has_many :funding_execution_leader, -> {kind_execution_leader}, class_name: 'FundingUser'
   has_many :execution_leader, through: :funding_execution_leader, source: :user
 
   has_many :calendars
@@ -44,7 +44,7 @@ class Funding < ApplicationRecord
 
   def search_data
     attributes.merge company_name: self.company&.name,
-                     company_sector_names: self.company&.sector_ids.map{|ins| CacheBox.dm_single_sector_tree[ins]},
+                     company_sector_names: self.company&.sector_ids.map {|ins| CacheBox.dm_single_sector_tree[ins]}
     # todo 约见
     # todo Tracklog
   end
@@ -91,7 +91,7 @@ class Funding < ApplicationRecord
   def funding_various_file(params)
     if params[:attachments].present? || params[attachment_ids].present?
       self.funding_materials.each do |funding_material|
-        unless params[attachment_ids].map{|ins| ins.to_i}.include? funding_material.id
+        unless params[attachment_ids].map {|ins| ins.to_i}.include? funding_material.id
           funding_material.purge
         end
       end
