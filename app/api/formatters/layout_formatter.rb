@@ -33,12 +33,11 @@ module Formatters::LayoutFormatter
   end
 
   def self.page_auth(env)
+    request = env['rack.request.query_hash']
     if request['auth'].present?
       res = {}
-      request = nil
       current_ability = nil
       request['auth'].each do |auth|
-        request ||= env['rack.request.query_hash']
         current_ability ||= env['api.endpoint'].current_ability
         if (arr = auth.split('@')).size == 2
           action, model = arr
