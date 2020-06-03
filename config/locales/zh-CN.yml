@@ -19,9 +19,11 @@ zh-CN:
       user: 用户
       user_investor_group: 个人投资组
       user_title: 用户title
-      calendar: 日程
       funding: 项目
       funding_company_contact: 项目成员
+      verification: 审核
+      notification: 通知
+      calendar: 日程
 
   activerecord:
     models:

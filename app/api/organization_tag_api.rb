@@ -1,21 +1,19 @@
 class OrganizationTagApi < Grape::API
   mounted do
     resource configuration[:owner] do
-      resource ':organization_tag_category_id' do
-
+      resource ':id' do
         desc '标签类别对应标签', entity: Entities::OrganizationTag
         get :tags do
-          @organization_tags = OrganizationTag.where(organization_tag_category_id: params[:organization_tag_category_id])
+          @organization_tags = OrganizationTag.where(organization_tag_category_id: params[:id])
           present @organization_tags, with: Entities::OrganizationTag
         end
 
         desc '新增标签', entity: Entities::OrganizationTag
         params do
           optional :name, type: String, desc: '名称'
-          optional :id, as: :organization_tag_category_id, type: Integer, desc: '标签类别ID'
         end
         post :tags do
-          present OrganizationTag.create!(declared(params)), with: Entities::OrganizationTag
+          present OrganizationTag.create!(declared(params).merge(organization_tag_category_id: params[:id])), with: Entities::OrganizationTag
         end
 
       end

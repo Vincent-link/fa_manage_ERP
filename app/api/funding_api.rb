@@ -151,4 +151,6 @@ class FundingApi < Grape::API
       end
     end
   end
+
+  mount BscApi, with: {owner: 'fundings'}
 end

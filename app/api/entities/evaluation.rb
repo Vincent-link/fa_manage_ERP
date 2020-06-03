@@ -10,6 +10,7 @@ module Entities
     expose :other, documentation: {type: 'integer', desc: '其他建议', required: true}
     expose :user, using: Entities::User
 
+    expose :funding_id, documentation: {type: 'integer', desc: '项目id', required: true}
     expose :created_at, documentation: {type: 'integer', desc: '用户评分时间', required: true}
   end
 end

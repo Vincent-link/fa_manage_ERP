@@ -27,7 +27,7 @@ class RoleApi < Grape::API
 
       desc '获取单个权限组权限', entity: Entities::Resource
       get :resources do
-        @role_resources = Resource.resources.select{|e| RoleResource.where(role_id: params[:id]).pluck(:name).include?(e.name)}        
+        @role_resources = Resource.resources.select{|e| RoleResource.where(role_id: params[:id]).pluck(:name).include?(e.name)}
         present @role_resources, with: Entities::Resource
       end
 
@@ -36,7 +36,6 @@ class RoleApi < Grape::API
         optional 'name', type: String, desc: "权限"
       end
       patch :resources do
-        # binding.pry
         @resources = Resource.resources.select { |e| params[:name] == e.name }
         @role.resource_ids = @resources.map(&:name)
         present @role.role_resources, with: Entities::Resource
@@ -50,10 +49,10 @@ class RoleApi < Grape::API
 
       desc '更新权限组用户', entity: Entities::UserRole
       params do
-        optional 'ids', type: Array[String], desc: "用户ID"
+        optional :ids, type: Array[Integer], desc: "用户ID"
       end
       patch :users do
-        @users = User.all.select { |e| params[:ids].include?(e.id.to_s) }
+        @users = User.select { |e| params[:ids].include?(e.id) }
         @role.user_ids = @users.map(&:id)
         present @role.user_roles, with: Entities::UserRole
       end
@@ -80,7 +79,7 @@ class RoleApi < Grape::API
         @role.update(declared(params))
         present @role, with: Entities::Role
       end
-      
+
     end
 
   end

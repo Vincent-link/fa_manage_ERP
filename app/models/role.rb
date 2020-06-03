@@ -24,6 +24,6 @@ class Role < ApplicationRecord
   end
 
   def add_user_by_id id
-    self.user_roles.with_deleted.find_or_create_by :user_id => id
+    self.user_roles.find_or_create_by :user_id => id
   end
 end

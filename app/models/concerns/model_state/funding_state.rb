@@ -41,6 +41,12 @@ module ModelState
           hold:         { value: 8, desc: "Hold"       },
           pass:         { value: 9, desc: "Pass"       }
       }
+
+      state_config :bsc_status, config: {
+          started:      { value: "started",  desc: "bsc已启动"     },
+          evaluatting:  { value: "evaluatting", desc: "bsc投票中"  },
+          finished:     { value: "finished",  desc: "bsc完成"      }
+      }
     end
   end
 end
