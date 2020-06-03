@@ -5,7 +5,7 @@ module Entities
     expose :position, documentation: {type: 'Entities::IdName', desc: '职位'} do |ins|
       {
           id: ins.position_id,
-          name: ins.position_desc,
+          name: ins.position_id_desc,
       }
     end
     expose :email, documentation: {type: 'string', desc: '邮箱'}
