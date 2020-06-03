@@ -12,6 +12,7 @@ class Funding < ApplicationRecord
   has_one_attached :funding_el
 
   belongs_to :company
+  belongs_to :funding_source_member, class_name: 'Member', foreign_key: :source_member
 
   has_many :time_lines, -> { order(created_at: :desc) }, class_name: 'TimeLine'
   has_many :funding_company_contacts, class_name: 'FundingCompanyContact'
@@ -35,7 +36,7 @@ class Funding < ApplicationRecord
     pre_index = Funding.with_deleted.where("created_at > ?", Time.new(current_year))
                     .order(:serial_number => :desc).first
                     .serial_number&.slice(-6..-1).to_i || 0 rescue 0
-    self.serial_number = "E#{current_year.to_s.slice(-2..-1)}#{format('%06d', pre_index)}"
+    self.serial_number = "E#{current_year.to_s.slice(-2..-1)}#{format('%06d', pre_index+1)}"
   end
 
   def base_time_line

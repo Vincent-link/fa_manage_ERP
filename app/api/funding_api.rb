@@ -4,11 +4,11 @@ class FundingApi < Grape::API
   resource :fundings do
     desc '创建项目', entity: Entities::FundingLite
     params do
-      requires :category, type: Integer, desc: '项目类型（字典）'
+      requires :category, type: Integer, desc: '项目类型（字典funding_category）'
       requires :company_id, type: Integer, desc: '公司id'
       requires :name, type: String, desc: '项目名称'
 
-      optional :round_id, type: Integer, desc: '轮次'
+      optional :round_id, type: Integer, desc: '轮次（字典rounds）'
       optional :target_amount_currency, type: Integer, desc: '交易金额币种'
       optional :target_amount, type: Float, desc: '交易金额'
       optional :share, type: Float, desc: '出让股份'
@@ -20,7 +20,7 @@ class FundingApi < Grape::API
       optional :market_competition, type: String, desc: '市场竞争分析'
       optional :financing_plan, type: String, desc: '融资计划'
       optional :other_desc, type: String, desc: '其他'
-      optional :source_type, type: Integer, desc: '融资来源类型'
+      optional :source_type, type: Integer, desc: '融资来源类型(字典funding_source_type)'
       optional :source_member, type: Integer, desc: '投资者'
       optional :source_detail, type: String, desc: '来源明细'
       optional :funding_score, type: Integer, desc: '项目评分'
@@ -84,10 +84,10 @@ class FundingApi < Grape::API
 
       desc '编辑项目', entity: Entities::FundingLite
       params do
-        optional :category, type: Integer, desc: '项目类型'
+        optional :category, type: Integer, desc: '项目类型（字典funding_category）'
         optional :name, type: String, desc: '项目名称'
 
-        optional :round_id, type: Integer, desc: '轮次'
+        optional :round_id, type: Integer, desc: '轮次（字典rounds）'
         optional :post_valuation_currency, type: Integer, desc: '本轮投后估值币种'
         optional :post_investment_valuation, type: Float, desc: '本轮投后估值'
         optional :target_amount_currency, type: Integer, desc: '交易金额币种'
@@ -101,7 +101,7 @@ class FundingApi < Grape::API
         optional :market_competition, type: String, desc: '市场竞争分析'
         optional :financing_plan, type: String, desc: '融资计划'
         optional :other_desc, type: String, desc: '其他'
-        optional :source_type, type: Integer, desc: '融资来源类型'
+        optional :source_type, type: Integer, desc: '融资来源类型（字典funding_source_type）'
         optional :source_member, type: Integer, desc: '投资者'
         optional :source_detail, type: String, desc: '来源明细'
         optional :funding_score, type: Integer, desc: '项目评分'
@@ -122,6 +122,7 @@ class FundingApi < Grape::API
       end
       patch do
         #todo 约见
+        auth_source_type(params)
         raise '咨询类型的项目不能修改类型' if @funding.category == Funding.category_advisory_value && @funding.category != params[:category]
         Funding.transaction do
           @funding.update(params.slice(:category, :name, :round_id, :shiny_word, :post_investment_valuation, :post_valuation_currency,
@@ -132,7 +133,7 @@ class FundingApi < Grape::API
           @funding.add_project_follower(params)
           @funding.funding_various_file(params)
         end
-        present funding, with: Entities::FundingLite
+        present @funding, with: Entities::FundingLite
       end
 
       desc '项目详情', entity: Entities::FundingComprehensive

@@ -8,7 +8,7 @@ module Entities
     expose :market_competition, documentation: {type: 'string', desc: '市场竞争分析'}
     expose :financing_plan, documentation: {type: 'string', desc: '融资计划'}
     expose :other_desc, documentation: {type: 'string', desc: '其他'}
-    expose :bp, with: Entities::File,if: ->(ins) {ins.bp.present?}, documentation: {type: Entities::File, desc: 'bp文件', required: true}
+    expose :funding_bp, with: Entities::File,if: ->(ins) {ins.funding_bp.present?}, documentation: {type: Entities::File, desc: 'bp文件', required: true}
     expose :is_list, documentation: {type: 'boolean', desc: '是否为上市/新三板公司'}
     expose :ticker, documentation: {type: 'string', desc: '股票代码'}
     expose :post_investment_valuation, documentation: {type: 'float', desc: '本轮投后估值'}

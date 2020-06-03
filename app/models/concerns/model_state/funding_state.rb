@@ -30,16 +30,13 @@ module ModelState
       }
 
       state_config :source_type, config: {
-          reviewing:    { value: 0, desc: "Reviewing"  },
-          interesting:  { value: 1, desc: "Interesting"},
-          voting:       { value: 2, desc: "Voting"     },
-          pursue:       { value: 3, desc: "Pursue"     },
-          execution:    { value: 4, desc: "Execution"  },
-          closing:      { value: 5, desc: "Closing"    },
-          closed:       { value: 6, desc: "Closed"     },
-          paid:         { value: 7, desc: "Paid"       },
-          hold:         { value: 8, desc: "Hold"       },
-          pass:         { value: 9, desc: "Pass"       }
+          member_referral:         { value: 0, desc: "投资人推荐"   },
+          member_recommend:        { value: 1, desc: "找投资人引荐" },
+          find_company:            { value: 2, desc: "自己找公司"   },
+          company_find:            { value: 3, desc: "公司找到我"   },
+          colleague_introduction:  { value: 4, desc: "同事介绍"    },
+          company_email:           { value: 5, desc: "公司对外邮箱" },
+          company_edition:         { value: 6, desc: "公司版"      }
       }
 
       state_config :bsc_status, config: {
