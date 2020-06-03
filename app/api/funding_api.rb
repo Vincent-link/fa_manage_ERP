@@ -133,7 +133,7 @@ class FundingApi < Grape::API
           @funding.add_project_follower(params)
           @funding.funding_various_file(params)
         end
-        present funding, with: Entities::FundingLite
+        present @funding, with: Entities::FundingLite
       end
 
       desc '项目详情', entity: Entities::FundingComprehensive
