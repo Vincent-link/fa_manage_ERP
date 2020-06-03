@@ -16,10 +16,11 @@ class BscApi < Grape::API
           @funding.investment_committee_ids = params[:investment_committee_ids]
           @funding.update(conference_team_ids: params[:conference_team_ids], bsc_status: Funding.bsc_status_config[:started][:value])
           # 项目成员会收到通知
-          content = Notification.project_type_config[:bsc_started][:desc].call(@funding.company.name)
+          content = Notification.project_type_config[:bsc_started][:desc].call(@funding.name)
+          binding.pry
           @funding.funding_users.map {|e| Notification.create(notification_type: Notification.notification_type_config[:project][:desc], content: content, user_id: e.user_id, is_read: false)}
           # 启动BSC后，投委会成员会收到对该项目的comments征集（提问）的邀请通知
-          content = Notification.project_type_config[:ask_to_review][:desc].call(@funding.company.name)
+          content = Notification.project_type_config[:ask_to_review][:desc].call(@funding.name)
           params[:investment_committee_ids].map {|e| Notification.create(notification_type: Notification.notification_type_config[:project][:desc], content: content, user_id: e, is_read: false)}
 
           present true
@@ -35,7 +36,7 @@ class BscApi < Grape::API
           @funding.investment_committee_ids = params[:investment_committee_ids]
           @funding.update(conference_team_ids: params[:conference_team_ids], bsc_status: Funding.bsc_status_config[:evaluatting][:value])
           # 开启BSC投票后，相关投委成员会收到该项目的评分审核
-          desc = Verification.verification_type_config[:bsc_evaluate][:desc].call(@funding.company.name)
+          desc = Verification.verification_type_config[:bsc_evaluate][:desc].call(@funding.name)
           # 保持每个投委会成员对应的bsc评分项目只有一条bsc评分审核
           @funding.evaluations.map {|e|
             if e.user.verifications.where(verification_type: Verification.verification_type_config[:bsc_evaluate][:value]).where("verifi->>'funding_id' = '#{params[:id]}'").empty?
@@ -115,8 +116,8 @@ class BscApi < Grape::API
         desc '提醒投票'
         post "bsc/remind_to_vote" do
           # 判断当前用户是否是管理员
-          if User.current.is_admin?
-            content = Notification.project_type_config[:ask_to_review][:desc].call(@funding.company.name)
+          if can? :remind, "to_vote"
+            content = Notification.project_type_config[:ask_to_review][:desc].call(@funding.name)
             @funding.evaluations.where(is_agree: nil).map {|e| Notification.create(notification_type: Notification.notification_type_config[:project][:desc], content: content, user_id: e.user_id, is_read: false)}
           else
             raise CanCan::AccessDenied

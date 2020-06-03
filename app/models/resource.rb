@@ -18,8 +18,11 @@ class Resource
     resource 'read_verification', '查看审核' do
       can :read, Verification
     end
-    resource 'one_vote_veto', '查看审核' do
-      can :read, Verification
+    resource 'one_vote_veto', '一票否决' do
+      can :one_vote, 'veto'
+    end
+    resource 'remind_to_vote', '提醒投票' do
+      can :remind, 'to_vote'
     end
   end
 
@@ -484,12 +487,10 @@ class Resource
   group :external, '外部数据权限' do
     resource 'read_force_call_report', '查看force call report' do
       can :read, 'force_call_report'
-      can :read, ForceFileStub
     end
 
     resource 'download_force_call_report', '下载force call report' do
       can :download, 'force_call_report'
-      can :download, ForceFileStub
     end
   end
 
