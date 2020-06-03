@@ -37,14 +37,14 @@ class FundingApi < Grape::API
       optional :model, type: File, desc: 'Model'
       optional :el, type: File, desc: 'EL'
 
-      optional :funding_company_contacts, type: Array[JSON] do
-        requires :name, type: String, desc: '成员名称'
-        optional :position_id, type: Integer, desc: '职位（字典funding_contact_position）'
-        optional :email, type: String, desc: '邮箱'
-        optional :mobile, type: String, desc: '手机号码'
-        optional :wechat, type: String, desc: '微信号'
-        optional :description, type: String, desc: '简介'
-      end
+      # optional :funding_company_contacts, type: Array[JSON] do
+      #   requires :name, type: String, desc: '成员名称'
+      #   optional :position_id, type: Integer, desc: '职位（字典funding_contact_position）'
+      #   optional :email, type: String, desc: '邮箱'
+      #   optional :mobile, type: String, desc: '手机号码'
+      #   optional :wechat, type: String, desc: '微信号'
+      #   optional :description, type: String, desc: '简介'
+      # end
 
       #todo 约见（5个字段的swagger）（李靖超）
     end
@@ -65,11 +65,14 @@ class FundingApi < Grape::API
 
     desc '项目列表', entity: Entities::FundingBaseInfo
     params do
+      optional :status, type: Integer, desc: '状态'
       optional :keyword, type: String, desc: '关键字'
       optional :location_ids, type: Array[Integer], desc: '地点（字典locations）'
       optional :sector_ids, type: Array[Integer], desc: '行业（字典sector_tree）'
       optional :round_ids, type: Array[Integer], desc: '轮次(字典rounds)'
       optional :pipeline, type: Array[Integer], desc: 'Pipeline阶段'
+      optional :page, type: Integer, desc: 'Pipeline阶段', default: 1
+      optional :per_page, type: Integer, desc: 'Pipeline阶段', default: 30
       # todo Pipeline阶段暂时没有（李靖超）
     end
     get do

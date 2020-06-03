@@ -1,6 +1,7 @@
 class Funding < ApplicationRecord
   acts_as_paranoid
-  # searchkick
+  has_paper_trail
+  searchkick
 
   include ModelState::FundingState
 
@@ -31,6 +32,8 @@ class Funding < ApplicationRecord
   before_create :gen_serial_number
   after_create :base_time_line
 
+  scope :search_import, -> {includes(:company)}
+
   def gen_serial_number
     current_year = Time.now.year
     pre_index = Funding.with_deleted.where("created_at > ?", Time.new(current_year))
@@ -44,6 +47,8 @@ class Funding < ApplicationRecord
   end
 
   def search_data
+    attributes.merge {}
+    # attributes.merge company: self.company
     # attributes.merge company_name: self.company&.name,
     #                  company_sector_names: self.company&.sector_ids.map { |ins| CacheBox.dm_single_sector_tree[ins] },
     #                  sector_ids: self.company&.sector_ids
@@ -53,11 +58,34 @@ class Funding < ApplicationRecord
 
   def self.es_search(params)
     where_hash = {}
-    where_hash[:sector_ids] = {all: params[:sector]} if params[:sector].present?
-    where_hash[:round_ids] = {all: params[:round]} if !params[:any_round] && params[:round].present?
-    where_hash[:location_ids] = {all: params[:round]} if !params[:any_round] && params[:round].present?
+    if params[:location_ids]
+
+    end
+
+    if params[:sector_ids]
+
+    end
+
+    if params[:round_ids]
+      where_hash[:round_id] = params[:round_ids]
+    end
+
+    if params[:pipeline]
+
+    end
+
+    if params[:keyword]
+      Funding.search(params[:keyword], where: where_hash, highlight: DEFAULT_HL_TAG.merge(fields: []))
+    else
+      Funding.search(where: where_hash)
+    end
+    # where_hash[:sector_ids] = {all: params[:sector]} if params[:sector].present?
+    # where_hash[:round_ids] = {all: params[:round]} if !params[:any_round] && params[:round].present?
+    # where_hash[:location_ids] = {all: params[:round]} if !params[:any_round] && params[:round].present?
     # todo 搜索还没好
-    Funding.all.limit 10
+    # Organization.search(params[:query], where: where_hash, order: order_hash, page: params[:page], per_page: params[:per_page], highlight: DEFAULT_HL_TAG)
+
+
   end
 
   def add_project_follower(params)

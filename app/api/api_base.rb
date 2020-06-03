@@ -68,7 +68,7 @@ class ApiBase < Grape::API
   mount CalendarApi
   mount FundingStateMachineApi
   mount FundingApi
-  mount FundingCompanyContactApi
+  # mount FundingCompanyContactApi
   mount VerificationApi
   mount NotificationApi
 
