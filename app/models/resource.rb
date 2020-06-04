@@ -18,7 +18,7 @@ class Resource
     resource 'read_verification', '查看审核' do
       can :read, Verification
     end
-    resource 'one_vote_veto', '查看审核' do
+    resource 'one_vote_veto', '一票否决权' do
       can :read, Verification
     end
   end

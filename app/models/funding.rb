@@ -226,7 +226,7 @@ class Funding < ApplicationRecord
           can_verify_users = UserRole.select { |e| roles.pluck(:id).include?(e.role_id) }
           # 给管理员发审核
           desc = Verification.verification_type_config[:bsc_evaluate][:desc].call(self.company.name)
-          can_verify_users.pluck(:user_id).map {|e| Verification.create(verification_type: "bsc_evaluate", desc: desc, user_id: e.user_id, verifi: {funding_id: self.id})} unless can_verify_users.nil?
+          can_verify_users.pluck(:user_id).map {|e| Verification.create(verification_type: "bsc_evaluate", desc: desc, user_id: e.user_id, verifi: {funding_id: self.id})} unless can_verify_users.empty?
         when -Float::INFINITY...0
           # 项目自动 pass，并给项目成员及管理员发送通知；
           Funding.transaction do
