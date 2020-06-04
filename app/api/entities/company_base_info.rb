@@ -2,8 +2,8 @@ module Entities
   class CompanyBaseInfo < Base
     expose :id, documentation: {type: 'integer', desc: '公司id'}
     expose :name, documentation: {type: 'string', desc: '公司名称'}
-    expose :sector, documentation: {type: 'Entites::IdName', desc: '行业'} do |ins|
-          '假数据'
+    expose :sector, documentation: {type: 'string', desc: '行业'} do |ins|
+      '假数据'
     end
     expose :registered_name, documentation: {type: 'string', desc: '工商名'} do |ins|
       '假数据'
@@ -14,7 +14,10 @@ module Entities
     expose :logo, documentation: {type: 'string', desc: '公司logo'} do |ins|
       '假数据'
     end
-    expose :location_id, documentation: {type: 'integer', desc: '行业'} do |ins|
+    expose :location_province_id, documentation: {type: 'integer', desc: '省份'} do |ins|
+      '假数据'
+    end
+    expose :location_city_id, documentation: {type: 'integer', desc: '城市'} do |ins|
       '假数据'
     end
     # expose :address, with: Entities::Address, documentation: {type: 'string', desc: '地址'}

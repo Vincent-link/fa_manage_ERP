@@ -34,6 +34,7 @@ module Entities
     with_options(format_with: :time_to_s_date) do
       expose :operating_day, documentation: {type: 'string', desc: '状态开始时间'}
     end
+    expose :shiny_word, documentation: {type: 'string', desc: '一句话简介'}
     expose :com_desc, documentation: {type: 'string', desc: '公司简介'}
     expose :products_and_business, documentation: {type: 'string', desc: '产品与商业模式'}
     expose :financial, documentation: {type: 'string', desc: '财务数据'}
