@@ -56,6 +56,8 @@ gem 'searchkick'
 # oss
 gem 'aws-sdk', '~> 3'
 
+gem 'acts-as-taggable-on', '~> 6.0'
+
 # excel
 # gem 'spreadsheet'
 # gem 'axlsx'
