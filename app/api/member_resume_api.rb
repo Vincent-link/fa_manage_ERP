@@ -15,7 +15,7 @@ class MemberResumeApi < Grape::API
         desc '新增工作经历'
         params do
           requires :organization_id, type: Integer, desc: '就职机构id'
-          optional :title, type: String, desc: 'title'
+          optional :title, type: String, desc: '职位'
           optional :started_date, type: Date, desc: '开始时间'
           optional :closed_date, type: Date, desc: '结束时间'
         end
@@ -43,7 +43,7 @@ class MemberResumeApi < Grape::API
       desc '更新工作经历'
       params do
         requires :organization_id, type: Integer, desc: '就职机构id'
-        optional :title, type: String, desc: 'title'
+        optional :title, type: String, desc: '职位'
         optional :started_date, type: Date, desc: '开始时间'
         optional :closed_date, type: Date, desc: '结束时间'
       end

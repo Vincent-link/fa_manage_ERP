@@ -39,6 +39,7 @@ module Helpers
     end
 
     def logout
+      SsoClient.client.client_credentials.get_token.get("/api/logout_by_id?id=#{session['current_user_id']}") if session['current_user_id']
       session.clear
     end
 
