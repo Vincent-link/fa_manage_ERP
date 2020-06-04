@@ -19,6 +19,7 @@ class CommonApi < Grape::API
           funding_contact_position: FundingCompanyContact.position_id_id_name,
           funding_status: Funding.status_id_name,
           funding_category: Funding.category_id_name,
+          funding_source_type: Funding.source_type_id_name,
       }
     end
 

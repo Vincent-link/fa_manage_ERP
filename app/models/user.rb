@@ -18,7 +18,7 @@ class User < ApplicationRecord
   has_many :calendar_members, as: :memberable
   has_many :calendars, through: :calendar_members
   has_many :created_calendars, foreign_key: :user_id, class_name: 'Calendar'
-  belongs_to :leader, class_name: 'User'
+  belongs_to :leader, class_name: 'User', optional: true
   has_many :sub_users, class_name: 'User', foreign_key: :leader_id
   has_many :sub_user_calendars, through: :sub_users, source: :calendars
 
@@ -28,7 +28,8 @@ class User < ApplicationRecord
   delegate :name, to: :grade, :prefix => true, allow_nil: true
 
   def self.find_or_create_user(auth_user_hash)
-    self.find_or_create_by(:id => auth_user_hash.id) do |user|
+    auth_user_hash = Hashie::Mash.new auth_user_hash
+    self.find_or_create_by!(:id => auth_user_hash.id) do |user|
       user.name = auth_user_hash.name
       user.email = auth_user_hash.email
       user.team_id = auth_user_hash.team_id

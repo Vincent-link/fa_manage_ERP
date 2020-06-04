@@ -4,6 +4,9 @@ class Calendar < ApplicationRecord
   include StateConfig
 
   has_many :calendar_members
+  has_many :org_members, -> {where(memberable_type: 'Member')}, class_name: 'CalendarMember'
+  has_many :com_members, -> {where(memberable_type: 'CompanyContact')}, class_name: 'CalendarMember'
+  has_many :user_members, -> {where(memberable_type: 'User')}, class_name: 'CalendarMember'
   belongs_to :user
   belongs_to :address, optional: true
   belongs_to :funding, optional: true

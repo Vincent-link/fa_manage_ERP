@@ -34,6 +34,7 @@ module Entities
     with_options(format_with: :time_to_s_date) do
       expose :operating_day, documentation: {type: 'string', desc: '状态开始时间'}
     end
+    expose :shiny_word, documentation: {type: 'string', desc: '一句话简介'}
     expose :com_desc, documentation: {type: 'string', desc: '公司简介'}
     expose :products_and_business, documentation: {type: 'string', desc: '产品与商业模式'}
     expose :financial, documentation: {type: 'string', desc: '财务数据'}
@@ -41,8 +42,14 @@ module Entities
     expose :market_competition, documentation: {type: 'string', desc: '市场竞争分析'}
     expose :financing_plan, documentation: {type: 'string', desc: '融资计划'}
     expose :other_desc, documentation: {type: 'string', desc: '其他'}
-    expose :sources_type, documentation: {type: 'integer', desc: '融资来源类型'}
-    expose :sources_detail, documentation: {type: 'string', desc: '融资来源明细'}
+    expose :source_type, documentation: {type: 'integer', desc: '融资来源类型'}
+    expose :source_detail, if: lambda { |ins| 'Funding'.constantize.source_type_filter(:find_company, :company_find, :colleague_introduction).include? ins.source_type}, documentation: {type: 'string', desc: '融资来源明细'}
+    expose :source_member, if: lambda { |ins| 'Funding'.constantize.source_type_filter(:member_referral, :member_recommend).include? ins.source_type}, documentation: {type: 'Entities::IdName', desc: '投资者'} do |ins|
+      {
+          id: ins.source_member,
+          name: ins.funding_source_member&.name
+      }
+    end
     expose :confidentiality_level, documentation: {type: 'integer', desc: '保密等级'}
     expose :confidentiality_reason, documentation: {type: 'string', desc: '保密原因'}
     expose :is_reportable, documentation: {type: 'boolean', desc: '是否出现在周报/日报'}

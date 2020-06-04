@@ -125,7 +125,7 @@ class FundingStateMachineApi < Grape::API
         optional :financial, type: String, desc: '财务数据'
         optional :operational, type: String, desc: '运营数据'
         optional :market_competition, type: String, desc: '市场竞争分析'
-        requires :financing_plan, type: String, desc: '融资计划'
+        optional :financing_plan, type: String, desc: '融资计划'
         optional :other_desc, type: String, desc: '其他'
         optional :reason, type: String, desc: 'pass理由'
         optional :bp, type: File, desc: 'BP'
@@ -144,7 +144,7 @@ class FundingStateMachineApi < Grape::API
       params do
         requires :status, type: Integer, desc: '状态'
       end
-      post 'unreasonable_movement' do
+      patch 'status' do
         # todo 判断管理员权限
         @funding.update!(status: params[:status])
         present @funding, with: Entities::FundingLite

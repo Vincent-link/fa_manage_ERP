@@ -48,3 +48,7 @@ Grape::Endpoint.class_eval do
     summary
   end
 end
+
+ActsAsTaggableOn::Tag.class_eval do
+  send(:acts_as_taggable_on, :sub_tags)
+end

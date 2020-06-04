@@ -34,11 +34,11 @@ module Formatters::LayoutFormatter
 
   def self.page_auth(env)
     request = env['rack.request.query_hash']
-    current_ability = env['api.endpoint'].current_ability
     if request['auth'].present?
       res = {}
-      puts 0
+      current_ability = nil
       request['auth'].each do |auth|
+        current_ability ||= env['api.endpoint'].current_ability
         if (arr = auth.split('@')).size == 2
           action, model = arr
           res[auth] = current_ability.can?(action.to_sym, (model.constantize rescue model))
