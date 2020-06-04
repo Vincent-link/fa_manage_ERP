@@ -126,7 +126,7 @@ class FundingApi < Grape::API
       patch do
         #todo 约见
         auth_source_type(params)
-        raise '咨询类型的项目不能修改类型' if @funding.category == Funding.category_advisory_value && @funding.category != params[:category]
+        raise '咨询类型的项目不能修改类型' if params[:category].present? && @funding.category == Funding.category_advisory_value && @funding.category != params[:category]
         Funding.transaction do
           @funding.update(params.slice(:category, :name, :round_id, :shiny_word, :post_investment_valuation, :post_valuation_currency,
                                        :target_amount, :target_amount_currency, :share, :source_type, :source_member, :source_detail,
