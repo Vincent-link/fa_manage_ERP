@@ -97,3 +97,4 @@ group :test do
 end
 
 gem 'pry'
+gem 'acts-as-taggable-on', '~> 6.0'

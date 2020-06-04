@@ -17,7 +17,6 @@ class BscApi < Grape::API
           @funding.update(conference_team_ids: params[:conference_team_ids], bsc_status: Funding.bsc_status_config[:started][:value])
           # 项目成员会收到通知
           content = Notification.project_type_config[:bsc_started][:desc].call(@funding.name)
-          binding.pry
           @funding.funding_users.map {|e| Notification.create(notification_type: Notification.notification_type_config[:project][:desc], content: content, user_id: e.user_id, is_read: false)}
           # 启动BSC后，投委会成员会收到对该项目的comments征集（提问）的邀请通知
           content = Notification.project_type_config[:ask_to_review][:desc].call(@funding.name)
