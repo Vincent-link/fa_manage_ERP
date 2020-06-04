@@ -27,7 +27,7 @@ class FundingApi < Grape::API
 
       optional :attachments, type: Array[File], desc: '附件'
 
-      optional :project_user_ids, type: Array[Integer], desc: '项目成员id'
+      optional :normal_user_ids, type: Array[Integer], desc: '项目成员id'
       optional :bd_leader_id, type: Integer, desc: 'BD负责人id'
       optional :execution_leader_id, type: Integer, desc: '执行负责人id'
 
@@ -112,7 +112,7 @@ class FundingApi < Grape::API
         optional :attachments, type: Array[File], desc: '附件'
         optional :attachment_ids, type: Array[Integer], desc: '附件id'
 
-        optional :project_user_ids, type: Array[Integer], desc: '项目成员id'
+        optional :normal_user_ids, type: Array[Integer], desc: '项目成员id'
         optional :bd_leader_id, type: Integer, desc: 'BD负责人id'
         optional :execution_leader_id, type: Integer, desc: '执行负责人id'
 
