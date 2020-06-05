@@ -44,6 +44,10 @@ module ModelState
           evaluatting:  { value: "evaluatting", desc: "bsc投票中"  },
           finished:     { value: "finished",  desc: "bsc完成"      }
       }
+
+      state_config :confidentiality_level, config: {
+          first: {value: 1, desc: '假数据level 1'}
+      }
     end
   end
 end

@@ -29,7 +29,7 @@ module Entities
       Entities::User.represent ins.bd_leader.first
     end
     expose :execution_leader, documentation: {type: 'Entities::User', desc: '执行负责人'} do |ins|
-      Entities::User.represent ins.bd_leader.first
+      Entities::User.represent ins.execution_leader.first
     end
     with_options(format_with: :time_to_s_date) do
       expose :operating_day, documentation: {type: 'string', desc: '状态开始时间'}
