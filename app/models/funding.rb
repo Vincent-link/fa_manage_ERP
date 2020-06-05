@@ -18,7 +18,7 @@ class Funding < ApplicationRecord
   has_many :time_lines, -> { order(created_at: :desc) }, class_name: 'TimeLine'
   has_many :funding_company_contacts, class_name: 'FundingCompanyContact'
 
-  has_many :funding_normal_users, -> { kind_funding_normal_users }, class_name: 'FundingUser'
+  has_many :funding_normal_users, -> { kind_normal_users }, class_name: 'FundingUser'
   has_many :normal_users, through: :funding_normal_users, source: :user
 
   has_many :funding_bd_leader, -> { kind_bd_leader }, class_name: 'FundingUser'
@@ -95,8 +95,8 @@ class Funding < ApplicationRecord
 
   def add_project_follower(params)
     if params[:normal_user_ids].present?
-      self.funding_normal_users.where.not(user_id: params[:normal_users_ids]).destroy_all
-      (params[:normal_users_ids] - self.normal_user_ids).each do |user_id|
+      self.funding_normal_users.where.not(user_id: params[:normal_user_ids]).destroy_all
+      (params[:normal_user_ids] - self.normal_user_ids).each do |user_id|
         self.funding_normal_users.create(kind: FundingUser.kind_normal_users_value, user_id: user_id)
       end
     end
