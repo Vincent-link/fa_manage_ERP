@@ -8,8 +8,8 @@ module Entities
     expose :wechat, documentation: {type: 'string', desc: '微信'}
     expose :email, documentation: {type: 'string', desc: '邮箱'}
     expose :team_ids, documentation: {type: 'integer', desc: '所属团队', is_array: true}
-    expose :card, using: Entities::File, if: ->(ins) {ins.card.present?}, documentation: {type: Entities::File, desc: '名片'}
-    expose :avatar, using: Entities::File, if: ->(ins) {ins.avatar.present?}, documentation: {type: Entities::File, desc: '头像'}
+    expose :card_attachment, as: :card, using: Entities::File, documentation: {type: Entities::File, desc: '名片', required: true}
+    expose :avatar_attachment, as: :avatar, using: Entities::File, documentation: {type: Entities::File, desc: '用户头像', required: true}
     expose :position_rank_id, documentation: {type: 'integer', desc: '职级'}
     expose :address, using: Entities::Address, documentation: {type: 'Entities::Address', desc: '办公地点'}
 
