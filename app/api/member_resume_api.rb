@@ -37,7 +37,7 @@ class MemberResumeApi < Grape::API
 
       desc '删除工作经历'
       delete do
-        @member_resume.destory!
+        @member_resume.destroy!
       end
 
       desc '更新工作经历'
