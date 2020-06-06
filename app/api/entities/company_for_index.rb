@@ -1,10 +1,8 @@
 module Entities
-  class CompanyBaseInfo < Base
+  class CompanyForIndex < Base
     expose :id, documentation: {type: 'integer', desc: '公司id'}
     expose :name, documentation: {type: 'string', desc: '公司名称'}
-    expose :sector, documentation: {type: 'string', desc: '行业'} do |ins|
-      '假数据'
-    end
+    expose :sector_list, documentation: {type: 'string', desc: '行业'} 
     expose :location_province_id, documentation: {type: 'integer', desc: '省份'} do |ins|
       '假数据'
     end
