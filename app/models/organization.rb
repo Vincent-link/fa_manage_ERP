@@ -5,6 +5,8 @@ class Organization < ApplicationRecord
 
   include StateConfig
 
+  acts_as_taggable_on :tags
+
   has_one_attached :logo
 
   has_many :members

@@ -33,10 +33,10 @@ class RoleApi < Grape::API
 
       desc '更新单个权限组权限', entity: Entities::Resource
       params do
-        optional 'name', type: String, desc: "权限"
+        optional :names, type: Array[String], desc: "权限"
       end
       patch :resources do
-        @resources = Resource.resources.select { |e| params[:name] == e.name }
+        @resources = Resource.resources.select { |e| params[:names].include?(e.name) }
         @role.resource_ids = @resources.map(&:name)
         present @role.role_resources, with: Entities::Resource
       end
