@@ -1,5 +1,6 @@
 class Company < ApplicationRecord
   has_many :calendars
+  has_many :contacts
 
   acts_as_taggable_on :tags
   acts_as_taggable_on :sub_tags
