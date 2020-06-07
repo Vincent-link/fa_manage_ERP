@@ -28,13 +28,22 @@ class CompanyApi < Grape::API
       requires :location_province_id, type: Integer, desc: '省份'
       requires :location_city_id, type: Integer, desc: '城市'
       optional :detailed_address, type: String, desc: '详细地址'
-      optional :business_data_id, type: Integer, desc: '工商数据'
+      optional :business_id, type: Integer, desc: '工商数据'
       optional :sector_ids, type: Array[Integer], desc: '所属行业'
       optional :tag_ids, type: Array[Integer], desc: '标签'
-      optional :contact_ids, type: Array[Integer], desc: '联系人'
+
+      requires :contact, type: Array do
+        requires :name, type: String, desc: '姓名'
+        requires :title, type: String, desc: '职位'
+        requires :mobile, type: String, desc: '电话'
+        optional :email, type: String, desc: '邮箱'
+      end
     end
     post do
+      params[:logo] = ActionDispatch::Http::UploadedFile.new(params[:logo]) if params[:logo]
 
+
+      present Company.create!(declared(params, include_missing: false)), with: Entities::CompanyForShow
     end
 
     resource ':id' do
