@@ -31,24 +31,39 @@ class CompanyApi < Grape::API
       optional :business_id, type: Integer, desc: '工商数据'
       optional :sector_ids, type: Array[Integer], desc: '所属行业'
       optional :tag_ids, type: Array[Integer], desc: '标签'
-
-      requires :contact, type: Array do
+      requires :contacts, type: Array, desc: '联系人' do
         requires :name, type: String, desc: '姓名'
-        requires :title, type: String, desc: '职位'
-        requires :mobile, type: String, desc: '电话'
+        optional :position, type: String, desc: '职位'
+        optional :tel, type: String, desc: '电话'
         optional :email, type: String, desc: '邮箱'
+        optional :wechat, type: String, desc: '微信'
       end
     end
     post do
       params[:logo] = ActionDispatch::Http::UploadedFile.new(params[:logo]) if params[:logo]
 
+      Company.transaction do
+        contacts_params = params.delete(:contacts)
+        tags_params = params.delete(:tag_ids)
+        sectors_params = params.delete(:sector_ids)
 
-      present Company.create!(declared(params, include_missing: false)), with: Entities::CompanyForShow
+        @company = Company.create(params)
+        @company.tag_ids = tags_params
+        @company.sector_ids = sectors_params
+
+        contacts_params.map { |e| Contact.create(e.merge(company_id: @company.id)) }
+      end
+      true
     end
 
     resource ':id' do
       before do
         @company = Company.find params[:id]
+      end
+
+      desc '公司详情', entity: Entities::CompanyBaseInfo
+      get do
+        present @company, with: Entities::CompanyBaseInfo
       end
 
       desc '编辑公司信息'
@@ -62,9 +77,11 @@ class CompanyApi < Grape::API
         optional :detailed_address, type: String, desc: '详细地址'
         optional :detailed_intro, type: String, desc: '公司详细介绍'
         optional :tag_ids, type: Array[Integer], desc: '标签'
+        optional :sector_ids, type: Array[Integer], desc: '所属行业'
       end
       patch do
-
+        params[:logo] = ActionDispatch::Http::UploadedFile.new(params[:logo]) if params[:logo]
+        true if @company.update!(declared(params, include_missing: false))
       end
 
       desc '工商数据'
@@ -78,13 +95,7 @@ class CompanyApi < Grape::API
         requires :is_ka, type: Boolean, desc: '是否ka'
       end
       patch :ka do
-
-      end
-
-      desc '融资事件'
-      get :financing_events do
-        @invest_events = Zombie::DmInvestevent.includes(:company, :invest_type, :invest_round).order_by_date.public_data.not_deleted.where(company_id: params[:id]).paginate(:page => params[:page] || 1, :per_page => params[:page_size] || 4)._select(:id, :company_logo, :company_name, :company_slogan, :company_category_id, :company_sub_category_id, :company_location_city_id, :birth_date, :invest_round_id, :invest_type_id, :invest_batch, :detail_money, :detail_money_unit, :currency_id, :is_modify, :company_location_province_id, :company_location_city_id, :invest_type_and_batch_desc, :deleted_at, :detail_money_des, :deleted_note, :recover_note, :company_id, :post_money_des)
-        present @invest_events
+        @company.update(is_ka: params[:is_ka])
       end
 
       desc '竞争公司'
