@@ -1,6 +1,5 @@
 class UserTitleApi < Grape::API
   resource :user_titles do
-
     desc '所有对外title', entity: Entities::UserTitle
     get do
       present UserTitle.all, with: Entities::UserTitle
@@ -32,14 +31,6 @@ class UserTitleApi < Grape::API
         @user_title.update(declared(params))
         present @user_title, with: Entities::UserTitle
       end
-
-      # desc 'Title对应用户', entity: Entities::User
-      # get :users do
-      #   @users = User.where(user_title_id: @user_title.id)
-      #   present @users, with: Entities::User
-      # end
-      
     end
-
   end
 end

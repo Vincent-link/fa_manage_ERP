@@ -72,6 +72,7 @@ class ApiBase < Grape::API
   mount VerificationApi
   mount NotificationApi
   mount CompanyApi
+  mount TeamApi
 
   add_swagger_documentation array_use_braces: true
 end

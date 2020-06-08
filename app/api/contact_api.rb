@@ -16,7 +16,7 @@ class ContactApi < Grape::API
           optional :wechat, type: String, desc: '微信'
         end
         post :contacts do
-          Contact.create!(declared(params))
+          Contact.create!(declared(params).merge(company_id: params[:id]))
         end
       end
     end
@@ -25,6 +25,7 @@ class ContactApi < Grape::API
   resources :contacts do
     resource :id do
       before do
+        @contact = Contact.find(params[:id])
       end
 
       desc '编辑联系人'
@@ -36,12 +37,12 @@ class ContactApi < Grape::API
         optional :wechat, type: String, desc: '微信'
       end
       patch do
-
+        @contact.update(declared(params))
       end
 
       desc '删除联系人'
       delete do
-
+        @contact.destroy()
       end
     end
   end

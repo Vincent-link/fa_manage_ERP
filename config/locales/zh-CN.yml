@@ -27,6 +27,7 @@ zh-CN:
       calendar: 日程
       company: 公司
       contact: 联系人
+      team: 团队
 
   activerecord:
     models:
