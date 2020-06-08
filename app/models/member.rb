@@ -77,6 +77,14 @@ class Member < ApplicationRecord
     @lower_report_relation ||= Zombie::DmMemberReportRelation.where(superior_id: self.id).inspect
   end
 
+  def solid_report_lower
+    Member.where(id: dm_lower_report_relation.select {|relation| relation.report_type == 1}.map(&:member_id))
+  end
+
+  def virtual_report_lower
+    Member.where(id: dm_lower_report_relation.select {|relation| relation.report_type == 0}.map(&:member_id))
+  end
+
   def self.es_search(params, options = {})
     where_hash = {}
     where_hash[:sector_ids] = {all: params[:sector]} if params[:sector].present?

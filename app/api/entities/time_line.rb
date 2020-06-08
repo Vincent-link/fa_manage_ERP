@@ -1,6 +1,7 @@
 module Entities
   class TimeLine < Base
     expose :id, documentation: {type: 'integer', desc: 'TimeLine id'}
+    expose :reason, documentation: {type: 'string', desc: '原因'}
     expose :status_type, documentation: {type: 'string', desc: '状态'} do |ins|
       'Funding'.constantize.status_desc_for_value(ins.status)
     end

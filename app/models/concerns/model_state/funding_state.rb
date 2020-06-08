@@ -8,12 +8,12 @@ module ModelState
           pp:       {value: 1, desc: 'PP', code: [:category, :company_id, :round_id, :target_amount_currency, :target_amount,
                                                   :share, :shiny_word, :com_desc, :products_and_business, :financial,
                                                   :operational, :market_competition, :financing_plan, :source_type,
-                                                  :source_member, :source_detail, :funding_score, :project_user_ids]},
+                                                  :source_member, :source_detail, :funding_score, :normal_user_ids]},
           ma:       {value: 2, desc: 'M&A', code: [:category, :company_id, :round_id, :target_amount_currency, :target_amount,
                                                    :share, :shiny_word, :com_desc, :products_and_business, :financial,
                                                    :operational, :market_competition, :financing_plan, :source_type,
-                                                   :source_member, :source_detail, :funding_score, :project_user_ids]},
-          advisory: {value: 3, desc: '咨询', code: [:category, :project_user_ids]}
+                                                   :source_member, :source_detail, :funding_score, :normal_user_ids]},
+          advisory: {value: 3, desc: '咨询', code: [:category, :normal_user_ids]}
       }
 
       state_config :status, config: {
@@ -43,6 +43,10 @@ module ModelState
           started:      { value: "started",  desc: "bsc已启动"     },
           evaluatting:  { value: "evaluatting", desc: "bsc投票中"  },
           finished:     { value: "finished",  desc: "bsc完成"      }
+      }
+
+      state_config :confidentiality_level, config: {
+          first: {value: 1, desc: '假数据level 1'}
       }
     end
   end

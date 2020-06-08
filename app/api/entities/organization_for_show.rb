@@ -15,7 +15,7 @@ module Entities
 
     expose :followed_location_ids, documentation: {type: 'integer', desc: '关注地区', is_array: true}
     expose :intro, documentation: {type: 'string', desc: '机构介绍'}
-    expose :logo, using: Entities::File,if: ->(ins) {ins.logo.present?}, documentation: {type: Entities::File, desc: '机构logo'}
+    expose :logo_attachment, as: :logo, using: Entities::File, documentation: {type: Entities::File, desc: '机构logo'}
 
     expose :sector_ids, documentation: {type: 'integer', desc: '行业', is_array: true}
     expose :round_ids, documentation: {type: 'integer', desc: '轮次', is_array: true}

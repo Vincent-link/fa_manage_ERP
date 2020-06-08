@@ -24,12 +24,12 @@ module Entities
     expose :post_valuation_currency, documentation: {type: 'integer', desc: '本轮投后估值币种'}
     expose :is_ka, documentation: {type: 'boolean', desc: '是否是KA项目'}
     expose :is_complicated, documentation: {type: 'boolean', desc: '是否是复杂项目'}
-    expose :project_users, with: Entities::User, documentation: {type: 'Entities::User', desc: '项目成员', is_array: true}
+    expose :normal_users, with: Entities::User, documentation: {type: 'Entities::User', desc: '项目成员', is_array: true}
     expose :bd_leader, documentation: {type: 'Entities::User', desc: 'BD负责人'} do |ins|
       Entities::User.represent ins.bd_leader.first
     end
     expose :execution_leader, documentation: {type: 'Entities::User', desc: '执行负责人'} do |ins|
-      Entities::User.represent ins.bd_leader.first
+      Entities::User.represent ins.execution_leader.first
     end
     with_options(format_with: :time_to_s_date) do
       expose :operating_day, documentation: {type: 'string', desc: '状态开始时间'}

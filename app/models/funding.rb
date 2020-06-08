@@ -18,8 +18,8 @@ class Funding < ApplicationRecord
   has_many :time_lines, -> { order(created_at: :desc) }, class_name: 'TimeLine'
   has_many :funding_company_contacts, class_name: 'FundingCompanyContact'
 
-  has_many :funding_project_users, -> { kind_funding_project_users }, class_name: 'FundingUser'
-  has_many :project_users, through: :funding_project_users, source: :user
+  has_many :funding_normal_users, -> { kind_normal_users }, class_name: 'FundingUser'
+  has_many :normal_users, through: :funding_normal_users, source: :user
 
   has_many :funding_bd_leader, -> { kind_bd_leader }, class_name: 'FundingUser'
   has_many :bd_leader, through: :funding_bd_leader, source: :user
@@ -94,16 +94,27 @@ class Funding < ApplicationRecord
   end
 
   def add_project_follower(params)
-    if params[:project_user_ids].present?
-      self.project_user_ids = params[:project_users_ids]
+    if params[:normal_user_ids].present?
+      self.funding_normal_users.where.not(user_id: params[:normal_user_ids]).destroy_all
+      (params[:normal_user_ids] - self.normal_user_ids).each do |user_id|
+        self.funding_normal_users.create(kind: FundingUser.kind_normal_users_value, user_id: user_id)
+      end
     end
 
     if params[:bd_leader_id].present?
-      self.bd_leader_ids = [params[:bd_leader_id]]
+      if self.bd_leader.present?
+        self.funding_bd_leader.first.update(user_id: params[:bd_leader_id])
+      else
+        self.funding_bd_leader.create(kind: FundingUser.kind_bd_leader_value, user_id: params[:bd_leader_id])
+      end
     end
 
     if params[:execution_leader_id].present?
-      self.execution_leader_ids = [params[:execution_leader_id]]
+      if self.bd_leader.present?
+        self.funding_execution_leader.first.update(user_id: params[:execution_leader_id])
+      else
+        self.funding_execution_leader.create(kind: FundingUser.kind_execution_leader_value, user_id: params[:execution_leader_id])
+      end
     end
   end
 

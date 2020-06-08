@@ -116,6 +116,6 @@ zh-CN:
         sources_member: 投资者
         sources_detail: 来源明细
         funding_score: 项目评分
-        project_user_ids: 项目成员
+        normal_user_ids: 项目成员
         bd_leader_id: BD负责人
         execution_leader_id: 执行负责人
