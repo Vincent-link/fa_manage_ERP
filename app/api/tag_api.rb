@@ -1,11 +1,23 @@
 class TagApi < Grape::API
   resource :tags do
-    desc '获取投资人tag'
-    params do
-      requires :category, type: String, desc: 'tag类别', values: ['member_hot_spot']
+    resource ':id' do
+      before do
+        @tag = ActsAsTaggableOn::Tag.find(params[:id])
+      end
+
+      desc '修改'
+      params do
+        requires :name, type: String, desc: '名称'
+      end
+      patch do
+        @tag.update(name: params[:name])
+      end
+
+      desc '删除'
+      delete do
+        @tag.destroy
+      end
     end
-    get do
-      present Tag.send("category_#{params[:category]}"), with: Entities::Tag
-    end
+
   end
 end

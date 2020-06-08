@@ -31,7 +31,7 @@ class CompanyApi < Grape::API
       optional :business_id, type: Integer, desc: '工商数据'
       optional :sector_ids, type: Array[Integer], desc: '所属行业'
       optional :tag_ids, type: Array[Integer], desc: '标签'
-      requires :contacts, type: Array, desc: '联系人' do
+      requires :contacts, type: Array[JSON], desc: '联系人' do
         requires :name, type: String, desc: '姓名'
         optional :position, type: String, desc: '职位'
         optional :tel, type: String, desc: '电话'

@@ -2,8 +2,9 @@ class ContactApi < Grape::API
   mounted do
     resource configuration[:owner] do
       resource ':id' do
-        desc '所有联系人'
+        desc '所有联系人', entity: Entities::Contact
         get :contacts do
+          present Contact.where(company_id: params[:id]), with: Entities::Contact
         end
 
         desc '新建联系人'
@@ -15,7 +16,7 @@ class ContactApi < Grape::API
           optional :wechat, type: String, desc: '微信'
         end
         post :contacts do
-
+          Contact.create!(declared(params))
         end
       end
     end

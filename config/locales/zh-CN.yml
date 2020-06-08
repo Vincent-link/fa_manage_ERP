@@ -15,6 +15,7 @@ zh-CN:
       organization_team: 投资机构团队
       resource: 权限点
       role: 角色
+      tag_category: 标签类别
       tag: 标签
       user: 用户
       user_investor_group: 个人投资组
