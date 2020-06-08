@@ -52,9 +52,9 @@ class FundingApi < Grape::API
       auth_funding_code(params)
       Funding.transaction do
         @funding = Funding.create(params.slice(:category, :company_id, :round_id, :target_amount_currency, :target_amount,
-                                              :share, :shiny_word, :com_desc, :products_and_business, :financial,
-                                              :operational, :market_competition, :financing_plan, :other_desc, :source_type,
-                                              :source_member, :source_detail, :funding_score, :name).merge(operating_day: Date.today))
+                                               :share, :shiny_word, :com_desc, :products_and_business, :financial,
+                                               :operational, :market_competition, :financing_plan, :other_desc, :source_type,
+                                               :source_member, :source_detail, :funding_score, :name).merge(operating_day: Date.today))
         @funding.add_project_follower(params)
         @funding.gen_funding_company_contacts(params)
         @funding.funding_various_file(params)
@@ -139,6 +139,17 @@ class FundingApi < Grape::API
         present @funding, with: Entities::FundingLite
       end
 
+      desc '编辑项目跟进人', entity: Entities::FundingUser
+      params do
+        optional :normal_user_ids, type: Array[Integer], desc: '项目成员id'
+        optional :bd_leader_id, type: Integer, desc: 'BD负责人id'
+        optional :execution_leader_id, type: Integer, desc: '执行负责人id'
+      end
+      patch 'funding_user' do
+        @funding.add_project_follower(params)
+        present @funding, with: Entities::FundingUser
+      end
+
       desc '项目详情', entity: Entities::FundingComprehensive
       params do
         requires :type, type: String, desc: '样式：弹窗：pop、页面：page、状态流转相关字段: status'
@@ -152,6 +163,21 @@ class FundingApi < Grape::API
         when 'status'
           present @funding, with: Entities::FundingStatusTransition
         end
+      end
+
+      desc '状态变更历史', entity: Entities::TimeLine
+      params do
+      end
+      get 'timelines' do
+        time_lines = @funding.time_lines
+        present time_lines, with: Entities::TimeLine
+      end
+
+      desc '项目跟进人', entity: Entities::FundingUser
+      params do
+      end
+      get 'funding_user' do
+        present @funding, with: Entities::FundingUser
       end
     end
   end
