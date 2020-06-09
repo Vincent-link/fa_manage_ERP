@@ -9,8 +9,9 @@ module Entities
       '假数据'
     end
     expose :is_ka, documentation: {type: 'boolean', desc: '是否ka'}
-    expose :updated_at, documentation: {type: 'datetime', desc: '最近更新时间'}
-
+    with_options(format_with: :time_to_s_second) do
+      expose :updated_at, documentation: {type: 'datetime', desc: '最近更新时间'}
+    end
     # expose :address, with: Entities::Address, documentation: {type: 'string', desc: '地址'}
   end
 end

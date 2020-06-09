@@ -86,7 +86,7 @@ class CompanyApi < Grape::API
 
       desc '工商数据'
       post :business_data do
-        @company = Zombie::DmCompanyApi.find_by_id(params[:id])
+        @company = Zombie::DmCompany.find_by_id(params[:id])
         present @company.registered_name
       end
 
