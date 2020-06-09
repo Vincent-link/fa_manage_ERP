@@ -1,6 +1,7 @@
 class Company < ApplicationRecord
   has_many :calendars
   has_many :contacts, dependent: :destroy
+  has_many :fundings
 
   acts_as_taggable_on :tags
   acts_as_taggable_on :sectors
@@ -30,13 +31,18 @@ class Company < ApplicationRecord
   end
 
   def financing_events
+    @self_financing_events = self.fundings
     @financing_events = Zombie::DmInvestevent.includes(:company, :invest_type, :invest_round).order_by_date.public_data.not_deleted.where(company_id: self.id).paginate(:page => 1, :per_page => 4)
+
+    binding.pry
     financing_events = []
+    binding.pry
     @financing_events.map do |e|
       financing_event = {}
       financing_event[:invest_type_and_batch_desc] = e.invest_type_and_batch_desc
       financing_event[:status] = e.status
-      financing_event[:created_at] = e.created_at
+      financing_event[:fa_id_list] = e.fa_id_list
+      financing_event[:updated_at] = e.updated_at
       financing_events << financing_event
     end
 

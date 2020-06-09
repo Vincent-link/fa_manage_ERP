@@ -63,7 +63,6 @@ class ApiBase < Grape::API
   mount ResourceApi
   mount UserTitleApi
   mount TagCategoryApi
-  mount TagApi
   mount MemberResumeApi
   mount CalendarApi
   mount FundingStateMachineApi

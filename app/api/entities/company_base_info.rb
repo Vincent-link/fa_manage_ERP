@@ -13,7 +13,9 @@ module Entities
     expose :tags, documentation: {type: 'string', desc: '标签'}
     expose :financing_events, using: Entities::FinancingEvents
     expose :is_ka, documentation: {type: 'boolean', desc: '是否ka'}
-    expose :updated_at, documentation: {type: 'datetime', desc: '最近更新时间'}
+    with_options(format_with: :time_to_s_second) do
+      expose :updated_at, documentation: {type: 'datetime', desc: '最近更新时间'}
+    end
     # expose :address, with: Entities::Address, documentation: {type: 'string', desc: '地址'}
   end
 end
