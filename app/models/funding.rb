@@ -5,15 +5,15 @@ class Funding < ApplicationRecord
 
   include ModelState::FundingState
 
-  has_many_attached :funding_materials
-  has_one_attached :funding_teaser
-  has_one_attached :funding_bp
-  has_one_attached :funding_nda
-  has_one_attached :funding_model
-  has_one_attached :funding_el
+  has_many_attached :file_materials
+  has_one_attached :file_teaser
+  has_one_attached :file_bp
+  has_one_attached :file_nda
+  has_one_attached :file_model
+  has_one_attached :file_el
 
   belongs_to :company
-  belongs_to :funding_source_member, class_name: 'Member', foreign_key: :source_member
+  belongs_to :funding_source_member, class_name: 'Member', foreign_key: :source_member, optional: true
 
   has_many :time_lines, -> { order(created_at: :desc) }, class_name: 'TimeLine'
   has_many :funding_company_contacts, class_name: 'FundingCompanyContact'
@@ -27,7 +27,13 @@ class Funding < ApplicationRecord
   has_many :funding_execution_leader, -> { kind_execution_leader }, class_name: 'FundingUser'
   has_many :execution_leader, through: :funding_execution_leader, source: :user
 
+  has_many :funding_users
+  has_many :funding_all_users, through: :funding_users, source: :user
+
   has_many :calendars
+
+  has_many :track_logs
+  has_many :spas, -> {where(:status => TrackLog.status_spa_sha_value)}, class_name: 'TrackLog'
 
   before_create :gen_serial_number
   after_create :base_time_line
