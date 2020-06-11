@@ -20,6 +20,17 @@ class TagCategoryApi < Grape::API
 
       desc '删除标签类别'
       delete do
+        # 删除子标签
+        binding.pry
+        sub_tag_ids = @tag_category.tags.map{|e| e.sub_tags.pluck(:tag_id)}
+        @tag_category.tags.map{|e| e.sub_tags.destroy_all}
+        sub_tag_ids = sub_tag_ids.flatten
+
+        # 删除标签
+        tag_ids = @tag_category.tags.pluck(:tag_id) + sub_tag_ids
+        @tag_category.tags.destroy_all
+        ActsAsTaggableOn::Tag.where(id: tag_ids).destroy_all
+
         @tag_category.destroy
       end
 

@@ -49,7 +49,7 @@ class OrganizationApi < Grape::API
       optional :en_name, type: String, desc: '机构英文名称'
       optional :level, type: String, desc: '级别，见公共字典值level'
       optional :site, type: String, desc: '机构官网'
-      optional :tag_ids, type: Array[Integer], desc: '机构标签'
+      optional :organization_tag_ids, type: Array[Integer], desc: '机构标签'
       optional :sector_ids, type: Array[Integer], desc: '关注行业'
       optional :round_ids, type: Array[Integer], desc: '关注轮次'
       optional :any_round, type: Boolean, desc: '是否不限轮次', default: false
@@ -71,6 +71,12 @@ class OrganizationApi < Grape::API
     end
     post do
       params[:logo] = ActionDispatch::Http::UploadedFile.new(params[:logo]) if params[:logo]
+
+      @organization.organization_tag_ids = params[:organization_tag_ids]
+      @organization.sector_ids = params[:sector_ids]
+      params.delete(:organization_tag_ids)
+      params.delete(:sector_ids)
+
       present Organization.create!(declared(params, include_missing: false)), with: Entities::OrganizationForShow
     end
 
@@ -129,7 +135,7 @@ class OrganizationApi < Grape::API
         optional :en_name, type: String, desc: '机构英文名称'
         optional :level, type: String, desc: '级别，见公共字典值level'
         optional :site, type: String, desc: '机构官网'
-        optional :tag_ids, type: Array[Integer], desc: '机构标签'
+        optional :organization_tag_ids, type: Array[Integer], desc: '机构标签'
         optional :sector_ids, type: Array[Integer], desc: '关注行业'
         optional :round_ids, type: Array[Integer], desc: '关注轮次'
         optional :any_round, type: Boolean, desc: '是否不限轮次', default: false
@@ -154,6 +160,12 @@ class OrganizationApi < Grape::API
       patch do
         params[:logo] = ActionDispatch::Http::UploadedFile.new(params[:logo]) if params[:logo]
         params.delete(:part) #todo part validate
+
+        @organization.organization_tag_ids = params[:organization_tag_ids]
+        @organization.sector_ids = params[:sector_ids]
+        params.delete(:organization_tag_ids)
+        params.delete(:sector_ids)
+
         @organization.update!(declared(params, include_missing: false))
         present @organization, with: Entities::OrganizationForShow
       end

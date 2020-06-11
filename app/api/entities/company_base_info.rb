@@ -10,7 +10,7 @@ module Entities
     expose :location_city_id, documentation: {type: 'integer', desc: '城市'}
     expose :detailed_address, documentation: {type: 'string', desc: '详细地址'}
     expose :sectors, documentation: {type: 'string', desc: '所属行业'}
-    expose :tags, documentation: {type: 'string', desc: '标签'}
+    expose :company_tags, documentation: {type: 'string', desc: '标签'}
     expose :financing_events, using: Entities::FinancingEvents
     expose :is_ka, documentation: {type: 'boolean', desc: '是否ka'}
     with_options(format_with: :time_to_s_second) do

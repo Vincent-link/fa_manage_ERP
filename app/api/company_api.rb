@@ -27,7 +27,7 @@ class CompanyApi < Grape::API
       optional :detailed_address, type: String, desc: '详细地址'
       optional :business_id, type: Integer, desc: '工商数据'
       optional :sector_ids, type: Array[Integer], desc: '所属行业'
-      optional :tag_ids, type: Array[Integer], desc: '标签'
+      optional :company_tag_ids, type: Array[Integer], desc: '标签'
       requires :contacts, type: Array[JSON], desc: '联系人' do
         requires :name, type: String, desc: '姓名'
         optional :position, type: String, desc: '职位'
@@ -45,7 +45,7 @@ class CompanyApi < Grape::API
         sectors_params = params.delete(:sector_ids)
 
         @company = Company.create(params)
-        @company.tag_ids = tags_params
+        @company.company_tag_ids = tags_params
         @company.sector_ids = sectors_params
 
         contacts_params.map { |e| Contact.create(e.merge(company_id: @company.id)) }
@@ -69,25 +69,46 @@ class CompanyApi < Grape::API
         optional :logo, type: File, desc: 'logo'
         optional :website, type: String, desc: '网址'
         optional :sector_ids, type: Array[Integer], desc: '所属行业'
-        requires :one_sentence_intro, type: String, desc: '一句话简介'
-        requires :location_province_id, type: Integer, desc: '省份'
-        requires :location_city_id, type: Integer, desc: '城市'
+        optional :one_sentence_intro, type: String, desc: '一句话简介'
+        optional :location_province_id, type: Integer, desc: '省份'
+        optional :location_city_id, type: Integer, desc: '城市'
         optional :detailed_address, type: String, desc: '详细地址'
         optional :detailed_intro, type: String, desc: '公司详细介绍'
-        optional :tag_ids, type: Array[Integer], desc: '标签'
+        optional :company_tag_ids, type: Array[Integer], desc: '标签'
         optional :sector_ids, type: Array[Integer], desc: '所属行业'
         requires :part, type: String, desc: '更新区域', values: ['basic', 'head']
       end
       patch do
         params[:logo] = ActionDispatch::Http::UploadedFile.new(params[:logo]) if params[:logo]
-        params.delete(:part) #todo part validate
+        part = params.delete(:part) #todo part validate
+        # case part
+        # when 'head'
+        # when 'basic'
+        # end
+
+        @company.company_tag_ids = params[:company_tag_ids]
+        @company.sector_ids = params[:sector_ids]
+        params.delete(:company_tag_ids)
+        params.delete(:sector_ids)
+
         true if @company.update!(declared(params, include_missing: false))
       end
 
-      desc '工商数据'
-      post :business_data do
-        @company = Zombie::DmCompany.where(id: params[:id])._select(:registered_name)
-        present @company.first.registered_name
+      desc '关联企业搜索'
+      params do
+        requires :name, type: String, desc: '名称'
+      end
+      post :relation_search do
+        @company = Zombie::DmCompany.where("registered_name like ?", params[:name])
+        present @company
+      end
+
+      desc '关联企业添加'
+      params do
+        requires :name, type: String, desc: '工商名称'
+        requires :tyc_website, type: String, desc: '天眼查网址'
+      end
+      post :relation_add do
       end
 
       desc '设为KA'

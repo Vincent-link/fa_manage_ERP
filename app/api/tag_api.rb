@@ -8,7 +8,7 @@ class TagApi < Grape::API
 
         desc '一级标签'
         get :tags do
-          present @root_category.tags, with: Entities::OrganizationTagCategory
+          present @root_category.tags, with: Entities::OrganizationTag
         end
 
         desc '创建一级标签'
@@ -36,8 +36,14 @@ class TagApi < Grape::API
 
             desc '删除一级标签'
             delete do
-              @root_category.tag_list.remove(@one_level_tag.name)
-              @root_category.save
+              # 删除子标签
+              sub_tag_ids = @one_level_tag.sub_tags.pluck(:tag_id)
+              @one_level_tag.sub_tags.destroy_all
+              ActsAsTaggableOn::Tag.where(id: sub_tag_ids).destroy_all
+
+              # 删除标签
+              ActsAsTaggableOn::Tagging.where(tag_id: @one_level_tag.id).destroy_all
+              @one_level_tag.destroy
             end
 
             desc '一级标签的所有二级标签'
@@ -70,8 +76,8 @@ class TagApi < Grape::API
 
                 desc '删除二级标签'
                 delete do
-                  @one_level_tag.sub_tag_list.remove(@two_level_tag.name)
-                  @one_level_tag.save
+                  ActsAsTaggableOn::Tagging.where(tag_id: @two_level_tag.id).destroy_all
+                  @two_level_tag.destroy
                 end
               end
             end

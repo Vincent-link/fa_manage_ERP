@@ -5,7 +5,8 @@ class Organization < ApplicationRecord
 
   include StateConfig
 
-  acts_as_taggable_on :tags
+  acts_as_taggable_on :organization_tags
+  acts_as_taggable_on :sectors
 
   has_one_attached :logo
 
@@ -13,7 +14,7 @@ class Organization < ApplicationRecord
   has_many :comments, as: :commentable
   has_many :ir_reviews, as: :commentable
   has_many :newsfeeds, as: :commentable
-  has_many :organization_tags
+  # has_many :organization_tags
   has_many :lead_organization_relations, -> {relation_type_lead}, class_name: 'OrganizationRelation'
   has_many :mate_organization_relations, -> {relation_type_mate}, class_name: 'OrganizationRelation'
   has_many :lead_organizations, through: :lead_organization_relations, source: :relation_organization, class_name: 'Organization'

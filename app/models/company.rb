@@ -3,7 +3,7 @@ class Company < ApplicationRecord
   has_many :contacts, dependent: :destroy
   has_many :fundings
 
-  acts_as_taggable_on :tags
+  acts_as_taggable_on :company_tags
   acts_as_taggable_on :sectors
 
   has_one_attached :logo
@@ -34,27 +34,29 @@ class Company < ApplicationRecord
     financing_events = Zombie::DmInvestevent.includes(:company, :invest_type, :invest_round, :investors).order_by_date.public_data.not_deleted.where(company_id: self.id).paginate(:page => 1, :per_page => 4)._select(:all_investors, :birth_date, :invest_type_and_batch_desc, :detail_money_des)
     all_events = (financing_events + self_financing_events).sort_by {|p| p.try(:birth_date) || p.try(:updated_at)}.reverse
 
+    arr = []
     all_events.map do |event|
       event_hash = {}
       if event.class.name == "Funding"
         event_hash[:date] = event.updated_at
         event_hash[:round_id] = event.round_id
         event_hash[:target_amount] = event.target_amount
-        if self.status == 9
-          event_hash[:funding_members] = self.time_lines.pluck(:reason)
+        if event.status.present? && event.status == 9
+          event_hash[:funding_members] = event.time_lines.pluck(:reason)
         else
-          event_hash[:funding_members] = event.funding_members
+          event_hash[:funding_members] = event.funding_members.pluck(:name)
         end
-        event_hash[:status] = event.status
+        event_hash[:status] = event.status.to_s
       else
         event_hash[:date] = event.birth_date
         event_hash[:round_id] = event.invest_type_and_batch_desc
         event_hash[:target_amount] = event.detail_money_des
-        event_hash[:funding_members] = event.funding_members
+        event_hash[:funding_members] = event.all_investors.pluck(:fromable_name)
         event_hash[:status] = "融资事件"
       end
-
+      arr << event_hash
     end
+    arr
   end
 
   def recent_financing
