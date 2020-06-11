@@ -7,6 +7,8 @@ class Member < ApplicationRecord
   has_one_attached :avatar
   has_one_attached :card
 
+  acts_as_taggable_on :tags
+
   belongs_to :organization, optional: true
   belongs_to :sponsor, class_name: 'User', optional: true
 

@@ -38,6 +38,8 @@ class TagApi < Grape::API
             delete do
               @root_category.tag_list.remove(@one_level_tag.name)
               @root_category.save
+              # 删除一级标签对应的二级标签
+              @root_category.tags.map { |e| e.sub_tags.destroy }
             end
 
             desc '一级标签的所有二级标签'

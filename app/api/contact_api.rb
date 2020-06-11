@@ -23,7 +23,7 @@ class ContactApi < Grape::API
   end
 
   resources :contacts do
-    resource :id do
+    resource ':id' do
       before do
         @contact = Contact.find(params[:id])
       end
