@@ -219,6 +219,7 @@ class Funding < ApplicationRecord
   end
 
   has_many :funding_users
+  has_many :funding_members, through: :funding_users, source: :user 
 
   has_many :evaluations
   has_many :questions
