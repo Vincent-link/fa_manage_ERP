@@ -63,7 +63,10 @@ class OrganizationApi < Grape::API
       optional :usd_amount_max, type: String, desc: '美元最大金额'
       optional :followed_location_ids, type: Array[Integer], desc: '关注地区'
       optional :intro, type: String, desc: '机构简介'
-      optional :logo, type: File, desc: '机构logo'
+      optional :logo_file, type: Hash, desc: '机构logo' do
+        optional :id, type: Integer, desc: 'file_id 已有文件id'
+        optional :blob_id, type: Integer, desc: 'blob_id 新文件id'
+      end
       optional :invest_period_id, type: Integer, desc: '投资周期'
       optional :decision_flow, type: String, desc: '投资决策流程'
       optional :ic_rule, type: String, desc: '投委会机制'
@@ -143,7 +146,10 @@ class OrganizationApi < Grape::API
         optional :usd_amount_max, type: String, desc: '美元最大金额'
         optional :followed_location_ids, type: Array[Integer], desc: '关注地区'
         optional :intro, type: String, desc: '机构简介'
-        optional :logo, type: File, desc: '机构logo'
+        optional :logo, type: Hash, desc: '机构logo' do
+          optional :id, type: Integer, desc: 'file_id 已有文件id'
+          optional :blob_id, type: Integer, desc: 'blob_id 新文件id'
+        end
         requires :part, type: String, desc: '更新区域', values: ['basic', 'head']
 
         optional :invest_period, type: Integer, desc: '投资周期'
