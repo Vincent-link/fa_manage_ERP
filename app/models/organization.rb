@@ -69,8 +69,8 @@ class Organization < ApplicationRecord
                      ir_reviews: "#{self.ir_reviews.map(&:content).join(' ')}",
                      newsfeeds: "#{self.newsfeeds.map(&:content).join(' ')}",
                      comments: "#{self.comments.map(&:content).join(' ')}",
-                     members: "#{self.members.map(&:name).join(' ')}",
-                     organization_tags: "#{self.organization_tags.map(&:name).join(' ')}"
+                     # organization_tags: "#{self.organization_tags.map(&:name).join(' ')}", todo tags
+                     members: "#{self.members.map(&:name).join(' ')}"
   end
 
   def self.es_search(params)
@@ -108,7 +108,7 @@ class Organization < ApplicationRecord
         'intro' => 'org_des',
         'site' => 'url'
     }
-    self.attributes.transform_keys {|k| dm_key_map[k]}.compact
+    self.attributes.transform_keys {|k| dm_key_map[k]}.compact.merge(investor_type: 1)
   end
 
   def last_investevent
