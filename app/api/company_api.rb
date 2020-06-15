@@ -65,7 +65,7 @@ class CompanyApi < Grape::API
 
       desc '编辑公司信息'
       params do
-        requires :name, type: String, desc: '公司名称'
+        optional :name, type: String, desc: '公司名称'
         optional :logo, type: File, desc: 'logo'
         optional :website, type: String, desc: '网址'
         optional :sector_ids, type: Array[Integer], desc: '所属行业'
@@ -80,11 +80,16 @@ class CompanyApi < Grape::API
       end
       patch do
         params[:logo] = ActionDispatch::Http::UploadedFile.new(params[:logo]) if params[:logo]
-        part = params.delete(:part) #todo part validate
-        # case part
-        # when 'head'
-        # when 'basic'
-        # end
+
+        part = params.delete(:part)
+        case part
+        when 'head'
+          raise "名称不能为空" if params[:name].nil?
+          raise "行业不能为空" if params[:sector_ids].nil?
+          raise "一句话介绍不能为空" if params[:one_sentence_intro].nil?
+          raise "地点不能为空" if params[:location_city_id].nil? || params[:location_province_id].nil?
+        when 'basic'
+        end
 
         @company.company_tag_ids = params[:company_tag_ids]
         @company.sector_ids = params[:sector_ids]
@@ -99,7 +104,7 @@ class CompanyApi < Grape::API
         requires :name, type: String, desc: '名称'
       end
       post :relation_search do
-        @company = Zombie::DmCompany.where("registered_name like ?", params[:name])
+        @company = Zombie::DmCompany.where("registered_name like ?", params[:name])._select(:registered_name)
         present @company
       end
 
@@ -109,6 +114,8 @@ class CompanyApi < Grape::API
         requires :tyc_website, type: String, desc: '天眼查网址'
       end
       post :relation_add do
+        @relation_company = Zombie::DmCompany.create_company(declared(params))
+        @relation_company.id
       end
 
       desc '设为KA'
