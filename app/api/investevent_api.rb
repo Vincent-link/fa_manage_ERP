@@ -11,7 +11,7 @@ class InvesteventApi < Grape::API
       hash = events.group_by(&:invest_round_id)
       hash.transform_values! {|v| v.size}
       hash.map {|k, v| {name: k, value: v}}
-    endapp/api/organization_api.rb
+    end
 
     def stat_time(events)
       hash = events.group_by {|ins| ins.birth_date && ins.birth_date[0..3]}
