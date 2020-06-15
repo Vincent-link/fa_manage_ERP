@@ -179,7 +179,7 @@ class FundingApi < Grape::API
 
       desc '上传文档', entity: Entities::Attachment
       params do
-        requires :type, type: Integer, desc: "文件类型: #{Funding.all_funding_file_type_hash.invert}", value: Funding.all_funding_file_type_values
+        requires :type, type: Integer, desc: "文件类型: #{Funding.all_funding_file_type_hash.invert}", values: Funding.all_funding_file_type_values
         requires :file, type: Hash do
           requires :blob_id, type: Integer, desc: '文件blob_id'
         end
