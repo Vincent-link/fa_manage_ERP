@@ -25,8 +25,14 @@ class MemberApi < Grape::API
         optional :email, type: String, desc: '投资人邮箱'
         optional :tel, type: String, desc: '手机号'
         optional :wechat, type: String, desc: '微信'
-        optional :card, type: File, desc: '名片'
-        optional :avatar, type: File, desc: '头像'
+        optional :card_file, type: Hash, desc: '名片' do
+          optional :id, type: Integer, desc: 'file_id 已有文件id'
+          optional :blob_id, type: Integer, desc: 'blob_id 新文件id'
+        end
+        optional :avatar_file, type: Hash, desc: '头像' do
+          optional :id, type: Integer, desc: 'file_id 已有文件id'
+          optional :blob_id, type: Integer, desc: 'blob_id 新文件id'
+        end
         optional :tel, type: String, desc: '手机号'
         optional :sponsor_id, type: Integer, desc: '来源'
         optional :position_rank_id, type: Integer, desc: '职级'
@@ -52,8 +58,6 @@ class MemberApi < Grape::API
         optional :intro, type: String, desc: '简介'
       end
       post :members do
-        params[:card] = ActionDispatch::Http::UploadedFile.new(params[:card]) if params[:card]
-        params[:avatar] = ActionDispatch::Http::UploadedFile.new(params[:avatar]) if params[:avatar]
         present Member.create!(params), with: Entities::MemberForShow
       end
     end
@@ -129,8 +133,14 @@ class MemberApi < Grape::API
         optional :email, type: String, desc: '投资人邮箱'
         optional :tel, type: String, desc: '手机号'
         optional :wechat, type: String, desc: '微信'
-        optional :card, type: File, desc: '名片'
-        optional :avatar, type: File, desc: '头像'
+        optional :card_file, type: Hash, desc: '名片' do
+          optional :id, type: Integer, desc: 'file_id 已有文件id'
+          optional :blob_id, type: Integer, desc: 'blob_id 新文件id'
+        end
+        optional :avatar_file, type: Hash, desc: '头像' do
+          optional :id, type: Integer, desc: 'file_id 已有文件id'
+          optional :blob_id, type: Integer, desc: 'blob_id 新文件id'
+        end
         optional :tel, type: String, desc: '手机号'
         optional :organization_id, type: String, desc: '机构id'
         optional :sponsor_id, type: Integer, desc: '来源'

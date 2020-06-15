@@ -11,7 +11,7 @@ class InvesteventApi < Grape::API
       hash = events.group_by(&:invest_round_id)
       hash.transform_values! {|v| v.size}
       hash.map {|k, v| {name: k, value: v}}
-    end
+    endapp/api/organization_api.rb
 
     def stat_time(events)
       hash = events.group_by {|ins| ins.birth_date && ins.birth_date[0..3]}
@@ -100,7 +100,8 @@ class InvesteventApi < Grape::API
     params do
       optional :organization_id, type: Integer, desc: '机构id'
       optional :member_id, type: Integer, desc: '投资人id'
-      at_least_one_of :organization_id, :member_id
+      optional :company_name, type: String, desc: '公司名称', regexp: /..+/
+      at_least_one_of :organization_id, :member_id, :company_name
       optional :sectors, type: Array[Integer], desc: '行业'
       optional :rounds, type: Array[Integer], desc: '轮次'
       optional :start_date, type: String, desc: '案例起始时间'
@@ -114,13 +115,14 @@ class InvesteventApi < Grape::API
                else
                  Zombie::DmInvestevent
                end
-      events = events.search(sector: params[:sectors]) if params[:sectors]
-      events = events.search(round: params[:rounds]) if params[:rounds]
-      if params[:member_id]
-        events = events.by_member(params[:member_id]).order_by_date._select(:id, :birth_date, :company_name, :company_category_id, :invest_round_id, :company_location_province_id, :lead_type, :investevent_investors, :invest_type_id, :company_id, :detail_money_des, :overview).paginate(page: params[:page], per_page: params[:per_page])
-      else
-        events = events.by_investor(params[:organization_id]).order_by_date._select(:id, :birth_date, :company_name, :company_category_id, :invest_round_id, :company_location_province_id, :lead_type, :investevent_investors, :invest_type_id, :company_id, :detail_money_des, :overview).paginate(page: params[:page], per_page: params[:per_page])
-      end
+      search_params = {}
+      search_params[:sector] = params[:sectors] if params[:sectors]
+      search_params[:round] = params[:rounds] if params[:rounds]
+      search_params[:company_name] = params[:company_name] if params[:company_name]
+      events = events.search(search_params) if search_params.present?
+      events = events.by_member(params[:member_id]) if params[:member_id]
+      events = events.by_investor(params[:organization_id]) if params[:organization_id]
+      events = events.order_by_date._select(:id, :birth_date, :company_name, :company_category_id, :invest_round_id, :company_location_province_id, :lead_type, :investevent_investors, :invest_type_id, :company_id, :detail_money_des, :overview).paginate(page: params[:page], per_page: params[:per_page])
 
       present events.inspect, with: Entities::InvesteventForIndex
     end
