@@ -2,6 +2,7 @@ module Entities
   class MemberForShow < Base
     expose :id, documentation: {type: 'integer', desc: '投资人id', required: true}
     expose :name, documentation: {type: 'string', desc: '投资人名称', required: true}
+    expose :organization_id, documentation: {type: 'integer', desc: '机构id', required: true}
     expose :organization_name, documentation: {type: 'string', desc: '机构名称', required: true}
     expose :tel, documentation: {type: 'string', desc: '电话'}
     expose :wechat, documentation: {type: 'string', desc: '微信'}
