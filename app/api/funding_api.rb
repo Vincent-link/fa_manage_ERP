@@ -37,14 +37,14 @@ class FundingApi < Grape::API
       optional :model, type: File, desc: 'Model'
       optional :el, type: File, desc: 'EL'
 
-      # optional :funding_company_contacts, type: Array[JSON] do
-      #   requires :name, type: String, desc: '成员名称'
-      #   optional :position_id, type: Integer, desc: '职位（字典funding_contact_position）'
-      #   optional :email, type: String, desc: '邮箱'
-      #   optional :mobile, type: String, desc: '手机号码'
-      #   optional :wechat, type: String, desc: '微信号'
-      #   optional :description, type: String, desc: '简介'
-      # end
+      optional :funding_company_contacts, type: Array[JSON] do
+        requires :name, type: String, desc: '成员名称'
+        optional :position_id, type: Integer, desc: '职位（字典funding_contact_position）'
+        optional :email, type: String, desc: '邮箱'
+        optional :mobile, type: String, desc: '手机号码'
+        optional :wechat, type: String, desc: '微信号'
+        optional :description, type: String, desc: '简介'
+      end
 
       #todo 约见（5个字段的swagger）（李靖超）
     end
@@ -52,9 +52,9 @@ class FundingApi < Grape::API
       auth_funding_code(params)
       Funding.transaction do
         @funding = Funding.create(params.slice(:category, :company_id, :round_id, :target_amount_currency, :target_amount,
-                                              :share, :shiny_word, :com_desc, :products_and_business, :financial,
-                                              :operational, :market_competition, :financing_plan, :other_desc, :source_type,
-                                              :source_member, :source_detail, :funding_score, :name).merge(operating_day: Date.today))
+                                               :share, :shiny_word, :com_desc, :products_and_business, :financial,
+                                               :operational, :market_competition, :financing_plan, :other_desc, :source_type,
+                                               :source_member, :source_detail, :funding_score, :name).merge(operating_day: Date.today))
         @funding.add_project_follower(params)
         @funding.gen_funding_company_contacts(params)
         @funding.funding_various_file(params)
@@ -65,14 +65,11 @@ class FundingApi < Grape::API
 
     desc '项目列表', entity: Entities::FundingBaseInfo
     params do
-      optional :status, type: Integer, desc: '状态'
       optional :keyword, type: String, desc: '关键字'
       optional :location_ids, type: Array[Integer], desc: '地点（字典locations）'
       optional :sector_ids, type: Array[Integer], desc: '行业（字典sector_tree）'
       optional :round_ids, type: Array[Integer], desc: '轮次(字典rounds)'
       optional :pipeline, type: Array[Integer], desc: 'Pipeline阶段'
-      optional :page, type: Integer, desc: 'Pipeline阶段', default: 1
-      optional :per_page, type: Integer, desc: 'Pipeline阶段', default: 30
       # todo Pipeline阶段暂时没有（李靖超）
     end
     get do
@@ -139,6 +136,17 @@ class FundingApi < Grape::API
         present @funding, with: Entities::FundingLite
       end
 
+      desc '编辑项目跟进人', entity: Entities::FundingUser
+      params do
+        optional :normal_user_ids, type: Array[Integer], desc: '项目成员id'
+        optional :bd_leader_id, type: Integer, desc: 'BD负责人id'
+        optional :execution_leader_id, type: Integer, desc: '执行负责人id'
+      end
+      patch 'funding_user' do
+        @funding.add_project_follower(params)
+        present @funding, with: Entities::FundingUser
+      end
+
       desc '项目详情', entity: Entities::FundingComprehensive
       params do
         requires :type, type: String, desc: '样式：弹窗：pop、页面：page、状态流转相关字段: status'
@@ -152,6 +160,91 @@ class FundingApi < Grape::API
         when 'status'
           present @funding, with: Entities::FundingStatusTransition
         end
+      end
+
+      desc '状态变更历史', entity: Entities::TimeLine
+      params do
+      end
+      get 'timelines' do
+        time_lines = @funding.time_lines
+        present time_lines, with: Entities::TimeLine
+      end
+
+      desc '项目跟进人', entity: Entities::FundingUser
+      params do
+      end
+      get 'funding_user' do
+        present @funding, with: Entities::FundingUser
+      end
+
+      desc '上传文档', entity: Entities::Attachment
+      params do
+        requires :type, type: Integer, desc: "文件类型: #{Funding.all_funding_file_type_hash.invert}", values: Funding.all_funding_file_type_values
+        requires :file, type: Hash do
+          requires :blob_id, type: Integer, desc: '文件blob_id'
+        end
+        optional :track_log_id, type: Integer, desc: 'TrackLog id'
+      end
+      post 'files' do
+        params[:type] = params[:type].to_i
+        case
+        when params[:type] == Funding.all_funding_file_type_spa_value
+          track_log = TrackLog.find(params[:track_log_id])
+          track_log.change_spa(current_user.id, params[:file][:blob_id])
+          file = track_log.file_spa_attachment
+        when params[:type] == Funding.all_funding_file_type_ts_value
+          track_log = TrackLog.find(params[:track_log_id])
+          track_log.change_ts(current_user.id, params[:file][:blob_id])
+          file = track_log.file_ts_attachment
+        when params[:type] == Funding.all_funding_file_type_materials_value
+          file = ActiveStorage::Attachment.create!(name: 'file_materials', record_type: 'Funding', record_id: @funding.id, blob_id: params[:file][:blob_id])
+        when Funding.all_funding_file_type_filter(:bp, :el, :teaser, :nda, :model).include?(params[:type])
+          if @funding.try(Funding.all_funding_file_type_value_code(params[:type], :file).first).present?
+            file = @funding.try("#{Funding.all_funding_file_type_value_code(params[:type], :file).first}_attachment")
+            file.update!(blob_id: params[:file][:blob_id])
+          else
+            file = ActiveStorage::Attachment.create!(name: Funding.all_funding_file_type_value_code(params[:type], :file).first, record_type: 'Funding', record_id: @funding.id, blob_id: params[:file][:blob_id])
+          end
+        end
+        present file, with: Entities::Attachment
+      end
+
+      desc '删除文档'
+      params do
+        requires :file_id, type: Integer, desc: '文件id'
+      end
+      delete 'files' do
+        file = ActiveStorage::Attachment.find(params[:file_id])
+        case file.record_type
+        when 'Funding'
+          file.delete
+        when 'TrackLog'
+          case file.name
+          when 'file_spa'
+            raise '不能在文件管理页面删除spa'
+          when 'file_ts'
+            file.record_type.constantize.find(file.record_id).update!(status: TrackLog.status_pass_value)
+            file.delete
+          end
+        end
+      end
+
+      desc '获取文档列表', entity: Entities::FundingAttachment
+      params do
+      end
+      get 'files' do
+        files = {
+            file_bp: @funding.file_bp_attachment,
+            file_teaser: @funding.file_teaser_attachment,
+            file_model: @funding.file_model_attachment,
+            file_el: @funding.file_el_attachment,
+            file_nda: @funding.file_nda_attachment,
+            file_materials: @funding.file_materials_attachments,
+            file_ts: ActiveStorage::Attachment.where(name: 'file_ts', record_type: "TrackLog", record_id: @funding.track_log_ids),
+            file_spa: ActiveStorage::Attachment.where(name: 'file_spa', record_type: "TrackLog", record_id: @funding.track_log_ids)
+        }
+        organizations = @funding.track_logs.map{|ins| [ins.id, ins.organization]}.to_h
+        present files, with: Entities::FundingAttachment, organizations: organizations
       end
     end
   end

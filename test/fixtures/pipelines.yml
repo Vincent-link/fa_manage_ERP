@@ -1,0 +1,31 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  funding_id: 1
+  status: 1
+  est_amount: 1
+  est_amount_unit: 1
+  currency: 1
+  fee_rate: 1
+  fee_discount: 1
+  other_amount: 1
+  complete_rate: 1
+  total_fee: 1
+  current_currency: 1
+  el_date: 2020-06-09
+  est_bill_date: 2020-06-09
+
+two:
+  funding_id: 1
+  status: 1
+  est_amount: 1
+  est_amount_unit: 1
+  currency: 1
+  fee_rate: 1
+  fee_discount: 1
+  other_amount: 1
+  complete_rate: 1
+  total_fee: 1
+  current_currency: 1
+  el_date: 2020-06-09
+  est_bill_date: 2020-06-09

@@ -18,6 +18,7 @@ module Entities
       }
     end
     expose :round_id, documentation: {type: 'integer', desc: '轮次'}
+    expose :share, documentation: {type: 'float', desc: '出让股份'}
     expose :target_amount, documentation: {type: 'float', desc: '交易金额'}
     expose :target_amount_currency, documentation: {type: 'integer', desc: '交易金额币种'}
     expose :post_investment_valuation, documentation: {type: 'float', desc: '本轮投后估值'}

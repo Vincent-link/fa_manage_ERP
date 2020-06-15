@@ -56,13 +56,24 @@ class Organization < ApplicationRecord
     self.logo.service_url
   end
 
+  def logo_file= file_hash
+    if file_hash
+      if file_hash[:blob_id].present?
+        self.logo.destroy! if self.logo.present?
+        self.build_logo_attachment blob_id: file_hash[:blob_id]
+      elsif file_hash[:id].blank?
+        self.logo.destroy! if self.logo.present?
+      end
+    end
+  end
+
   def search_data
     attributes.merge last_investevent_date: self.last_investevent&.birth_date,
                      ir_reviews: "#{self.ir_reviews.map(&:content).join(' ')}",
                      newsfeeds: "#{self.newsfeeds.map(&:content).join(' ')}",
                      comments: "#{self.comments.map(&:content).join(' ')}",
-                     members: "#{self.members.map(&:name).join(' ')}",
-                     organization_tags: "#{self.organization_tags.map(&:name).join(' ')}"
+                     # organization_tags: "#{self.organization_tags.map(&:name).join(' ')}", todo tags
+                     members: "#{self.members.map(&:name).join(' ')}"
   end
 
   def self.es_search(params)
@@ -100,7 +111,7 @@ class Organization < ApplicationRecord
         'intro' => 'org_des',
         'site' => 'url'
     }
-    self.attributes.transform_keys {|k| dm_key_map[k]}.compact
+    self.attributes.transform_keys {|k| dm_key_map[k]}.compact.merge(investor_type: 1)
   end
 
   def last_investevent

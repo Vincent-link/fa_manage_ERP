@@ -48,6 +48,17 @@ module ModelState
       state_config :confidentiality_level, config: {
           first: {value: 1, desc: '假数据level 1'}
       }
+
+      state_config :all_funding_file_type, config: {
+          bp:        {value: 1, desc: 'BP',     file: 'file_bp',        },
+          nda:       {value: 2, desc: 'NDA',    file: 'file_nda',       },
+          teaser:    {value: 3, desc: 'Teaser', file: 'file_teaser',    },
+          model:     {value: 4, desc: 'MODEL',  file: 'file_model',     },
+          materials: {value: 5, desc: '其他',    file: 'file_materials', },
+          el:        {value: 6, desc: 'EL',     file: 'file_el',        },
+          ts:        {value: 7, desc: 'TS',     file: 'file_ts',        },
+          spa:       {value: 8, desc: 'SPA',    file: 'file_spa',       },
+      }
     end
   end
 end

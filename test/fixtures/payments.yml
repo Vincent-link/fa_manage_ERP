@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  pipeline_id: 1
+  amount: 1
+  currency: 1
+  pay_date: 2020-06-10
+
+two:
+  pipeline_id: 1
+  amount: 1
+  currency: 1
+  pay_date: 2020-06-10

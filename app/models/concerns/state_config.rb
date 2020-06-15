@@ -30,6 +30,19 @@ module StateConfig
           end
         end
 
+        define_singleton_method "#{_arg}_id_name_key" do
+          result = []
+          config.each do |key, element|
+            result << {
+                :id => element[:value],
+                :name => element[:desc],
+                :key => key.to_s
+            }
+          end
+
+          result
+        end
+
         define_singleton_method "#{_arg}_id_name_with_option" do |select_options = {}|
           self.try("#{_arg}_array_with_option", select_options).map do |v, k|
             {:id => k,
