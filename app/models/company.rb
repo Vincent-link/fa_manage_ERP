@@ -38,7 +38,7 @@ class Company < ApplicationRecord
   def financing_events
     self_financing_events = self.fundings
     financing_events = Zombie::DmInvestevent.includes(:company, :invest_type, :invest_round, :investors).order_by_date.public_data.not_deleted.where(company_id: self.id).paginate(:page => 1, :per_page => 4)._select(:all_investors, :birth_date, :invest_type_and_batch_desc, :detail_money_des)
-    all_events = (financing_events + self_financing_events).sort_by {|p| p.try(:birth_date) || p.try(:updated_at)}.reverse
+    all_events = (financing_events + self_financing_events).sort_by {|p| p.try(:round_id) || p.try(:invest_round_id)}.reverse
 
     arr = []
     all_events.map do |event|
@@ -47,7 +47,7 @@ class Company < ApplicationRecord
         event_hash[:date] = event.updated_at
         event_hash[:round_id] = event.round_id
         event_hash[:target_amount] = event.target_amount
-        if event.status.present? && event.status == 9
+        if event.status == 9
           event_hash[:funding_members] = event.time_lines.pluck(:reason)
         else
           event_hash[:funding_members] = event.funding_members.pluck(:name)

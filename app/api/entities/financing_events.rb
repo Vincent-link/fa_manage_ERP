@@ -1,6 +1,6 @@
 module Entities
   class FinancingEvents < Base
-    with_options(format_with: :time_to_s_second) do
+    with_options(format_with: :time_to_s_date) do
       expose :date, documentation: {type: 'string', desc: '更新时间', required: true}
     end
     expose :round_id, documentation: {type: 'string', desc: '', required: true}

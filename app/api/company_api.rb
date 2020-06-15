@@ -58,9 +58,9 @@ class CompanyApi < Grape::API
         @company = Company.find params[:id]
       end
 
-      desc '公司详情', entity: Entities::CompanyBaseInfo
+      desc '公司详情', entity: Entities::CompanyForShow
       get do
-        present @company, with: Entities::CompanyBaseInfo
+        present @company, with: Entities::CompanyForShow
       end
 
       desc '编辑公司信息'
