@@ -71,6 +71,8 @@ class ApiBase < Grape::API
   mount VerificationApi
   mount NotificationApi
   mount FileApi
+  mount PipelineApi
+  mount TrackLogApi
   mount CompanyApi
   mount TeamApi
 

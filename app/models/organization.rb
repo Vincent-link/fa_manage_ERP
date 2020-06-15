@@ -56,6 +56,17 @@ class Organization < ApplicationRecord
     self.logo.service_url
   end
 
+  def logo_file= file_hash
+    if file_hash
+      if file_hash[:blob_id].present?
+        self.logo.destroy! if self.logo.present?
+        self.build_logo_attachment blob_id: file_hash[:blob_id]
+      elsif file_hash[:id].blank?
+        self.logo.destroy! if self.logo.present?
+      end
+    end
+  end
+
   def search_data
     attributes.merge last_investevent_date: self.last_investevent&.birth_date,
                      ir_reviews: "#{self.ir_reviews.map(&:content).join(' ')}",

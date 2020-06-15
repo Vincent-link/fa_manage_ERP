@@ -22,13 +22,17 @@ class TrackLogApi < Grape::API
               optional :blob_id, type: Integer, desc: '重新上传的spa文件id'
               optional :id, type: Integer, desc: 'spa_id'
             end
+            requires :syn_pipeline, type: Boolean, desc: '是否同步到pipeline'
           end
+          optional :pipeline_id, type: Integer, desc: '同步的pipeline_id'
           # todo 需要pipline id
         end
 
         post 'spa' do
           spas = @funding.spas
+          pipeline_est_amount = 0
           params[:spas].each do |spa|
+            pipeline_est_amount += spa[:amount] if spa[:syn_pipeline]
             case spa[:action]
             when 'delete'
               spas.find(spa[:id]).destroy
