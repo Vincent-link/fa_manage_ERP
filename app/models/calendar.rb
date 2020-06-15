@@ -12,6 +12,7 @@ class Calendar < ApplicationRecord
   belongs_to :funding, optional: true
   belongs_to :company, optional: true
   belongs_to :organization, optional: true
+  has_many :track_log_deatils, as: :linkable
 
   state_config :meeting_type, config: {
       face: {value: 1, desc: '线下约见'},

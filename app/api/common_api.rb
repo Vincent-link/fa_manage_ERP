@@ -21,6 +21,7 @@ class CommonApi < Grape::API
           funding_category: Funding.category_id_name,
           funding_source_type: Funding.source_type_id_name,
           funding_confidentiality_level: Funding.confidentiality_level_id_name,
+          track_log_detail_detail_type: TrackLogDetail.detail_type_id_name_key,
       }
     end
 
