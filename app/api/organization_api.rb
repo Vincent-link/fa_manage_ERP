@@ -73,8 +73,6 @@ class OrganizationApi < Grape::API
       optional :alias, type: Array[String], desc: '机构别名'
     end
     post do
-      params[:logo] = ActionDispatch::Http::UploadedFile.new(params[:logo]) if params[:logo]
-
       @organization.organization_tag_ids = params[:organization_tag_ids]
       @organization.sector_ids = params[:sector_ids]
       params.delete(:organization_tag_ids)
@@ -152,7 +150,7 @@ class OrganizationApi < Grape::API
         optional :usd_amount_max, type: String, desc: '美元最大金额'
         optional :followed_location_ids, type: Array[Integer], desc: '关注地区'
         optional :intro, type: String, desc: '机构简介'
-        optional :logo, type: Hash, desc: '机构logo' do
+        optional :logo_file, type: Hash, desc: '机构logo' do
           optional :id, type: Integer, desc: 'file_id 已有文件id'
           optional :blob_id, type: Integer, desc: 'blob_id 新文件id'
         end
@@ -164,7 +162,6 @@ class OrganizationApi < Grape::API
         optional :alias, type: Array[String], desc: '机构别名'
       end
       patch do
-        params[:logo] = ActionDispatch::Http::UploadedFile.new(params[:logo]) if params[:logo]
         params.delete(:part) #todo part validate
 
         @organization.organization_tag_ids = params[:organization_tag_ids]

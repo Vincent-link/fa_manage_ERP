@@ -3,9 +3,12 @@ class Member < ApplicationRecord
   has_paper_trail
   searchkick language: "chinese"
   include StateConfig
+  include BlobFileSupport
 
   has_one_attached :avatar
   has_one_attached :card
+  has_blob_upload :avatar, :card
+
 
   acts_as_taggable_on :tags
 
