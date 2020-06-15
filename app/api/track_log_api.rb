@@ -17,6 +17,7 @@ class TrackLogApi < Grape::API
             requires :fee_rate, type: Float, desc: '费率'
             requires :fee_discount, type: Float, desc: '费率折扣'
             requires :amount, type: Float, desc: '投资金额'
+            requires :currency, type: Integer, desc: '币种'
             requires :ratio, type: Float, desc: '股份比例'
             requires :file_spa, type: Hash do
               optional :blob_id, type: Integer, desc: '重新上传的spa文件id'
@@ -25,24 +26,13 @@ class TrackLogApi < Grape::API
             requires :syn_pipeline, type: Boolean, desc: '是否同步到pipeline'
           end
           optional :pipeline_id, type: Integer, desc: '同步的pipeline_id'
-          # todo 需要pipline id
         end
 
         post 'spa' do
+          # todo 合并代码因为整体代码结构变了，所以pipeline还需要再重新弄一下
+          @funding.change_spas(current_user.id, params)
           spas = @funding.spas
-          pipeline_est_amount = 0
-          params[:spas].each do |spa|
-            pipeline_est_amount += spa[:amount] if spa[:syn_pipeline]
-            case spa[:action]
-            when 'delete'
-              spas.find(spa[:id]).destroy
-            when 'update'
-              spas.find(spa[:id]).update!(spa.slice(:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio))
-              if spa[:file_spa][:blob_id].present?
-
-              end
-            end
-          end
+          present spas, with: Entities::TrackLogBase
         end
 
         desc '新增项目进度', entity: Entities::TrackLogBase
@@ -57,7 +47,13 @@ class TrackLogApi < Grape::API
           optional :content, type: String, desc: '跟进信息'
           optional :track_log_id, type: Integer, desc: '合并到另一条项目进度的项目进度id'
 
-          optional :spa_msg, type: Hash do
+          given status: ->(val) { val == TrackLog.status_issue_ts_value } do
+            requires :file_ts, type: Hash do
+              optional :blob_id, type: Integer, desc: 'ts文件id'
+            end
+          end
+
+          given status: ->(val) { val == TrackLog.status_spa_sha_value } do
             requires :pay_date, type: Date, desc: '结算日期'
             requires :is_fee, type: Boolean, desc: '是否收费'
             requires :fee_rate, type: Float, desc: '费率'
@@ -65,7 +61,9 @@ class TrackLogApi < Grape::API
             requires :amount, type: Float, desc: '投资金额'
             requires :currency, type: Integer, desc: '币种'
             requires :ratio, type: Float, desc: '股份比例'
-            requires :bob_id, type: Integer, desc: 'spa文件id'
+            requires :file_spa, type: Hash do
+              optional :blob_id, type: Integer, desc: 'spa文件id'
+            end
           end
 
           optional :calendar, type: Hash do
@@ -82,21 +80,45 @@ class TrackLogApi < Grape::API
           params[:member_ids] = organziation.members.where(:params[:member_ids]).map(&:id)
           if params[:track_log_id].present?
             tracklog = @funding.track_logs.find(params[:track_log_id])
+            raise '此项目进度的机构与添加投资人的机构不是同一机构' if tracklog.organization_id != params[:organization_id]
             tracklog.update(status: TrackLog.status_meeting_value) if params[:calendar].present? && tracklog.status_contacted?
             params[:member_ids] |= tracklog.member_ids
-            raise '此项目进度的机构与添加投资人的机构不是同一机构' if tracklog.organization_id != params[:organization_id]
           else
             tracklog = @funding.track_logs.create(params.slice(:status, :organization_id, :has_bp, :has_teaser, :has_nda, :has_model))
+            case params[:status].to_i
+            when TrackLog.status_spa_sha_value
+              @funding.change_spas(current_user.id, {spas: [params.slice(:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency, :file_spa).merge(action: 'update', id: tracklog.id)]})
+            when TrackLog.status_issue_ts_value
+              tracklog.change_ts(current_user.id, params[:file_spa][:blob_id])
+            when TrackLog.status_contacted_value
+              raise '状态选择错误' if params[:calendar].present?
+            end
           end
           tracklog.member_ids = params[:member_ids]
-          calendar = current_user.created_calendars.create!(params[:calendar].slice(:started_at, :ended_at, :address_id, :meeting_type).merge(meeting_category: Calendar.meeting_category_roadshow_value))
-          tracklog.track_log_details.create(params.slice(:content).merge(user_id: current_user.id, linkable_id: calendar.id, linkable_type: calendar.class.to_s))
+          current_user.created_calendars.create!(params[:calendar].slice(:started_at, :ended_at, :address_id, :meeting_type).merge(meeting_category: Calendar.meeting_category_roadshow_value, track_log_id: tracklog.id)) if params[:calendar].present?
+          tracklog.track_log_details.create(params.slice(:content).merge(user_id: current_user.id))
           present tracklog, with: Entities::TrackLogBase
+        end
+
+        desc '项目进度数量', entity: Entities::TrackLogBase
+        params do
+        end
+
+        get 'count' do
+          track_logs = @funding.track_logs
+          track_log_counts = TrackLog.status_id_name_key.map do |ins|
+            {
+                id: ins[:id],
+                name: ins[:name],
+                count: track_logs.try("status_#{ins[:key]}").count
+            }
+          end
+          {track_log_counts: track_log_counts}
         end
 
         desc '项目进度列表', entity: Entities::TrackLogBase
         params do
-          requires :status, type: Integer, desc: '项目进度状态'
+          requires :status, type: Integer, desc: '项目进度状态（字典：track_log_status）'
           optional :keyword, type: String, desc: '关键字'
         end
 
@@ -126,14 +148,36 @@ class TrackLogApi < Grape::API
 
       desc '阶段变更', entity: Entities::TrackLogDetail
       params do
-        requires :status, type: Integer, desc: '状态'
+        optional :file_ts, type: Hash do
+          optional :blob_id, type: Integer, desc: 'ts文件id'
+        end
+
+        optional :pay_date, type: Date, desc: '结算日期'
+        optional :is_fee, type: Boolean, desc: '是否收费'
+        optional :fee_rate, type: Float, desc: '费率'
+        optional :fee_discount, type: Float, desc: '费率折扣'
+        optional :amount, type: Float, desc: '投资金额'
+        optional :currency, type: Integer, desc: '币种'
+        optional :ratio, type: Float, desc: '股份比例'
+        optional :file_spa, type: Hash do
+          optional :blob_id, type: Integer, desc: 'spa文件id'
+        end
+
+        optional :calendar, type: Hash do
+          requires :started_at, type: DateTime, desc: '开始时间'
+          requires :ended_at, type: DateTime, desc: '结束时间'
+          optional :address_id, type: Integer, desc: '会议地点id'
+          requires :meeting_type, type: Integer, desc: '约见类型'
+        end
+
+        requires :status, type: Integer, desc: '状态（字典：track_log_status）'
         optional :content, type: String, desc: 'Drop或Pass原因'
       end
 
       post 'status_change' do
         params[:user_id] = current_user.id
         @track_log.change_status_and_gen_detail(params)
-        track_log_details = @tracklog.track_log_details
+        track_log_details = @track_log.track_log_details
         present track_log_details, with: Entities::TrackLogDetail
       end
 
@@ -142,7 +186,7 @@ class TrackLogApi < Grape::API
       end
 
       get 'track_log_details' do
-        track_log_details = @tracklog.track_log_details
+        track_log_details = @track_log.track_log_details
         present track_log_details, with: Entities::TrackLogDetail
       end
     end

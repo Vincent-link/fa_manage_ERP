@@ -73,6 +73,7 @@ class ApiBase < Grape::API
   mount FileApi
   mount PipelineApi
   mount TrackLogApi
+  mount TrackLogDetailApi
   mount CompanyApi
   mount TeamApi
 

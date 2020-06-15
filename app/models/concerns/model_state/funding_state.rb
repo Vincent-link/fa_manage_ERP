@@ -50,13 +50,14 @@ module ModelState
       }
 
       state_config :all_funding_file_type, config: {
-          bp:     {value: 'file_bp',     desc: 'BP'},
-          nda:    {value: 'file_nda',    desc: 'NDA'},
-          teaser: {value: 'file_teaser', desc: 'Teaser'},
-          model:  {value: 'file_model',  desc: 'MODEL'},
-          el:     {value: 'file_el',     desc: 'EL'},
-          ts:     {value: 'file_ts',     desc: 'TS'},
-          spa:    {value: 'file_spa',    desc: 'SPA'},
+          bp:        {value: 1, desc: 'BP',     file: 'file_bp',        },
+          nda:       {value: 2, desc: 'NDA',    file: 'file_nda',       },
+          teaser:    {value: 3, desc: 'Teaser', file: 'file_teaser',    },
+          model:     {value: 4, desc: 'MODEL',  file: 'file_model',     },
+          materials: {value: 5, desc: '其他',    file: 'file_materials', },
+          el:        {value: 6, desc: 'EL',     file: 'file_el',        },
+          ts:        {value: 7, desc: 'TS',     file: 'file_ts',        },
+          spa:       {value: 8, desc: 'SPA',    file: 'file_spa',       },
       }
     end
   end

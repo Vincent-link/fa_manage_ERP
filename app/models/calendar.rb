@@ -12,7 +12,11 @@ class Calendar < ApplicationRecord
   belongs_to :funding, optional: true
   belongs_to :company, optional: true
   belongs_to :organization, optional: true
+  belongs_to :track_log, optional: true
   has_many :track_log_deatils, as: :linkable
+
+  after_create :gen_create_track_log_detail
+  after_update :gen_update_track_log_detail
 
   state_config :meeting_type, config: {
       face: {value: 1, desc: '线下约见'},
@@ -40,6 +44,25 @@ class Calendar < ApplicationRecord
   def cr_user_ids=(cr_user_ids)
     cr_user_ids.each do |user_id|
       self.calendar_members.build(memberable_type: 'User', memberable_id: user_id)
+    end
+  end
+
+  def gen_create_track_log_detail
+    if self.track_log.present?
+      self.track_log.gen_meeting_detail(User.current.id, self.id, 'create')
+    end
+  end
+
+  def gen_update_track_log_detail
+    user_id = User.current.id
+    if self.track_log.present?
+      case self.status
+      when '取消状态'
+        # todo 还没有约见的状态
+        self.track_log.gen_meeting_detail(user_id, self.id, 'delete')
+      else
+        self.track_log.gen_meeting_detail(user_id, self.id, 'update')
+      end
     end
   end
 end
