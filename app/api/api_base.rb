@@ -74,6 +74,7 @@ class ApiBase < Grape::API
   mount FileApi
   mount PipelineApi
   mount TrackLogApi
+  mount TrackLogDetailApi
 
   add_swagger_documentation array_use_braces: true
 end

@@ -36,6 +36,9 @@ class Funding < ApplicationRecord
   has_many :track_logs
   has_many :spas, -> {where(:status => TrackLog.status_spa_sha_value)}, class_name: 'TrackLog'
 
+  has_many :track_logs
+  has_many :spas, -> {where(:status => TrackLog.status_spa_sha_value)}, class_name: 'TrackLog'
+
   before_create :gen_serial_number
   after_create :base_time_line
   after_create :reviewing_status
@@ -298,6 +301,30 @@ class Funding < ApplicationRecord
           end
         end
       end
+    end
+  end
+
+  def change_spas(user_id, params)
+    spas = self.spas
+    params[:spas].each do |spa|
+      case spa[:action]
+      when 'delete'
+        spas.find(spa[:id]).destroy
+      when 'update'
+        spa_track_log = spas.find(spa[:id])
+        [:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency].each{|ins| raise '融资结算信息不全' unless (spa[ins] || spa_track_log.try(ins.to_s)).present?}
+        spa_track_log.update!(spa.slice(:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency))
+        if spa[:file_spa][:blob_id].present?
+          spa_track_log.file_spa.attachment.update!(blob_id: spa[:file_spa][:blob_id])
+        end
+      when 'create'
+        [:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency].each{|ins| raise '融资结算信息不全' unless spa[ins].present?}
+        raise 'SPA文件必传' unless spa[:file_spa][:blob_id].present?
+        spa_track_log = self.spas.create(spa.slice(:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency))
+        ActiveStorage::Attachment.create!(name: 'file_spa', record_type: 'TrackLog', record_id: spa_track_log.id, blob_id: spa[:file_spa][:blob_id])
+      end
+
+      spa_track_log.gen_spa_detail(user_id, spa[:action])
     end
   end
 end

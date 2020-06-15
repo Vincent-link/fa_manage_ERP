@@ -9,9 +9,9 @@ class TrackLogDetail < ApplicationRecord
   # todo 多态关联需要 SPA
 
   state_config :detail_type, config: {
-      base:     { value: 0, desc: "基础信息"  },
-      document: { value: 1, desc: "上传了文件"},
-      calendar: { value: 2, desc: "约见"     },
-      spa:      { value: 3, desc: "SPA"     },
+      base:     { value: 1, desc: "基础信息"  },
+      ts:       { value: 2, desc: "TS"      },
+      calendar: { value: 3, desc: "约见"     },
+      spa:      { value: 4, desc: "SPA"     },
   }
 end
