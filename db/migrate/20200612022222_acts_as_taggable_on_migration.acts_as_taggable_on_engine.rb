@@ -6,6 +6,9 @@ else
 end
 ActsAsTaggableOnMigration.class_eval do
   def self.up
+    drop_table :tags, force: :cascade
+    drop_table :taggings, force: :cascade
+
     create_table ActsAsTaggableOn.tags_table do |t|
       t.string :name
       t.timestamps
