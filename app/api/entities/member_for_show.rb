@@ -19,9 +19,7 @@ module Entities
     expose :currency_ids, documentation: {type: 'integer', desc: '关注币种', is_array: true}
     expose :scale_ids, documentation: {type: 'integer', desc: '关注投资规模', is_array: true}
     expose :tag_ids, documentation: {type: 'integer', desc: '标签', is_array: true}
-    expose :tag_desc, documentation: {type: String, desc: '标签', is_array: true} do |ins|
-      ['阿斯顿发斯蒂芬', '阿蒂芬']
-    end #todo 假数据
+    expose :tag_desc, documentation: {type: String, desc: '标签', is_array: true}
     expose :followed_location_ids, documentation: {type: 'integer', desc: '关注地区', is_array: true}
 
     expose :users, as: :covered_by, using: Entities::UserForShow, documentation: {type: 'Entities::UserLite', desc: '对接成员'}
