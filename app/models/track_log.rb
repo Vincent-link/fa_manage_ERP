@@ -24,7 +24,7 @@ class TrackLog < ApplicationRecord
       drop:        {value: 6, desc: "Drop",        level: 1}
   }
 
-  def search(params)
+  def self.search(params)
     track_logs = self.all
 
     if params[:status].present?
