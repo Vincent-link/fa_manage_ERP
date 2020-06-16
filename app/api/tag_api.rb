@@ -59,30 +59,30 @@ class TagApi < Grape::API
               @one_level_tag.sub_tag_list.add(params[:name])
               @one_level_tag.save
             end
-
-            resources :tags do
-              resource ':two_level_tag_id' do
-                before do
-                  @two_level_tag = ActsAsTaggableOn::Tag.find(params[:two_level_tag_id])
-                end
-
-                desc '修改二级标签'
-                params do
-                  requires :name, type: String, desc: '名称'
-                end
-                patch do
-                  @two_level_tag.update(name: params[:name])
-                end
-
-                desc '删除二级标签'
-                delete do
-                  ActsAsTaggableOn::Tagging.where(tag_id: @two_level_tag.id).destroy_all
-                  @two_level_tag.destroy
-                end
-              end
-            end
           end
         end
+      end
+    end
+  end
+
+  resources :tags do
+    resource ':two_level_tag_id' do
+      before do
+        @two_level_tag = ActsAsTaggableOn::Tag.find(params[:two_level_tag_id])
+      end
+
+      desc '修改二级标签'
+      params do
+        requires :name, type: String, desc: '名称'
+      end
+      patch do
+        @two_level_tag.update(name: params[:name])
+      end
+
+      desc '删除二级标签'
+      delete do
+        ActsAsTaggableOn::Tagging.where(tag_id: @two_level_tag.id).destroy_all
+        @two_level_tag.destroy
       end
     end
   end

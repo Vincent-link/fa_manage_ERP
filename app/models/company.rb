@@ -12,7 +12,6 @@ class Company < ApplicationRecord
   scope :search_import, -> {includes(:calendars)}
 
   validates_presence_of :name
-  validates_presence_of :sector_ids
   validates_presence_of :one_sentence_intro
   validates_presence_of :location_province_id
   validates_presence_of :location_city_id
@@ -53,12 +52,15 @@ class Company < ApplicationRecord
           event_hash[:funding_members] = event.funding_members.pluck(:name)
         end
         event_hash[:status] = event.status.to_s
+        event_hash[:bi] = "万"
+
       else
         event_hash[:date] = event.birth_date
         event_hash[:round_id] = event.invest_type_and_batch_desc
         event_hash[:target_amount] = event.detail_money_des
         event_hash[:funding_members] = event.all_investors.pluck(:fromable_name)
         event_hash[:status] = "融资事件"
+        event_hash[:bi] = "万"
       end
       arr << event_hash
     end

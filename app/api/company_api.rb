@@ -26,7 +26,7 @@ class CompanyApi < Grape::API
       requires :location_city_id, type: Integer, desc: '城市'
       optional :detailed_address, type: String, desc: '详细地址'
       optional :business_id, type: Integer, desc: '工商数据'
-      optional :sector_ids, type: Array[Integer], desc: '所属行业'
+      requires :sector_ids, type: Array[Integer], desc: '所属行业'
       optional :company_tag_ids, type: Array[Integer], desc: '标签'
       requires :contacts, type: Array[JSON], desc: '联系人' do
         requires :name, type: String, desc: '姓名'
@@ -44,7 +44,7 @@ class CompanyApi < Grape::API
         tags_params = params.delete(:tag_ids)
         sectors_params = params.delete(:sector_ids)
 
-        @company = Company.create(params)
+        @company = Company.create!(params)
         @company.company_tag_ids = tags_params
         @company.sector_ids = sectors_params
 

@@ -18,6 +18,11 @@ class TagCategoryApi < Grape::API
         @tag_category = TagCategory.find(params[:id])
       end
 
+      desc '获取标签类别'
+      get do
+        @tag_category
+      end
+
       desc '删除标签类别'
       delete do
         # 删除子标签
