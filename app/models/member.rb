@@ -78,6 +78,10 @@ class Member < ApplicationRecord
     self.attributes.transform_keys {|k| dm_key_map[k]}.compact
   end
 
+  def tag_desc
+    self.tags.map(&:name)
+  end
+
   def dm_lower_report_relation
     @lower_report_relation ||= Zombie::DmMemberReportRelation.where(superior_id: self.id).inspect
   end
