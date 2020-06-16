@@ -142,7 +142,7 @@ class MemberApi < Grape::API
           optional :blob_id, type: Integer, desc: 'blob_id 新文件id'
         end
         optional :tel, type: String, desc: '手机号'
-        optional :organization_id, type: String, desc: '机构id'
+        optional :organization_id, type: Integer, desc: '机构id'
         optional :sponsor_id, type: Integer, desc: '来源'
         optional :position_rank_id, type: Integer, desc: '职级'
         optional :position, type: String, desc: '实际职位'

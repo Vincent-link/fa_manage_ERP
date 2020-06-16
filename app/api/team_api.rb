@@ -14,6 +14,11 @@ class TeamApi < Grape::API
       Team.create!(declared(params))
     end
 
+    desc '获取BU', entity: Entities::TeamLite
+    get :bu do
+      present Team.where(parent_id: 242), with: Entities::TeamLite
+    end
+
     resources ':id' do
       before do
         @team = Team.find(params[:id])
