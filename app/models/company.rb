@@ -37,7 +37,7 @@ class Company < ApplicationRecord
   def financing_events
     self_financing_events = self.fundings
     financing_events = Zombie::DmInvestevent.includes(:company, :invest_type, :invest_round, :investors).order_by_date.public_data.not_deleted.where(company_id: self.id).paginate(:page => 1, :per_page => 4)._select(:all_investors, :birth_date, :invest_type_and_batch_desc, :detail_money_des)
-    all_events = (financing_events + self_financing_events).sort_by {|p| p.try(:round_id) || p.try(:invest_round_id)}.reverse
+    all_events = (financing_events + self_financing_events).sort_by {|p| p.try(:round_id) || p.try(:invest_round_id)}
 
     arr = []
     all_events.map do |event|
@@ -45,22 +45,25 @@ class Company < ApplicationRecord
       if event.class.name == "Funding"
         event_hash[:date] = event.updated_at
         event_hash[:round_id] = event.round_id
-        event_hash[:target_amount] = event.target_amount
-        if event.status == 9
-          event_hash[:funding_members] = event.time_lines.pluck(:reason)
-        else
-          event_hash[:funding_members] = event.funding_members.pluck(:name)
-        end
-        event_hash[:status] = event.status.to_s
-        event_hash[:bi] = "万"
 
+        target_amount_currency_arr = CacheBox::dm_currencies.select { |e| e["id"] == event.target_amount_currency }
+        target_amount_currency = ""
+        target_amount_currency = target_amount_currency_arr.first["name"] unless target_amount_currency_arr.empty?
+        target_amount = event.target_amount/10000 unless event.target_amount.nil?
+        event_hash[:target_amount] = "#{target_amount}万#{target_amount_currency}"
+
+        if event.status == 9
+          event_hash[:funding_members] = "pass理由：#{event.time_lines.pluck(:reason).join("。")}"
+        else
+          event_hash[:funding_members] = event.funding_members.pluck(:name).join("、")
+        end
+        event_hash[:status] = Funding.status_desc_for_value(event.status)
       else
-        event_hash[:date] = event.birth_date
+        event_hash[:date] = Time.parse(event.birth_date)
         event_hash[:round_id] = event.invest_type_and_batch_desc
         event_hash[:target_amount] = event.detail_money_des
-        event_hash[:funding_members] = event.all_investors.pluck(:fromable_name)
+        event_hash[:funding_members] = event.all_investors.pluck(:fromable_name).join("、")
         event_hash[:status] = "融资事件"
-        event_hash[:bi] = "万"
       end
       arr << event_hash
     end

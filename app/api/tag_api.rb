@@ -1,14 +1,15 @@
 class TagApi < Grape::API
   mounted do
     resource configuration[:owner] do
-      resource ':id' do
+      resource ':type_name' do
         before do
-          @root_category = TagCategory.find(params[:id])
+          tag_category_id = TagCategory.tag_category_type_config[params[:type_name].to_sym][:value]
+          @root_category = TagCategory.find(tag_category_id)
         end
 
         desc '一级标签'
         get :tags do
-          present @root_category.tags, with: Entities::OrganizationTag
+          present @root_category.tags, with: Entities::Tag
         end
 
         desc '创建一级标签'
@@ -48,7 +49,7 @@ class TagApi < Grape::API
 
             desc '一级标签的所有二级标签'
             get :tags do
-              present @one_level_tag.sub_tags, with: Entities::OrganizationTag
+              present @one_level_tag.sub_tags, with: Entities::Tag
             end
 
             desc '增加二级标签'

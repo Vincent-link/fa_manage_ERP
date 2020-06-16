@@ -1,6 +1,10 @@
 module Entities
   class Tag < Base
-    expose :id, documentation: {type: 'integer', desc: 'tag id'}
-    expose :name, documentation: {type: String, desc: 'tag名称'}
+    expose :id, documentation: {type: 'integer', desc: 'id', required: true}
+    expose :name, documentation: {type: 'string', desc: '名称', required: true}
+    expose :taggings_count, as: :num, documentation: {type: 'string', desc: '机构数量', required: true} do |ins|
+      ins.taggings_count - 1
+    end
+    expose :sub_tags, using: Entities::Tag
   end
 end

@@ -11,7 +11,6 @@ class CompanyApi < Grape::API
     end
     get do
       companies = Company.es_search(params)
-
       present companies, with: Entities::CompanyForIndex
     end
 
@@ -103,19 +102,18 @@ class CompanyApi < Grape::API
       params do
         requires :name, type: String, desc: '名称'
       end
-      post :relation_search do
-        @company = Zombie::DmCompany.where("registered_name like ?", params[:name])._select(:registered_name)
-        present @company
+      post :registered_company_search do
+        registered_companies = Zombie::DmRegisteredCompany.where("name like ?", params[:name])._select(:name, :info_url).inspect
+        present registered_companies, with: Entities::RegisteredCompany
       end
 
       desc '关联企业添加'
       params do
         requires :name, type: String, desc: '工商名称'
-        requires :tyc_website, type: String, desc: '天眼查网址'
+        requires :info_url, type: String, desc: '天眼查网址'
       end
-      post :relation_add do
-        @relation_company = Zombie::DmCompany.create_company(declared(params))
-        @relation_company.id
+      post :registered_company_add do
+        @relation_company = Zombie::DmRegisteredCompany.create_registered_company(declared(params))
       end
 
       desc '设为KA'
