@@ -45,8 +45,13 @@ class FundingApi < Grape::API
         optional :wechat, type: String, desc: '微信号'
         optional :description, type: String, desc: '简介'
       end
-
-      #todo 约见（5个字段的swagger）（李靖超）
+      requires :calendar, type: Hash do
+        requires :contact_ids, type: Array[Integer], desc: '公司联系人id'
+        requires :cr_user_ids, type: Array[Integer], desc: '华兴参与人id'
+        requires :started_at, type: DateTime, desc: '开始时间'
+        requires :ended_at, type: DateTime, desc: '结束时间'
+        requires :address_id, type: Integer, desc: '会议地点id'
+      end
     end
     post do
       auth_funding_code(params)
@@ -58,7 +63,7 @@ class FundingApi < Grape::API
         @funding.add_project_follower(params)
         @funding.gen_funding_company_contacts(params)
         @funding.funding_various_file(params)
-        # todo 约见
+        @funding.calendars.create!(declared(params)[:calendar].merge(company_id: params[:company_id], meeting_type: Calendar.meeting_type_face_value, meeting_category: Calendar.meeting_category_com_meeting_value))
       end
       present @funding, with: Entities::FundingLite
     end
@@ -69,8 +74,7 @@ class FundingApi < Grape::API
       optional :location_ids, type: Array[Integer], desc: '地点（字典locations）'
       optional :sector_ids, type: Array[Integer], desc: '行业（字典sector_tree）'
       optional :round_ids, type: Array[Integer], desc: '轮次(字典rounds)'
-      optional :pipeline, type: Array[Integer], desc: 'Pipeline阶段'
-      # todo Pipeline阶段暂时没有（李靖超）
+      optional :pipeline_status, type: Array[Integer], desc: 'Pipeline阶段'
     end
     get do
       fundings = Funding.es_search(params)
@@ -243,7 +247,7 @@ class FundingApi < Grape::API
             file_ts: ActiveStorage::Attachment.where(name: 'file_ts', record_type: "TrackLog", record_id: @funding.track_log_ids),
             file_spa: ActiveStorage::Attachment.where(name: 'file_spa', record_type: "TrackLog", record_id: @funding.track_log_ids)
         }
-        organizations = @funding.track_logs.map{|ins| [ins.id, ins.organization]}.to_h
+        organizations = @funding.track_logs.map {|ins| [ins.id, ins.organization]}.to_h
         present files, with: Entities::FundingAttachment, organizations: organizations
       end
     end

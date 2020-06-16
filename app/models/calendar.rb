@@ -5,7 +5,7 @@ class Calendar < ApplicationRecord
 
   has_many :calendar_members
   has_many :org_members, -> {where(memberable_type: 'Member')}, class_name: 'CalendarMember'
-  has_many :com_members, -> {where(memberable_type: 'CompanyContact')}, class_name: 'CalendarMember'
+  has_many :com_members, -> {where(memberable_type: 'Contact')}, class_name: 'CalendarMember'
   has_many :user_members, -> {where(memberable_type: 'User')}, class_name: 'CalendarMember'
   belongs_to :user
   belongs_to :address, optional: true
@@ -15,6 +15,7 @@ class Calendar < ApplicationRecord
   belongs_to :track_log, optional: true
   has_many :track_log_deatils, as: :linkable
 
+  before_validation :set_current_user
   after_create :gen_create_track_log_detail
   after_update :gen_update_track_log_detail
 
@@ -29,9 +30,16 @@ class Calendar < ApplicationRecord
       org_meeting: {value: 2, desc: '约见投资人'},
   }
 
-  def company_contact_ids=(company_contact_ids)
-    company_contact_ids.each do |user_id|
-      self.calendar_members.build(memberable_type: 'CompanyContact', memberable_id: user_id)
+  state_config :status, config: {
+      new: {value: 1, desc: '未约见'},
+      meet: {value: 2, desc: '已约见'},
+      done: {value: 3, desc: '已完成'},
+      cancel: {value: 4, desc: '已取消'}
+  }
+
+  def contact_ids=(contact_ids)
+    contact_ids.each do |user_id|
+      self.calendar_members.build(memberable_type: 'Contact', memberable_id: user_id)
     end
   end
 
@@ -57,12 +65,15 @@ class Calendar < ApplicationRecord
     user_id = User.current.id
     if self.track_log.present?
       case self.status
-      when '取消状态'
-        # todo 还没有约见的状态
+      when Calendar.status_cancel_value
         self.track_log.gen_meeting_detail(user_id, self.id, 'delete')
       else
         self.track_log.gen_meeting_detail(user_id, self.id, 'update')
       end
     end
+  end
+
+  def set_current_user
+    self.user_id ||= User.current&.id
   end
 end

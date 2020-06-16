@@ -62,7 +62,7 @@ class Funding < ApplicationRecord
   end
 
   def search_data
-    attributes.merge {}
+    attributes.merge pipeline_status: self.pipelines.pluck(:status)
     # attributes.merge company: self.company
     # attributes.merge company_name: self.company&.name,
     #                  company_sector_names: self.company&.sector_ids.map { |ins| CacheBox.dm_single_sector_tree[ins] },
@@ -85,9 +85,8 @@ class Funding < ApplicationRecord
       where_hash[:round_id] = params[:round_ids]
     end
 
-    if params[:pipeline]
-
-    end
+    #pipeline status
+    where_hash[:pipeline_status] = {all: params[:pipeline_status]} if params[:pipeline_status].present?
 
     if params[:keyword]
       Funding.search(params[:keyword], where: where_hash, highlight: DEFAULT_HL_TAG.merge(fields: []))
@@ -186,7 +185,7 @@ class Funding < ApplicationRecord
       raise '公司简介不少于400字' if params[:com_desc].size < 400
     when Funding.status_execution_value
       # todo 判断是否上传EL
-      # todo 判断是否有收入预测（李靖超）
+      # todo 判断是否有收入预测  update by 李靖超: self.pipeline.present?
     when Funding.status_closing_value
       # todo 判断是否有TS tracklog
       # todo 判断是否有TS状态换过的 tracklog
@@ -229,7 +228,7 @@ class Funding < ApplicationRecord
   end
 
   has_many :funding_users
-  has_many :funding_members, through: :funding_users, source: :user 
+  has_many :funding_members, through: :funding_users, source: :user
 
   has_many :evaluations
   has_many :questions
@@ -313,13 +312,13 @@ class Funding < ApplicationRecord
         spas.find(spa[:id]).destroy
       when 'update'
         spa_track_log = spas.find(spa[:id])
-        [:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency].each{|ins| raise '融资结算信息不全' unless (spa[ins] || spa_track_log.try(ins.to_s)).present?}
+        [:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency].each {|ins| raise '融资结算信息不全' unless (spa[ins] || spa_track_log.try(ins.to_s)).present?}
         spa_track_log.update!(spa.slice(:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency))
         if spa[:file_spa][:blob_id].present?
           spa_track_log.file_spa.attachment.update!(blob_id: spa[:file_spa][:blob_id])
         end
       when 'create'
-        [:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency].each{|ins| raise '融资结算信息不全' unless spa[ins].present?}
+        [:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency].each {|ins| raise '融资结算信息不全' unless spa[ins].present?}
         raise 'SPA文件必传' unless spa[:file_spa][:blob_id].present?
         spa_track_log = self.spas.create(spa.slice(:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency))
         ActiveStorage::Attachment.create!(name: 'file_spa', record_type: 'TrackLog', record_id: spa_track_log.id, blob_id: spa[:file_spa][:blob_id])
