@@ -193,6 +193,14 @@ class MemberApi < Grape::API
         member.update declared(params)
         present member, with: Entities::MemberForShow
       end
+
+      desc '关联融资事件'
+      params do
+        requires :event_id, type: Integer, desc: '关联事件ID'
+      end
+      patch :relate_event do
+        Zombie::DmInvestevent._by_id(params[:event_id]).add_members(params[:id], true)
+      end
     end
   end
 
