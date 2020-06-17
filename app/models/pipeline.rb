@@ -1,10 +1,19 @@
 class Pipeline < ApplicationRecord
+  include StateConfig
+
   belongs_to :funding
 
   has_many :pipeline_divides
   has_many :payments
 
   after_commit :reindex_funding
+
+  state_config :status, config: {
+      new: {value: 1, desc: '未约见'},
+      meet: {value: 2, desc: '已约见'},
+      done: {value: 3, desc: '已完成'},
+      cancel: {value: 4, desc: '已取消'}
+  }
 
   def reindex_funding
     if self.saved_changes[:status].present?
