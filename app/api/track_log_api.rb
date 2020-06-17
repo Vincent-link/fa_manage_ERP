@@ -77,7 +77,7 @@ class TrackLogApi < Grape::API
         post do
           raise '项目进度状态选择错误' if params[:calendar].present? && params[:track_log_id].nil? && params[:status] != TrackLog.status_meeting_value
           organziation = Organization.find(params[:organization_id])
-          params[:member_ids] = organziation.members.where(:params[:member_ids]).map(&:id)
+          params[:member_ids] = organziation.members.where(id: params[:member_ids]).map(&:id)
           if params[:track_log_id].present?
             tracklog = @funding.track_logs.find(params[:track_log_id])
             raise '此项目进度的机构与添加投资人的机构不是同一机构' if tracklog.organization_id != params[:organization_id]
