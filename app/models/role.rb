@@ -1,6 +1,7 @@
 class Role < ApplicationRecord
   has_many :role_resources, dependent: :destroy
   has_many :user_roles, dependent: :destroy
+  has_many :users, through: :user_roles, source: :user
 
   validates_presence_of :name
   validates_uniqueness_of :name

@@ -121,7 +121,7 @@ class CompanyApi < Grape::API
         requires :is_ka, type: Boolean, desc: '是否ka'
       end
       patch :ka do
-        @company.update(is_ka: params[:is_ka])
+        @company.update!(is_ka: params[:is_ka])
       end
 
       desc '竞争公司'
