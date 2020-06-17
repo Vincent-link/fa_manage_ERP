@@ -190,7 +190,7 @@ class MemberApi < Grape::API
       end
       patch :dismiss do
         member = Member.find(params[:id])
-        member.update declared(params)
+        member.update declared(params, include_missing: false)
         present member, with: Entities::MemberForShow
       end
 
