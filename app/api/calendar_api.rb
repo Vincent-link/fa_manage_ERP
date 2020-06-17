@@ -11,8 +11,12 @@ class CalendarApi < Grape::API
     end
     get do
       user = params[:user_id] ? current_user.sub_users.find(params[:user_id]) : current_user
-      cal = user.calendars
-      #todo group_user
+      cal = case params[:range]
+            when 'person'
+              user.calendars
+            when 'group'
+              Calendar.includes(:calendar_members).where(calendar_members: {memberable_type: 'User', memberable_id: CacheBox.get_group_user_ids(user.id)})
+            end
       cal = cal.where(status: params[:status]) if params[:status]
       cal = cal.where(meeting_category: params[:meeting_category]) if params[:meeting_category]
       cal = cal.where(started_at: params[:start_date]..params[:end_date])
