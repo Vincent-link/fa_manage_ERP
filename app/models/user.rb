@@ -9,6 +9,7 @@ class User < ApplicationRecord
   has_many :investor_groups
   has_many :follows
   has_many :user_roles, dependent: :destroy
+  has_many :roles, through: :user_roles
   has_many :evaluations, dependent: :destroy
   has_many :answers, dependent: :destroy
   has_many :notifications, dependent: :destroy

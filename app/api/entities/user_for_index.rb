@@ -8,7 +8,7 @@ module Entities
     expose :leader, using: Entities::UserLite
     expose :user_title, using: Entities::UserTitle
     expose :grade_name, documentation: {type: 'integer', desc: '内部职务', required: true}
-    expose :role, using: Entities::Role
+    expose :roles, using: Entities::Role
     expose :wechat, documentation: {type: 'string', desc: '微信', required: true}
   end
 end

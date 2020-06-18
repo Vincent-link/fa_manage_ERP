@@ -103,7 +103,7 @@ class CompanyApi < Grape::API
         requires :name, type: String, desc: '名称'
       end
       post :registered_company_search do
-        registered_companies = Zombie::DmRegisteredCompany.where("name like ?", params[:name])._select(:name, :info_url).inspect
+        registered_companies = Zombie::DmRegisteredCompany.where("name like ?", "%#{params[:name]}%")._select(:name, :info_url).inspect
         present registered_companies, with: Entities::RegisteredCompany
       end
 
