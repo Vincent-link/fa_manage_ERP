@@ -112,7 +112,7 @@ class TrackLog < ApplicationRecord
         status_desc: calendar.status_desc,
         id: calendar.id,
     }
-    self.track_log_details.create!(user_id: user_id, content: content, linkable_id: calendar_id, linkable_type: 'Calendar', history: history)
+    self.track_log_details.create!(user_id: user_id, content: content, linkable_id: calendar_id, linkable_type: 'Calendar', history: history, detail_type: TrackLogDetail.detail_type_calendar_value)
   end
 
   def gen_spa_detail(user_id, action)
@@ -144,7 +144,7 @@ class TrackLog < ApplicationRecord
             service_url: self.file_spa.blob.service_url,
         }
     }
-    self.track_log_details.create!(user_id: user_id, content: content, linkable_id: self.id, linkable_type: 'TrackLog', history: history)
+    self.track_log_details.create!(user_id: user_id, content: content, linkable_id: self.id, linkable_type: 'TrackLog', history: history, detail_type: TrackLogDetail.detail_type_spa_value)
   end
 
   def gen_ts_detail(user_id, action)
@@ -164,7 +164,7 @@ class TrackLog < ApplicationRecord
             service_url: self.file_ts.blob.service_url,
         }
     }
-    self.track_log_details.create!(user_id: user_id, content: content, linkable_id: self.id, linkable_type: 'TrackLog', history: history)
+    self.track_log_details.create!(user_id: user_id, content: content, linkable_id: self.id, linkable_type: 'TrackLog', history: history, detail_type: TrackLogDetail.detail_type_ts_value)
   end
 
   def change_spa(user_id, blob_id)
@@ -205,6 +205,6 @@ class TrackLog < ApplicationRecord
             service_url: self.file_spa.blob.service_url,
         }
     }
-    self.track_log_details.create!(user_id: user_id, content: content, linkable_id: self.id, linkable_type: 'TrackLog', history: history)
+    self.track_log_details.create!(user_id: user_id, content: content, linkable_id: self.id, linkable_type: 'TrackLog', history: history, detail_type: TrackLogDetail.detail_type_spa_value)
   end
 end
