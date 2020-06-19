@@ -67,7 +67,7 @@ class TrackLog < ApplicationRecord
     end
     self.update(status: params[:status])
     if params[:need_content]
-      content = "状态变更：#{self.status_desc} → #{TrackLog.status_desc_for_value(params[:status.to_i])}"
+      content = "状态变更：#{self.status_desc} → #{TrackLog.status_desc_for_value(params[:status])}"
       self.track_log_details.create(content: content, user_id: params[:user_id], detail_type: TrackLogDetail.detail_type_base_value)
     end
   end
