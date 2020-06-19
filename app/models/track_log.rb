@@ -55,10 +55,8 @@ class TrackLog < ApplicationRecord
       [:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency].each{|ins| raise '融资结算信息不全' unless params[ins].present?}
       raise '未传SPA不能进行状态变更' unless (params[:file_spa] || self.file_spa).present?
       if params[:file_spa].present? && params[:file_spa][:blob_id].present?
-        TrackLog.transaction do
           self.update(status: TrackLog.status_spa_sha_value)
           self.funding.change_spas(User.current.id, {spas: [params.slice(:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency, :file_spa).merge(action: 'update', id: self.id)]})
-        end
         params[:need_content] = false
       end
     when TrackLog.status_meeting_value
