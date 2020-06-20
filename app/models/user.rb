@@ -94,12 +94,12 @@ class User < ApplicationRecord
       User.transaction do
         if !verification.nil?
           if verification.verifi["change"][1] == @user_title.name
-            verification.update(status: true)
+            verification.update!(status: true)
           else
-            verification.update(status: false)
+            verification.update!(status: false)
           end
         end
-        self.update(params)
+        self.update!(params)
       end
     else
       user_title_before = User.current.user_title.name unless User.current.user_title.nil?

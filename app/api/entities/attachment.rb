@@ -9,5 +9,6 @@ module Entities
           name: organization&:name
       }
     end
+    expose :blob, using: Entities::BlobFile
   end
 end
