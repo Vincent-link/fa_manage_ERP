@@ -3,13 +3,44 @@ class BscApi < Grape::API
     resource configuration[:owner] do
       desc '所有bsc'
       params do
-        optional :name, type: String, desc: "项目名称"
-        optional :bsc_status, type: String, desc: "bsc状态"
-        optional :time, type: String, desc: "过会时间"
-        optional :name, type: String, desc: "项目名称"
+        optional :query, type: String, desc: "搜索名称"
+        optional :bsc_status, type: Array[String], desc: "bsc状态"
+        optional :agree_time_from, type: Date, desc: "开始日期"
+        optional :agree_time_to, type: Date, desc: "结束日期"
+        optional :conference_team_ids, type: Array[String], desc: "上会团队"
       end
       get "bscs" do
+        bscs = Funding.select(:id, :name, :bsc_status, :conference_team_ids, :agree_time)
+        bscs = bscs.where(bsc_status: params[:bsc_status]) if params[:bsc_status].present?
+        bscs = bscs.where("agree_time > ?", params[:agree_time_from]) if params[:agree_time_from].present?
+        bscs = bscs.where("agree_time < ?", params[:agree_time_to]) if params[:agree_time_to].present?
 
+        bscs = bscs.where('name like ?', "%#{params[:query]}%") if params[:query].present?
+        bscs = bscs.select{|e| params[:conference_team_ids] & e.conference_team_ids unless e.conference_team_ids.nil?} if params[:conference_team_ids].present?
+
+        present bscs, with: Entities::BscForIndex
+      end
+
+      desc "导出数据"
+      params do
+        optional :part, type: String, desc: "导出类型", values: ["投票数据", "过会数据"]
+      end
+      post "bscs/export" do
+        case params[:part]
+        when "投票数据"
+          book = Spreadsheet::Workbook.new
+          sheet1 = book.create_worksheet
+          sheet1.row(0).concat %w{Name Time}
+          row = 0
+          Funding.all do |funding|
+            binding.pry
+            row +=1
+            sheet1[row,1] = funding.name
+            sheet1[row,2] = funding.created_at
+          end
+          book.write "public/export/#{Time.now}.xls"
+        when "过会数据"
+        end
       end
 
       resource ':id' do
@@ -44,7 +75,7 @@ class BscApi < Grape::API
         post "bsc/start_bsc_evaluate" do
           # 保存投委会和上会团队
           @funding.investment_committee_ids = params[:investment_committee_ids]
-          @funding.update(conference_team_ids: params[:conference_team_ids], bsc_status: Funding.bsc_status_config[:evaluatting][:value])
+          @funding.update!(conference_team_ids: params[:conference_team_ids], bsc_status: Funding.bsc_status_config[:evaluatting][:value])
           # 开启BSC投票后，相关投委成员会收到该项目的评分审核
           desc = Verification.verification_type_config[:bsc_evaluate][:desc].call(@funding.name)
           # 保持每个投委会成员对应的bsc评分项目只有一条bsc评分审核

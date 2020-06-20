@@ -1,5 +1,5 @@
 class User < ApplicationRecord
-  scope :user_title_id, -> { where(user_title_id: 2) }
+  scope :user_title_id, -> {where(user_title_id: 2)}
 
   include RoleExtend
   attr_accessor :proxier_id
@@ -9,10 +9,11 @@ class User < ApplicationRecord
   has_many :investor_groups
   has_many :follows
   has_many :user_roles, dependent: :destroy
+  has_many :roles, through: :user_roles
   has_many :evaluations, dependent: :destroy
   has_many :answers, dependent: :destroy
   has_many :notifications, dependent: :destroy
-  has_many :verifications, dependent: :destroy
+  has_many :verifications, dependent: :destroy, as: :verifyable
   has_many :questions, dependent: :destroy
   belongs_to :user_title, optional: true
   has_many :calendar_members, as: :memberable
@@ -21,11 +22,17 @@ class User < ApplicationRecord
   belongs_to :leader, class_name: 'User', optional: true
   has_many :sub_users, class_name: 'User', foreign_key: :leader_id
   has_many :sub_user_calendars, through: :sub_users, source: :calendars
+  has_many :group_calendars, through: :group_users, source: :calendars
+  has_many :group_users, -> {where(id: CacheBox.get_group_user_ids(self.id))}, class_name: 'User'
 
   belongs_to :team, optional: true
   belongs_to :grade, optional: true
   delegate :name, to: :team, :prefix => true, allow_nil: true
   delegate :name, to: :grade, :prefix => true, allow_nil: true
+
+  def position
+    ''
+  end
 
   def self.find_or_create_user(auth_user_hash)
     auth_user_hash = Hashie::Mash.new auth_user_hash
@@ -61,16 +68,16 @@ class User < ApplicationRecord
     end
   end
 
+  # def group_users
+  #   User.where(id: CacheBox.get_group_user_ids(self.id))
+  # end
+
   def add_role_by_id id
     self.user_roles.find_or_create_by :role_id => id
   end
 
   def delete_role_by_id id
     self.user_roles.find_by(role_id: id).destroy
-  end
-
-  def role
-    Role.joins(:user_roles).where(user_roles: {user_id: self.id, deleted_at: nil})
   end
 
   def is_admin?
@@ -85,14 +92,14 @@ class User < ApplicationRecord
 
     if User.current.is_admin?
       User.transaction do
-         if !verification.nil?
+        if !verification.nil?
           if verification.verifi["change"][1] == @user_title.name
-            verification.update(status: true)
+            verification.update!(status: true)
           else
-            verification.update(status: false)
+            verification.update!(status: false)
           end
         end
-        self.update(params)
+        self.update!(params)
       end
     else
       user_title_before = User.current.user_title.name unless User.current.user_title.nil?
@@ -108,13 +115,7 @@ class User < ApplicationRecord
 
   def is_one_vote_veto?
     roles = Role.includes(:role_resources).where(role_resources: {name: 'admin_one_vote_veto'})
-    user_roles = UserRole.select { |e| roles.pluck(:id).include?(e.role_id) }
-    true if user_roles.pluck(:user_id).include?(self.id)
-  end
-
-  def can_read_verification?
-    roles = Role.includes(:role_resources).where(role_resources: {name: 'admin_read_verification'})
-    user_roles = UserRole.select { |e| roles.pluck(:id).include?(e.role_id) }
+    user_roles = UserRole.select {|e| roles.pluck(:id).include?(e.role_id)}
     true if user_roles.pluck(:user_id).include?(self.id)
   end
 end

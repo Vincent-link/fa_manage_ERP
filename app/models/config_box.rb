@@ -3,6 +3,7 @@ class ConfigBox
 
   state_config :upload_type, config: {
       organization_logo: { value: 'organization_logo', desc: "机构logo"  , is_static: true},
-      member_logo:       { value: 'member_logo',       desc: "投资人logo", is_static: true}
+      member_logo:       { value: 'member_logo',       desc: "投资人logo", is_static: true},
+      company_logo:      { value: 'company_logo',      desc: "公司logo",   is_static: true}
   }
 end

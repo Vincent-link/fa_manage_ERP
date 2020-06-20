@@ -5,7 +5,7 @@ class Organization < ApplicationRecord
 
   include StateConfig
 
-  acts_as_taggable_on :organization_tags
+  acts_as_taggable_on :tags
   acts_as_taggable_on :sectors
 
   has_one_attached :logo
@@ -165,6 +165,10 @@ class Organization < ApplicationRecord
         end
       end
     end
+  end
+
+  def tag_desc
+    self.tags.map(&:name)
   end
 
   def dm_organization

@@ -1,5 +1,6 @@
 class Verification < ApplicationRecord
   belongs_to :user
+  belongs_to :verifyable, polymorphic: :true
 
   include StateConfig
 
@@ -30,5 +31,8 @@ class Verification < ApplicationRecord
           evaluation = Evaluation.find_by(user_id: User.current.id, funding_id: params[:funding_id])
           Question.create!(params.merge(evaluation_id: evaluation.id, user_id: User.current.id)) unless evaluation.nil?
       }},
+      email: {
+        value: "email"
+      },
   }
 end

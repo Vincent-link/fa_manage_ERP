@@ -3,6 +3,7 @@ module Entities
     expose :id
     expose :memberable_id
     expose :memberable_name
+    expose :memberable_type
     expose :memberable_position
   end
 end

@@ -70,15 +70,20 @@ class UserApi < Grape::API
         present selected_roles, with: Entities::Role
       end
 
-      desc '更新用户权限组', entity: Entities::UserRole
+      desc '已选权限点', entity: Entities::Resource
+      get :resources do
+        user_roles = @user.user_roles
+        resources = Resource.resources.select{|e| RoleResource.where(role_id: user_roles.pluck(:role_id)).pluck(:name).include?(e.name)}
+        present resources, with: Entities::Resource
+      end
+
+      desc '更新用户权限组'
       params do
         optional 'ids', type: Array[String], desc: "权限组"
       end
       patch :roles do
         @roles = Role.all.select { |e| params[:ids].include?(e.id.to_s) } unless params[:ids].nil?
         @user.role_ids = @roles.map(&:id) unless @roles.nil?
-
-        present @role.user_roles, with: Entities::UserRole
       end
 
       desc '增加一个权限组', entity: Entities::Role

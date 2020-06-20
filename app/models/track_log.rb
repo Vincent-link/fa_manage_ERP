@@ -24,7 +24,7 @@ class TrackLog < ApplicationRecord
       drop:        {value: 6, desc: "Drop",        level: 1}
   }
 
-  def search(params)
+  def self.search(params)
     track_logs = self.all
 
     if params[:status].present?
@@ -107,7 +107,7 @@ class TrackLog < ApplicationRecord
         started_at: calendar.started_at,
         ended_at: calendar.ended_at,
         address_id: calendar.address_id,
-        address_desc: calendar.address.address_desc,
+        address_desc: calendar.address&.address_desc,
         status: calendar.status,
         status_desc: calendar.status_desc,
         id: calendar.id,

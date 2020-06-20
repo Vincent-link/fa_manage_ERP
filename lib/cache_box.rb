@@ -7,7 +7,7 @@ class CacheBox
 
   def self.dm_single_sector_tree
     Rails.cache.fetch('dm_single_sector_tree') do
-      Zombie::DmSector.root_sectors.as_json.map{|ins| [ins['id'], ins['name']]}.to_h
+      Zombie::DmSector.root_sectors.as_json.map {|ins| [ins['id'], ins['name']]}.to_h
     end
   end
 
@@ -22,7 +22,7 @@ class CacheBox
 
   def self.dm_single_rounds
     Rails.cache.fetch('dm_single_rounds') do
-      Zombie::DmInvestRound.all.map{|ins| [ins.id, ins.name]}.to_h
+      Zombie::DmInvestRound.all.map {|ins| [ins.id, ins.name]}.to_h
     end
   end
 
@@ -47,6 +47,14 @@ class CacheBox
   def self.dm_position_ranks
     Rails.cache.fetch('dm_position_ranks') do
       Zombie::DmPositionRank.all.select(:id, :name, :en_name).as_json
+    end
+  end
+
+  def self.get_group_user_ids(id)
+    return [] if id.blank?
+    Rails.cache.fetch("cb_get_group_user_ids_#{id}") do
+      ids = User.where(leader_id: id).pluck(:id)
+      [id] | ids.map {|i| CacheBox.get_group_user_ids(i)}.flatten
     end
   end
 end

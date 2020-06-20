@@ -11,8 +11,12 @@ class CalendarApi < Grape::API
     end
     get do
       user = params[:user_id] ? current_user.sub_users.find(params[:user_id]) : current_user
-      cal = user.calendars
-      #todo group_user
+      cal = case params[:range]
+            when 'person'
+              user.calendars
+            when 'group'
+              Calendar.includes(:calendar_members).where(calendar_members: {memberable_type: 'User', memberable_id: CacheBox.get_group_user_ids(user.id)})
+            end
       cal = cal.where(status: params[:status]) if params[:status]
       cal = cal.where(meeting_category: params[:meeting_category]) if params[:meeting_category]
       cal = cal.where(started_at: params[:start_date]..params[:end_date])
@@ -27,7 +31,7 @@ class CalendarApi < Grape::API
       optional :company_id, type: Integer, desc: '约见公司id'
       optional :funding_id, type: Integer, desc: '项目id'
       optional :organization_id, type: Integer, desc: '约见机构id'
-      optional :company_contact_ids, type: Array[Integer], desc: '公司联系人id'
+      optional :contact_ids, type: Array[Integer], desc: '公司联系人id'
       optional :member_ids, type: Array[Integer], desc: '投资人id'
       requires :cr_user_ids, type: Array[Integer], desc: '华兴参与人id'
       requires :started_at, type: DateTime, desc: '开始时间'
@@ -48,7 +52,7 @@ class CalendarApi < Grape::API
         optional :company_id, type: Integer, desc: '约见公司id'
         optional :funding_id, type: Integer, desc: '项目id'
         optional :organization_id, type: Integer, desc: '约见机构id'
-        optional :company_contact_ids, type: Array[Integer], desc: '公司联系人id'
+        optional :contact_ids, type: Array[Integer], desc: '公司联系人id'
         optional :member_ids, type: Array[Integer], desc: '投资人id'
         requires :cr_user_ids, type: Array[Integer], desc: '华兴参与人id'
         requires :started_at, type: DateTime, desc: '开始时间'

@@ -36,7 +36,7 @@ module Entities
       ins.file_ts.present?
     end
     expose :has_calender, documentation: {type: 'boolean', desc: '是否有会议'} do |ins|
-      ins.calenders.present?
+      ins.calendars.present?
     end
   end
 end

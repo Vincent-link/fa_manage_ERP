@@ -44,6 +44,7 @@ class MemberApi < Grape::API
         optional :currency_ids, type: Array[Integer], desc: '可投币种'
         optional :scale_ids, type: Array[Integer], desc: '投资规模'
         optional :team_ids, type: Array[Integer], desc: '团队'
+        optional :followed_location_ids, type: Array[Integer], desc: '关注地区id'
         optional :covered_by, type: Array[Integer], desc: '对接成员'
         optional :is_head, type: Boolean, desc: '是否高层'
         optional :is_ic, type: Boolean, desc: '是否投委会'
@@ -142,7 +143,7 @@ class MemberApi < Grape::API
           optional :blob_id, type: Integer, desc: 'blob_id 新文件id'
         end
         optional :tel, type: String, desc: '手机号'
-        optional :organization_id, type: String, desc: '机构id'
+        optional :organization_id, type: Integer, desc: '机构id'
         optional :sponsor_id, type: Integer, desc: '来源'
         optional :position_rank_id, type: Integer, desc: '职级'
         optional :position, type: String, desc: '实际职位'
@@ -153,6 +154,7 @@ class MemberApi < Grape::API
         optional :currency_ids, type: Array[Integer], desc: '可投币种'
         optional :scale_ids, type: Array[Integer], desc: '投资规模'
         optional :team_ids, type: Array[Integer], desc: '团队'
+        optional :followed_location_ids, type: Array[Integer], desc: '关注地区id'
         optional :covered_by, type: Array[Integer], desc: '对接成员'
         optional :is_head, type: Boolean, desc: '是否高层'
         optional :is_ic, type: Boolean, desc: '是否投委会'
@@ -190,8 +192,16 @@ class MemberApi < Grape::API
       end
       patch :dismiss do
         member = Member.find(params[:id])
-        member.update declared(params)
+        member.update declared(params, include_missing: false)
         present member, with: Entities::MemberForShow
+      end
+
+      desc '关联融资事件'
+      params do
+        requires :event_id, type: Integer, desc: '关联事件ID'
+      end
+      patch :relate_event do
+        Zombie::DmInvestevent._by_id(params[:event_id]).add_members(params[:id], true)
       end
     end
   end

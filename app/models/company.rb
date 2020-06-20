@@ -1,4 +1,6 @@
 class Company < ApplicationRecord
+  include BlobFileSupport
+
   has_many :calendars
   has_many :contacts, dependent: :destroy
   has_many :fundings
@@ -7,6 +9,7 @@ class Company < ApplicationRecord
   acts_as_taggable_on :sectors
 
   has_one_attached :logo
+  has_blob_upload :logo
 
   searchkick language: "chinese"
   scope :search_import, -> {includes(:calendars)}

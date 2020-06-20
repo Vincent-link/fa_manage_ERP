@@ -17,7 +17,10 @@ class CompanyApi < Grape::API
     desc '创建公司'
     params do
       requires :name, type: String, desc: '公司名称'
-      optional :logo, type: File, desc: 'logo'
+      optional :logo, type: Hash, desc: '头像' do
+        optional :id, type: Integer, desc: 'file_id 已有文件id'
+        optional :blob_id, type: Integer, desc: 'blob_id 新文件id'
+      end
       optional :website, type: String, desc: '网址'
       requires :one_sentence_intro, type: String, desc: '一句话简介'
       optional :detailed_intro, type: String, desc: '公司详细介绍'
@@ -36,18 +39,21 @@ class CompanyApi < Grape::API
       end
     end
     post do
-      params[:logo] = ActionDispatch::Http::UploadedFile.new(params[:logo]) if params[:logo]
-
       Company.transaction do
-        contacts_params = params.delete(:contacts)
         tags_params = params.delete(:tag_ids)
         sectors_params = params.delete(:sector_ids)
+        logo = params.delete(:logo)
+        contacts_params = params.delete(:contacts)
 
         @company = Company.create!(params)
         @company.company_tag_ids = tags_params
         @company.sector_ids = sectors_params
 
-        contacts_params.map { |e| Contact.create(e.merge(company_id: @company.id)) }
+        if logo.present?
+          ActiveStorage::Attachment.create!(name: 'logo', record_type: 'Company', record_id: @company.id, blob_id: logo[:blob_id])
+        end
+
+        contacts_params.map { |e| Contact.create!(e.merge(company_id: @company.id)) }
       end
       true
     end
@@ -65,7 +71,10 @@ class CompanyApi < Grape::API
       desc '编辑公司信息'
       params do
         optional :name, type: String, desc: '公司名称'
-        optional :logo, type: File, desc: 'logo'
+        optional :logo, type: Hash, desc: '头像' do
+          optional :id, type: Integer, desc: 'file_id 已有文件id'
+          optional :blob_id, type: Integer, desc: 'blob_id 新文件id'
+        end
         optional :website, type: String, desc: '网址'
         optional :sector_ids, type: Array[Integer], desc: '所属行业'
         optional :one_sentence_intro, type: String, desc: '一句话简介'
@@ -78,8 +87,6 @@ class CompanyApi < Grape::API
         requires :part, type: String, desc: '更新区域', values: ['basic', 'head']
       end
       patch do
-        params[:logo] = ActionDispatch::Http::UploadedFile.new(params[:logo]) if params[:logo]
-
         part = params.delete(:part)
         case part
         when 'head'
@@ -90,10 +97,17 @@ class CompanyApi < Grape::API
         when 'basic'
         end
 
-        @company.company_tag_ids = params[:company_tag_ids]
-        @company.sector_ids = params[:sector_ids]
-        params.delete(:company_tag_ids)
-        params.delete(:sector_ids)
+        @company.company_tag_ids = params.delete(:company_tag_ids)
+        @company.sector_ids = params.delete(:sector_ids)
+
+        logo = params.delete(:logo)
+        if logo.present?
+          if @company.logo_attachment.present?
+            @company.logo_attachment.update(blob_id: logo[:blob_id])
+          else
+            ActiveStorage::Attachment.create!(name: 'logo', record_type: 'Company', record_id: params[:id], blob_id: logo[:blob_id])
+          end
+        end
 
         true if @company.update!(declared(params, include_missing: false))
       end
@@ -103,7 +117,7 @@ class CompanyApi < Grape::API
         requires :name, type: String, desc: '名称'
       end
       post :registered_company_search do
-        registered_companies = Zombie::DmRegisteredCompany.where("name like ?", params[:name])._select(:name, :info_url).inspect
+        registered_companies = Zombie::DmRegisteredCompany.where("name like ?", "%#{params[:name]}%")._select(:name, :info_url).inspect
         present registered_companies, with: Entities::RegisteredCompany
       end
 
@@ -121,7 +135,7 @@ class CompanyApi < Grape::API
         requires :is_ka, type: Boolean, desc: '是否ka'
       end
       patch :ka do
-        @company.update(is_ka: params[:is_ka])
+        @company.update!(is_ka: params[:is_ka])
       end
 
       desc '竞争公司'
