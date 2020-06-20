@@ -229,7 +229,7 @@ class Funding < ApplicationRecord
   end
 
   has_many :funding_users
-  has_many :funding_members, through: :funding_users, source: :user 
+  has_many :funding_members, through: :funding_users, source: :user
 
   has_many :evaluations
   has_many :questions
@@ -263,11 +263,11 @@ class Funding < ApplicationRecord
       if !evaluations.empty?
         # 项目自动 pass，并给项目成员及管理员发送通知；
         Funding.transaction do
-          self.update(status: Funding.status_pass_value, bsc_status: Funding.bsc_status_config[:evaluatting][:value])
+          self.update!(status: Funding.status_pass_value, bsc_status: Funding.bsc_status_config[:evaluatting][:value])
           content = Notification.project_type_config[:passed][:desc].call(self.company.name)
           funding_users = self.funding_users.map {|e| User.find(e.user_id)}
 
-          (managers + funding_users).uniq.map {|e| Notification.create(notification_type: "project", content: content, user_id: e.id, is_read: false)}
+          (managers + funding_users).uniq.map {|e| Notification.create!(notification_type: "project", content: content, user_id: e.id, is_read: false)}
         end
       else
         result = self.evaluations.where(is_agree: 'yes').count - self.evaluations.where(is_agree: 'no').count
@@ -275,30 +275,30 @@ class Funding < ApplicationRecord
         when 0
           # 给项目成员发通知
           content = Notification.project_type_config[:waitting][:desc].call(self.company.name)
-          self.funding_users.map {|e| Notification.create(notification_type: "project", content: content, user_id: e.user_id, is_read: false)}
+          self.funding_users.map {|e| Notification.create!(notification_type: "project", content: content, user_id: e.user_id, is_read: false)}
 
           roles = Role.includes(:role_resources).where(role_resources: {name: 'admin_read_verification'})
           can_verify_users = UserRole.select {|e| roles.pluck(:id).include?(e.role_id)}
           # 给管理员发审核
           desc = Verification.verification_type_config[:bsc_evaluate][:desc].call(self.company.name)
-          can_verify_users.pluck(:user_id).map {|e| Verification.create(verification_type: "bsc_evaluate", desc: desc, user_id: e.user_id, verifi: {funding_id: self.id})} unless can_verify_users.empty?
+          can_verify_users.pluck(:user_id).map {|e| Verification.create!(verification_type: "bsc_evaluate", desc: desc, user_id: e.user_id, verifi: {funding_id: self.id})} unless can_verify_users.empty?
         when -Float::INFINITY...0
           # 项目自动 pass，并给项目成员及管理员发送通知；
           Funding.transaction do
-            self.update(status: Funding.status_pass_value, bsc_status: Funding.bsc_status_config[:evaluatting][:value])
+            self.update!(status: Funding.status_pass_value, bsc_status: Funding.bsc_status_config[:evaluatting][:value])
             content = Notification.project_type_config[:passed][:desc].call(self.company.name)
             funding_users = self.funding_users.map {|e| User.find(e.user_id)}
 
-            (managers + funding_users).uniq.map {|e| Notification.create(notification_type: "project", content: content, user_id: e.id, is_read: false)}
+            (managers + funding_users).uniq.map {|e| Notification.create!(notification_type: "project", content: content, user_id: e.id, is_read: false)}
           end
         when 0..Float::INFINITY
           # 项目自动推进到Pursue，并给项目成员及管理员发送通知；
           Funding.transaction do
-            self.update(status: Funding.status_pursue_value, bsc_status: Funding.bsc_status_config[:evaluatting][:value])
+            self.update!(status: Funding.status_pursue_value, bsc_status: Funding.bsc_status_config[:evaluatting][:value])
             content = Notification.project_type_config[:pursued][:desc].call(self.company.name)
             funding_users = self.funding_users.map {|e| User.find(e.user_id)}
 
-            (managers + funding_users).uniq.map {|e| Notification.create(notification_type: "project", content: content, user_id: e.id, is_read: false)}
+            (managers + funding_users).uniq.map {|e| Notification.create!(notification_type: "project", content: content, user_id: e.id, is_read: false)}
           end
         end
       end

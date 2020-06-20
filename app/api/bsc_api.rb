@@ -1,6 +1,17 @@
 class BscApi < Grape::API
   mounted do
     resource configuration[:owner] do
+      desc '所有bsc'
+      params do
+        optional :name, type: String, desc: "项目名称"
+        optional :bsc_status, type: String, desc: "bsc状态"
+        optional :time, type: String, desc: "过会时间"
+        optional :name, type: String, desc: "项目名称"
+      end
+      get "bscs" do
+
+      end
+
       resource ':id' do
         before do
           @funding = Funding.find(params[:id])
@@ -106,7 +117,7 @@ class BscApi < Grape::API
           @verifications = Verification.where(user_id: User.current, verification_type: Verification.verification_type_config[:bsc_evaluate][:value]).where("verifi->>'funding_id' = '#{params[:id]}'")
           Verification.transaction do
             evaluation = Verification.verification_type_config[:bsc_evaluate][:op].call(declared(params).merge(funding_id: params[:id]))
-            @verifications.first.update(status: true) unless @verifications.empty?
+            @verifications.first.update!(status: true) unless @verifications.empty?
           end
 
           @funding.is_pass_for_bsc?

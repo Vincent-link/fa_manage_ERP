@@ -10,7 +10,9 @@ class Verification < ApplicationRecord
         op: -> (verification){
           user_title = UserTitle.find_by(name: verification.verifi["change"][1])
           User.find(verification.sponsor).update(user_title_id: user_title.id)
-      }},
+        },
+        resource: "admin_read_title_update_verification"
+      },
       bsc_evaluate: {
         value: "bsc_evaluate",
         desc: -> (funding){"【#{funding}】已启动BSC评分"},

@@ -32,7 +32,7 @@ class VerificationApi < Grape::API
         Verification.verification_type_config[:appointment_apply][:value]
       ]
       # 如果有查看权限，判断该管理员是否是某些项目的投委会成员
-      if User.current.can_read_verification?
+      if can? :verify, "title_update"
         # 如果管理员不在某些项目的投委会
         if User.current.evaluations.empty?
           verified_verifications = Verification.where(status: params[:status], verification_type: verification_type)

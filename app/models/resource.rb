@@ -15,8 +15,11 @@ class Resource
       can :update_ka, Company
       can :update_ka, 'system_config'
     end
-    resource 'read_verification', '查看审核' do
-      can :read, Verification
+    resource 'verify_title_update', '审核title修改' do
+      can :verify, "title_update"
+    end
+    resource 'verify_bsc_evaluate', '审核bsc评分' do
+      can :verify, "bsc_evaluate"
     end
     resource 'one_vote_veto', '一票否决' do
       can :one_vote, 'veto'
