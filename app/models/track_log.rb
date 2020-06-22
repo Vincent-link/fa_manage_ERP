@@ -55,8 +55,7 @@ class TrackLog < ApplicationRecord
       [:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency].each{|ins| raise '融资结算信息不全' unless params[ins].present?}
       raise '未传SPA不能进行状态变更' unless (params[:file_spa] || self.file_spa).present?
       if params[:file_spa].present? && params[:file_spa][:blob_id].present?
-          self.update(status: TrackLog.status_spa_sha_value)
-          self.funding.change_spas(User.current.id, {spas: [params.slice(:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency, :file_spa).merge(action: 'update', id: self.id)]})
+        self.update_spa_msg(params.slice(:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency, :file_spa))
         params[:need_content] = false
       end
     when TrackLog.status_meeting_value
@@ -166,6 +165,21 @@ class TrackLog < ApplicationRecord
         }
     }
     self.track_log_details.create!(user_id: user_id, content: content, linkable_id: self.id, linkable_type: 'TrackLog', history: history, detail_type: TrackLogDetail.detail_type_ts_value)
+  end
+
+  def update_spa_msg(params)
+    [:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency].each {|ins| raise '融资结算信息不全' unless (params[ins] || ins.try(ins.to_s)).present?}
+    self.update!(params.slice(:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency))
+    if self.file_spa.present?
+      self.file_spa.attachment.update!(blob_id: params[:file_spa][:blob_id]) if params[:file_spa][:blob_id].present?
+      action = 'update'
+    else
+      ActiveStorage::Attachment.create!(name: 'file_spa', record_type: 'TrackLog', record_id: self.id, blob_id: params[:file_spa][:blob_id])
+      action = 'create'
+    end
+    user_id = User.current.id
+    self.gen_spa_detail(user_id, action)
+    self.update(status: TrackLog.status_spa_sha_value)
   end
 
   def change_spa(user_id, blob_id)
