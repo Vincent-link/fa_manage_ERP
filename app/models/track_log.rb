@@ -47,8 +47,8 @@ class TrackLog < ApplicationRecord
     case params[:status].to_i
     when TrackLog.status_issue_ts_value
       raise '未传TS不能进行状态变更' unless (params[:file_ts] || self.file_ts).present?
-      if params[:file_spa].present? && params[:file_spa][:blob_id].present?
-        self.change_ts(current_user.id, params[:file_spa][:blob_id])
+      if params[:file_ts].present? && params[:file_ts][:blob_id].present?
+        self.change_ts(current_user.id, params[:file_ts][:blob_id])
         params[:need_content] = false
       end
     when TrackLog.status_spa_sha_value
