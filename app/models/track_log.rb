@@ -63,11 +63,12 @@ class TrackLog < ApplicationRecord
         User.current.created_calendars.create!(params[:calendar].slice(:started_at, :ended_at, :address_id, :meeting_type).merge(meeting_category: Calendar.meeting_category_roadshow_value, track_log_id: tracklog.id))
         params[:need_content] = false
       end
-      raise '未创建会议不能进行状态变更' unless self.calendars.present?
+      # raise '未创建会议不能进行状态变更' unless self.calendars.present?
     end
+    before_status = self.status_desc
     self.update(status: params[:status])
     if params[:need_content]
-      content = "状态变更：#{self.status_desc} → #{TrackLog.status_desc_for_value(params[:status])}"
+      content = "状态变更：#{before_status} → #{TrackLog.status_desc_for_value(params[:status])}"
       self.track_log_details.create(content: content, user_id: params[:user_id], detail_type: TrackLogDetail.detail_type_base_value)
     end
   end
@@ -179,7 +180,6 @@ class TrackLog < ApplicationRecord
     end
     user_id = User.current.id
     self.gen_spa_detail(user_id, action)
-    self.update(status: TrackLog.status_spa_sha_value)
   end
 
   def change_spa(user_id, blob_id)
