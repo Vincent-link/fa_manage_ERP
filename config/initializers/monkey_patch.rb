@@ -140,3 +140,7 @@ ActsAsTaggableOn::TagList.class_eval do
     # add(*args)
   end
 end
+
+# ActiveStorage::Blob.class_eval do
+#
+# end

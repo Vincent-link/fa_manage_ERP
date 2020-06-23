@@ -13,7 +13,6 @@ class TrackLogDetailApi < Grape::API
         end
 
         post do
-          params = declared(params)
           if params[:calendar_id].present?
             @track_log.calendars.find params[:calendar_id]
             params[:linkable_id] = params[:calendar_id]

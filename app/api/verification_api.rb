@@ -21,26 +21,19 @@ class VerificationApi < Grape::API
       optional :page_size, as: :per_page, type: Integer, desc: '页数', default: 10
     end
     get :verified do
+      # nil 表示未审核，true和false表示已审核
       params[:status] ||= nil
-      super_verification_type = [
-        Verification.verification_type_config[:title_update][:value],
-        Verification.verification_type_config[:ka_apply][:value],
-        Verification.verification_type_config[:appointment_apply][:value]
-      ]
-      general_verification_type = [
-        Verification.verification_type_config[:bsc_evaluate][:value],
-        Verification.verification_type_config[:email][:value],
-      ]
       # 是否有权限审核权限
       if can? :verify, Verification
         # 权限审核&&普通审核
-        verifications = Verification.where(status: params[:status], verification_type: super_verification_type)
-        .or(User.current.verifications.where(status: params[:status], verification_type: general_verification_type)).paginate(page: params[:page], per_page: params[:per_page])
+        verifications = Verification.where(status: params[:status], verifi_type: Verification.verifi_type_resource_value)
+        .or(Verification.where(user_id: User.current.id, status: params[:status], verifi_type: Verification.verifi_type_user_value)).paginate(page: params[:page], per_page: params[:per_page])
 
         present verifications, with: Entities::Verification
       else
+        binding.pry
         # 如果没有权限审核权限，查出普通审核（bsc、邮件）
-        verifications = User.current.verifications.where(status: params[:status], verification_type: general_verification_type).paginate(page: params[:page], per_page: params[:per_page])
+        verifications = Verification.where(user_id: User.current.id, status: params[:status], verifi_type: Verification.verifi_type_user_value).paginate(page: params[:page], per_page: params[:per_page])
         present verifications, with: Entities::Verification
       end
 

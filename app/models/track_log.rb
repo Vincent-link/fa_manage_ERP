@@ -47,15 +47,15 @@ class TrackLog < ApplicationRecord
     case params[:status].to_i
     when TrackLog.status_issue_ts_value
       raise '未传TS不能进行状态变更' unless (params[:file_ts] || self.file_ts).present?
-      if params[:file_spa].present? && params[:file_spa][:blob_id].present?
-        self.change_ts(current_user.id, params[:file_spa][:blob_id])
+      if params[:file_ts].present? && params[:file_ts][:blob_id].present?
+        self.change_ts(current_user.id, params[:file_ts][:blob_id])
         params[:need_content] = false
       end
     when TrackLog.status_spa_sha_value
       [:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency].each{|ins| raise '融资结算信息不全' unless params[ins].present?}
       raise '未传SPA不能进行状态变更' unless (params[:file_spa] || self.file_spa).present?
       if params[:file_spa].present? && params[:file_spa][:blob_id].present?
-        self.funding.change_spas(User.current.id, {spas: [params.slice(:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency, :file_spa).merge(action: 'update', id: self.id)]})
+        self.update_spa_msg(params.slice(:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency, :file_spa))
         params[:need_content] = false
       end
     when TrackLog.status_meeting_value
@@ -63,11 +63,12 @@ class TrackLog < ApplicationRecord
         User.current.created_calendars.create!(params[:calendar].slice(:started_at, :ended_at, :address_id, :meeting_type).merge(meeting_category: Calendar.meeting_category_roadshow_value, track_log_id: tracklog.id))
         params[:need_content] = false
       end
-      raise '未创建会议不能进行状态变更' unless self.calendars.present?
+      # raise '未创建会议不能进行状态变更' unless self.calendars.present?
     end
+    before_status = self.status_desc
     self.update(status: params[:status])
     if params[:need_content]
-      content = "状态变更：#{self.status_desc} → #{TrackLog.status_desc_for_value(params[:status.to_i])}"
+      content = "状态变更：#{before_status} → #{TrackLog.status_desc_for_value(params[:status])}"
       self.track_log_details.create(content: content, user_id: params[:user_id], detail_type: TrackLogDetail.detail_type_base_value)
     end
   end
@@ -112,7 +113,7 @@ class TrackLog < ApplicationRecord
         status_desc: calendar.status_desc,
         id: calendar.id,
     }
-    self.track_log_details.create!(user_id: user_id, content: content, linkable_id: calendar_id, linkable_type: 'Calendar', history: history)
+    self.track_log_details.create!(user_id: user_id, content: content, linkable_id: calendar_id, linkable_type: 'Calendar', history: history, detail_type: TrackLogDetail.detail_type_calendar_value)
   end
 
   def gen_spa_detail(user_id, action)
@@ -144,7 +145,7 @@ class TrackLog < ApplicationRecord
             service_url: self.file_spa.blob.service_url,
         }
     }
-    self.track_log_details.create!(user_id: user_id, content: content, linkable_id: self.id, linkable_type: 'TrackLog', history: history)
+    self.track_log_details.create!(user_id: user_id, content: content, linkable_id: self.id, linkable_type: 'TrackLog', history: history, detail_type: TrackLogDetail.detail_type_spa_value)
   end
 
   def gen_ts_detail(user_id, action)
@@ -164,7 +165,21 @@ class TrackLog < ApplicationRecord
             service_url: self.file_ts.blob.service_url,
         }
     }
-    self.track_log_details.create!(user_id: user_id, content: content, linkable_id: self.id, linkable_type: 'TrackLog', history: history)
+    self.track_log_details.create!(user_id: user_id, content: content, linkable_id: self.id, linkable_type: 'TrackLog', history: history, detail_type: TrackLogDetail.detail_type_ts_value)
+  end
+
+  def update_spa_msg(params)
+    [:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency].each {|ins| raise '融资结算信息不全' unless (params[ins] || ins.try(ins.to_s)).present?}
+    self.update!(params.slice(:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency))
+    if self.file_spa.present?
+      self.file_spa.attachment.update!(blob_id: params[:file_spa][:blob_id]) if params[:file_spa][:blob_id].present?
+      action = 'update'
+    else
+      ActiveStorage::Attachment.create!(name: 'file_spa', record_type: 'TrackLog', record_id: self.id, blob_id: params[:file_spa][:blob_id])
+      action = 'create'
+    end
+    user_id = User.current.id
+    self.gen_spa_detail(user_id, action)
   end
 
   def change_spa(user_id, blob_id)
@@ -205,6 +220,6 @@ class TrackLog < ApplicationRecord
             service_url: self.file_spa.blob.service_url,
         }
     }
-    self.track_log_details.create!(user_id: user_id, content: content, linkable_id: self.id, linkable_type: 'TrackLog', history: history)
+    self.track_log_details.create!(user_id: user_id, content: content, linkable_id: self.id, linkable_type: 'TrackLog', history: history, detail_type: TrackLogDetail.detail_type_spa_value)
   end
 end

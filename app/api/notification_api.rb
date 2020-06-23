@@ -2,16 +2,16 @@ class NotificationApi < Grape::API
   resource :notifications do
     desc '通知', entity: Entities::Notification
     params do
-      optional :notification_type, type: String, desc: '类型', values: ["ir_review", "project", "investor"]
+      optional :notification_type, type: Integer, desc: '类型', values: [1, 2, 3]
       optional :is_read, type: Boolean, desc: '是否已读'
       optional :page, type: Integer, desc: '页数', default: 1
       optional :page_size, as: :per_page, type: Integer, desc: '页数', default: 10
     end
     get do
       params[:notification_type] ||= [
-        Notification.notification_type_config[:ir_review][:desc],
-        Notification.notification_type_config[:project][:desc],
-        Notification.notification_type_config[:investor][:desc]
+        Notification.notification_type_ir_review_value,
+        Notification.notification_type_project_value,
+        Notification.notification_type_investor_value
       ]
       params[:is_read] = [true, false] if params[:is_read].nil?
 

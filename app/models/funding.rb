@@ -254,7 +254,7 @@ class Funding < ApplicationRecord
   end
 
   def is_pass_for_bsc?
-    if self.evaluations.count == self.evaluations.where.not(is_agree: nil).count && self.bsc_status == Funding.bsc_status_config[:evaluatting][:value]
+    if self.evaluations.count == self.evaluations.where.not(is_agree: nil).count && self.bsc_status == Funding.bsc_status_evaluatting_value
       # 找出管理员
       managers = User.select {|e| e.is_admin?}
       # 反对票里面是否存在谁投了一票否决权
@@ -262,42 +262,43 @@ class Funding < ApplicationRecord
       if !evaluations.empty?
         # 项目自动 pass，并给项目成员及管理员发送通知；
         Funding.transaction do
-          self.update!(status: Funding.status_pass_value, bsc_status: Funding.bsc_status_config[:evaluatting][:value])
-          content = Notification.project_type_config[:passed][:desc].call(self.company.name)
+          self.update!(status: Funding.status_pass_value, bsc_status: Funding.bsc_status_evaluatting_value)
+          content = Notification.project_type_passed_desc.call(self.company.name)
           funding_users = self.funding_users.map {|e| User.find(e.user_id)}
 
-          (managers + funding_users).uniq.map {|e| Notification.create!(notification_type: "project", content: content, user_id: e.id, is_read: false)}
+          (managers + funding_users).uniq.map {|e| Notification.create!(notification_type: Notification.notification_type_project_value, content: content, user_id: e.id, is_read: false)}
         end
       else
         result = self.evaluations.where(is_agree: 'yes').count - self.evaluations.where(is_agree: 'no').count
         case result
         when 0
+          self.update!(status: Funding.status_pass_value, bsc_status: Funding.bsc_status_finished_value)
           # 给项目成员发通知
-          content = Notification.project_type_config[:waitting][:desc].call(self.company.name)
-          self.funding_users.map {|e| Notification.create!(notification_type: "project", content: content, user_id: e.user_id, is_read: false)}
-
-          roles = Role.includes(:role_resources).where(role_resources: {name: 'admin_read_verification'})
-          can_verify_users = UserRole.select {|e| roles.pluck(:id).include?(e.role_id)}
+          content = Notification.project_type_waitting_desc.call(self.company.name)
+          self.funding_users.map {|e| Notification.create!(notification_type: Notification.notification_type_project_value, content: content, user_id: e.user_id, is_read: false)}
           # 给管理员发审核
-          desc = Verification.verification_type_config[:bsc_evaluate][:desc].call(self.company.name)
-          can_verify_users.pluck(:user_id).map {|e| Verification.create!(verification_type: "bsc_evaluate", desc: desc, user_id: e.user_id, verifi: {funding_id: self.id})} unless can_verify_users.empty?
+          desc = Verification.verification_type_project_advancement_desc.call(self.company.name)
+          verification = Verification.find_by(verification_type: Verification.verification_type_project_advancement_value, verifi: {funding_id: self.id}, verifi_type: Verification.verifi_type_resource_value)
+          if verification.nil?
+            Verification.create!(verification_type: Verification.verification_type_project_advancement_value, desc: desc, verifi: {funding_id: self.id}, verifi_type: Verification.verifi_type_resource_value)
+          end
         when -Float::INFINITY...0
           # 项目自动 pass，并给项目成员及管理员发送通知；
           Funding.transaction do
-            self.update!(status: Funding.status_pass_value, bsc_status: Funding.bsc_status_config[:evaluatting][:value])
-            content = Notification.project_type_config[:passed][:desc].call(self.company.name)
+            self.update!(status: Funding.status_pass_value, bsc_status: Funding.bsc_status_finished_value)
+            content = Notification.project_type_passed_desc.call(self.company.name)
             funding_users = self.funding_users.map {|e| User.find(e.user_id)}
 
-            (managers + funding_users).uniq.map {|e| Notification.create!(notification_type: "project", content: content, user_id: e.id, is_read: false)}
+            (managers + funding_users).uniq.map {|e| Notification.create!(notification_type: Notification.notification_type_project_value, content: content, user_id: e.id, is_read: false)}
           end
         when 0..Float::INFINITY
           # 项目自动推进到Pursue，并给项目成员及管理员发送通知；
           Funding.transaction do
-            self.update!(status: Funding.status_pursue_value, bsc_status: Funding.bsc_status_config[:evaluatting][:value])
-            content = Notification.project_type_config[:pursued][:desc].call(self.company.name)
+            self.update!(status: Funding.status_pursue_value, bsc_status: Funding.bsc_status_finished_value)
+            content = Notification.project_type_pursued_desc.call(self.company.name)
             funding_users = self.funding_users.map {|e| User.find(e.user_id)}
 
-            (managers + funding_users).uniq.map {|e| Notification.create!(notification_type: "project", content: content, user_id: e.id, is_read: false)}
+            (managers + funding_users).uniq.map {|e| Notification.create!(notification_type: Notification.notification_type_project_value, content: content, user_id: e.id, is_read: false)}
           end
         end
       end
@@ -325,6 +326,37 @@ class Funding < ApplicationRecord
       end
 
       spa_track_log.gen_spa_detail(user_id, spa[:action])
+    end
+  end
+
+  def is_pass?
+    is_pass = ""
+    if self.bsc_status == "finished"
+      result = self.evaluations.where(is_agree: 'yes').count - self.evaluations.where(is_agree: 'no').count
+      case result
+      when 0
+        is_pass = "待决策"
+      when -Float::INFINITY...0
+        is_pass = "passed"
+      when 0..Float::INFINITY
+        is_pass = "pursued"
+      end
+    end
+    is_pass
+  end
+
+  def round
+    round_arr = CacheBox::dm_rounds.select { |e| e["id"] == self.round_id }
+    round = ""
+    round = round_arr.first["name"] unless round_arr.empty?
+    round
+  end
+
+  def is_list?
+    if self.is_list.nil?
+      is_list = self.is_list
+    else
+      is_list = self.is_list ? "是" : "否"
     end
   end
 end

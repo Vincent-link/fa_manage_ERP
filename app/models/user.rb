@@ -87,7 +87,7 @@ class User < ApplicationRecord
   end
 
   def update_title(params)
-    verification = Verification.find_by(user_id: self.id, verification_type: "title_update", status: nil)
+    verification = Verification.find_by(user_id: self.id, verification_type: Verification.verification_type_title_update_value, status: nil, verifi_type: Verification.verifi_type_resource_value)
     @user_title = UserTitle.find(params[:user_title_id])
 
     if User.current.is_admin?
@@ -103,11 +103,11 @@ class User < ApplicationRecord
       end
     else
       user_title_before = User.current.user_title.name unless User.current.user_title.nil?
-      desc = Verification.verification_type_config[:title_update][:desc].call(user_title_before, @user_title.name)
+      desc = Verification.verification_type_title_update_desc.call(user_title_before, @user_title.name)
       if !verification.nil?
-        verification.update(desc: desc, verifi: {kind: "title_update", change: [user_title_before, @user_title.name]}) unless verification.verifi["change"][1] == @user_title.name
+        verification.update(desc: desc, verifi: {kind: Verification.verification_type_title_update_value, change: [user_title_before, @user_title.name]}) unless verification.verifi["change"][1] == @user_title.name
       else
-        Verification.create(user_id: User.current.id, sponsor: User.current.id, verification_type: "title_update", desc: desc, verifi: {kind: "title_update", change: [user_title_before, @user_title.name]})
+        Verification.create(user_id: User.current.id, sponsor: User.current.id, verification_type: Verification.verification_type_title_update_value, desc: desc, verifi: {kind: "title_update", change: [user_title_before, @user_title.name]}, verifi_type: Verification.verifi_type_resource_value)
       end
 
     end
