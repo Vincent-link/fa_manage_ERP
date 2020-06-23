@@ -35,7 +35,7 @@ class TrackLog < ApplicationRecord
       track_logs = track_logs.joins("left join track_log_members tlm on tlm.track_log_id = track_logs.id
                                      left join members m on m.deleted_at is null and m.id = tlm.member_id
                                      left join organizations o on o.deleted_at is null and o.id = track_logs.organization_id")
-                       .where("o.name ilike ? or m.name ilike ?", "%#{params[:keyword]}%", "%#{params[:keyword]}%")
+                       .where("o.name ilike ? or m.name ilike ?", "%#{params[:keyword]}%", "%#{params[:keyword]}%").distinct(:id)
     end
 
     track_logs
