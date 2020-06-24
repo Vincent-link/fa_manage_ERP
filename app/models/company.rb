@@ -17,7 +17,6 @@ class Company < ApplicationRecord
   validates_presence_of :name
   validates_presence_of :one_sentence_intro
   validates_presence_of :location_province_id
-  validates_presence_of :location_city_id
 
   def search_data
     attributes.merge

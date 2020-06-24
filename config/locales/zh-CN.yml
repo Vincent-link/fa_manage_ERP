@@ -30,6 +30,8 @@ zh-CN:
       company: 公司
       contact: 联系人
       team: 团队
+      bsc: bsc管理
+      knowledge_base: 知识库
 
   activerecord:
     models:

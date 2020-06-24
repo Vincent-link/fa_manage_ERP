@@ -16,37 +16,9 @@ class KnowledgeBaseFileApi < Grape::API
         end
         post do
           if params[:file].present?
-            ActiveStorage::Attachment.create!(name: 'files', record_type: 'KnowledgeBase', record_id: params[:id], blob_id: params[:file][:blob_id])
-          end
-        end
-
-        resources :files do
-          resource ':file_id' do
-            before do
-              @file = ActiveStorage::Attachment.find(params[:file_id])
-            end
-            desc "预览"
-            get :preview do
-
-            end
-
-            desc "下载"
-            get :download do
-
-            end
-
-            desc "移动"
-            params do
-              requires :folder_id, type: Integer, desc: "文件夹id"
-            end
-            post :move do
-              raise "无权限！" if User.current.id != @file.blob.user_id
-              @file.update!(record_id: params[:folder_id])
-            end
-
-            desc "删除"
-            delete do
-              @file.destroy
+            KnowledgeBase.transaction do
+              ActiveStorage::Blob.find(params[:file][:blob_id]).update!(user_id: User.current.id)
+              ActiveStorage::Attachment.create!(name: 'files', record_type: 'KnowledgeBase', record_id: params[:id], blob_id: params[:file][:blob_id])
             end
           end
         end
@@ -56,6 +28,34 @@ class KnowledgeBaseFileApi < Grape::API
   end
 
   resources :KnowledgeBaseFiles do
+    resource ':file_id' do
+      before do
+        @file = ActiveStorage::Attachment.find(params[:file_id])
+      end
+      desc "预览"
+      get :preview do
 
+      end
+
+      desc "下载"
+      get :download do
+
+      end
+
+      desc "移动"
+      params do
+        requires :folder_id, type: Integer, desc: "文件夹id"
+      end
+      post :move do
+        binding.pry
+        raise "无权限！" if User.current.id != @file.blob.user_id
+        @file.update!(record_id: params[:folder_id], record_type: "KnowledgeBase", name: "files")
+      end
+
+      desc "删除"
+      delete do
+        @file.destroy
+      end
+    end
   end
 end

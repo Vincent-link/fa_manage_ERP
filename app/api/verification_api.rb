@@ -31,7 +31,6 @@ class VerificationApi < Grape::API
 
         present verifications, with: Entities::Verification
       else
-        binding.pry
         # 如果没有权限审核权限，查出普通审核（bsc、邮件）
         verifications = Verification.where(user_id: User.current.id, status: params[:status], verifi_type: Verification.verifi_type_user_value).paginate(page: params[:page], per_page: params[:per_page])
         present verifications, with: Entities::Verification

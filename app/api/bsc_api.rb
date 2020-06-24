@@ -197,7 +197,6 @@ class BscApi < Grape::API
       bscs = bscs.where("agree_time < ?", params[:agree_time_to]) if params[:agree_time_to].present?
 
       bscs = bscs.where('name like ?', "%#{params[:query]}%") if params[:query].present?
-      binding.pry
       bscs = bscs.select{|e| params[:conference_team_ids] & e.conference_team_ids unless e.conference_team_ids.nil?} if params[:conference_team_ids].present?
 
       present bscs, with: Entities::BscForIndex
@@ -241,9 +240,7 @@ class BscApi < Grape::API
         sheet1 = book.create_worksheet
         sheet1.row(0).concat %w{编号 项目名称 导出日期 来源部门 上会团队 一句话简介 所属行业 项目类型 融资轮次 融资币种 融资额 估值币种 预计本轮投后估值 过会时间 联系人 项目介绍 是否为上市/新三板公司或其拆分/控股资产}
         row = 0
-        binding.pry
         Funding.all.map do |funding|
-          binding.pry
           row +=1
           name = funding.name
           export_time = Time.now.strftime("%Y/%m/%d")
