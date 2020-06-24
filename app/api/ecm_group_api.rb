@@ -24,7 +24,7 @@ class EcmGroupApi < Grape::API
         @ecm_group.destroy!
       end
 
-      desc 'ecm_group详情', entity: Entities::EcmGroupOrganization
+      desc 'ecm_group详情', entity: Entities::EcmGroupForShow
       get do
         present @ecm_group, with: Entities::EcmGroupForShow
       end
