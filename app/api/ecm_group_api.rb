@@ -26,7 +26,7 @@ class EcmGroupApi < Grape::API
 
       desc 'ecm_group详情', entity: Entities::EcmGroupOrganization
       get do
-        present @ecm_group.investor_group_organizations, with: Entities::EcmGroupOrganization
+        present @ecm_group, with: Entities::EcmGroupForShow
       end
 
       desc '更新ecm_group', entity: Entities::EcmGroupForSelect
