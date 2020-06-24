@@ -57,4 +57,14 @@ class EcmGroupApi < Grape::API
       end
     end
   end
+
+  resource :ecm_group_details do
+    resource ':id' do
+      delete do
+        detail = InvestorGroupOrganization.find(params[:id])
+        detail.destroy!
+        present detail.investor_group, with: Entities::EcmGroupForShow
+      end
+    end
+  end
 end
