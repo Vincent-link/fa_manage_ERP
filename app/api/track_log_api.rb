@@ -47,13 +47,13 @@ class TrackLogApi < Grape::API
           optional :content, type: String, desc: '跟进信息'
           optional :track_log_id, type: Integer, desc: '合并到另一条项目进度的项目进度id'
 
-          given status: ->(val) { val == TrackLog.status_issue_ts_value } do
+          given status: ->(val) {val == TrackLog.status_issue_ts_value} do
             requires :file_ts, type: Hash do
               optional :blob_id, type: Integer, desc: 'ts文件id'
             end
           end
 
-          given status: ->(val) { val == TrackLog.status_spa_sha_value } do
+          given status: ->(val) {val == TrackLog.status_spa_sha_value} do
             requires :pay_date, type: Date, desc: '结算日期'
             requires :is_fee, type: Boolean, desc: '是否收费'
             requires :fee_rate, type: Float, desc: '费率'
@@ -188,6 +188,11 @@ class TrackLogApi < Grape::API
       get 'track_log_details' do
         track_log_details = @track_log.track_log_details
         present track_log_details, with: Entities::TrackLogDetail
+      end
+
+      desc '会议', entity: Entities::Calendar
+      get :calendars do
+        present @track_log.calendars, with: Entities::Calendar
       end
     end
   end
