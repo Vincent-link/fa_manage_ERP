@@ -22,6 +22,12 @@ module Entities
     expose :normal_users, with: Entities::User, documentation: {type: 'Entities::User', desc: '项目成员', is_array: true}
     expose :company, with: Entities::CompanyBaseInfo, documentation: {type: 'Entities::CompanyBaseInfo', desc: '公司信息'}
     expose :target_amount, documentation: {type: 'float', desc: '交易金额'}
+    expose :bsc_status, documentation: {type: 'Entities::IdName', desc: 'BSC状态'} do |ins|
+      {
+          id: ins.bsc_status,
+          name: ins.bsc_status_desc
+      }
+    end
     # todo tracklog
     # todo 约见
   end

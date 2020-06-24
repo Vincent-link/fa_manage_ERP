@@ -56,5 +56,11 @@ module Entities
     expose :is_reportable, documentation: {type: 'boolean', desc: '是否出现在周报/日报'}
     expose :is_list, documentation: {type: 'boolean', desc: '是否为上市/新三板公司'}
     expose :ticker, documentation: {type: 'string', desc: '股票代码'}
+    expose :bsc_status, documentation: {type: 'Entities::IdName', desc: 'BSC状态'} do |ins|
+      {
+          id: ins.bsc_status,
+          name: ins.bsc_status_desc
+      }
+    end
   end
 end
