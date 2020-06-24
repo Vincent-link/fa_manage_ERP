@@ -71,17 +71,31 @@ class CalendarApi < Grape::API
         @calendar.destroy!
       end
 
+      desc '取消日程'
+      post :cancel do
+        calendar = Calendar.find params[:id]
+        calendar.update(status: Calendar.status_cancel)
+      end
+
       desc '填写纪要'
       params do
         requires :summary, type: String, desc: '纪要'
         optional :investor_summary, type: JSON, desc: '投资人信息更新 investor_summary[member_id] = xxxxx'
         optional :ir_review_syn, type: Boolean, desc: '是否同步到IR Review'
         optional :newsfeed_syn, type: Boolean, desc: '是否同步到Newsfeed'
+        optional :track_result, type: String, desc: 'track_log跟进', values: %w(continue pass)
       end
       post :summary do
-        @calendar = Calendar.find params[:id]
-        @calendar.update! summary: params[:summary]
-        present @calendar, with: Entities::Calendar
+        calendar = Calendar.find params[:id]
+        calendar.update! summary: params[:summary]
+        present calendar, with: Entities::Calendar
+      end
+
+      desc '清空会议纪要'
+      delete :summary do
+        calendar = Calendar.find params[:id]
+        calendar.update! summary: nil
+        present calendar, with: Entities::Calendar
       end
 
       desc '约见详情'
