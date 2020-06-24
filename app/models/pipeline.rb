@@ -15,6 +15,8 @@ class Pipeline < ApplicationRecord
       cancel: {value: 4, desc: '已取消'}
   }
 
+  delegate :status_desc, to: :funding, prefix: true
+
   def reindex_funding
     if self.saved_changes[:status].present?
       self.funding.reindex
@@ -26,6 +28,6 @@ class Pipeline < ApplicationRecord
       self.pipeline_divides.find_or_initialize_by user_id: divide[:user_id] do |d|
         d.rate = divide[:rate]
       end
-    end
+    end if divide_arr.present?
   end
 end
