@@ -10,6 +10,7 @@ module Entities
     expose :fee_rate, documentation: {type: 'integer', desc: '费率'}
     expose :fee_discount, documentation: {type: 'integer', desc: '费率折扣'}
     expose :other_amount, documentation: {type: 'integer', desc: '其他金额'}
+    expose :other_amount_currency, documentation: {type: 'integer', desc: '其他金额币种'}
     expose :complete_rate, documentation: {type: 'integer', desc: '年内完成概率'}
     expose :total_fee, documentation: {type: 'integer', desc: '项目总收入预测'}
     expose :total_fee_currency, documentation: {type: 'integer', desc: '项目总收入币种'}
