@@ -74,7 +74,7 @@ class CalendarApi < Grape::API
       desc '取消日程'
       post :cancel do
         calendar = Calendar.find params[:id]
-        calendar.update(status: Calendar.status_cancel)
+        calendar.update(status: Calendar.status_cancel_value)
       end
 
       desc '填写纪要'
