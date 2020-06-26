@@ -17,6 +17,7 @@ class Company < ApplicationRecord
   validates_presence_of :name
   validates_presence_of :one_sentence_intro
   validates_presence_of :location_province_id
+  validates_presence_of :location_city_id
 
   def search_data
     attributes.merge
@@ -25,7 +26,7 @@ class Company < ApplicationRecord
   def self.es_search(params)
     where_hash = {}
     where_hash[:sector_list] = {all: params[:sector_ids]} if params[:sector_ids].present?
-    where_hash[:is_ka] = {all: params[:is_ka]} if params[:is_ka].present?
+    where_hash[:is_ka] = params[:is_ka] if !params[:is_ka].nil?
     where_hash[:recent_financing] = params[:recent_financing] if params[:recent_financing].present?
 
     order_hash = {"updated_at" => "desc"}

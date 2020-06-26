@@ -184,11 +184,11 @@ class BscApi < Grape::API
   resources :bscs do
     desc '所有bsc'
     params do
-      # optional :query, type: String, desc: "搜索名称"
-      optional 'bsc_status', type: Array[String], desc: "bsc状态"
+      optional :query, type: String, desc: "搜索名称"
+      optional :bsc_status, type: Array[Integer], desc: "bsc状态"
       optional :agree_time_from, type: Date, desc: "开始日期"
       optional :agree_time_to, type: Date, desc: "结束日期"
-      optional 'conference_team_ids', type: Array[Integer], desc: "上会团队"
+      optional :conference_team_ids, type: Array[Integer], desc: "上会团队"
     end
     get do
       bscs = Funding.select(:id, :name, :bsc_status, :conference_team_ids, :agree_time)
@@ -197,7 +197,7 @@ class BscApi < Grape::API
       bscs = bscs.where("agree_time < ?", params[:agree_time_to]) if params[:agree_time_to].present?
 
       bscs = bscs.where('name like ?', "%#{params[:query]}%") if params[:query].present?
-      bscs = bscs.select{|e| params[:conference_team_ids] & e.conference_team_ids unless e.conference_team_ids.nil?} if params[:conference_team_ids].present?
+      bscs = bscs.select{|e| !(params[:conference_team_ids].map(&:to_i) & e.conference_team_ids).empty? unless e.conference_team_ids.nil?} if params[:conference_team_ids].present?
 
       present bscs, with: Entities::BscForIndex
     end

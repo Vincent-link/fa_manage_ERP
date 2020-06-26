@@ -294,7 +294,7 @@ class Funding < ApplicationRecord
         when 0..Float::INFINITY
           # 项目自动推进到Pursue，并给项目成员及管理员发送通知；
           Funding.transaction do
-            self.update!(status: Funding.status_pursue_value, bsc_status: Funding.bsc_status_finished_value)
+            self.update!(status: Funding.status_pursue_value, bsc_status: Funding.bsc_status_finished_value, agree_time: Time.now)
             content = Notification.project_type_pursued_desc.call(self.company.name)
             funding_users = self.funding_users.map {|e| User.find(e.user_id)}
 
@@ -347,9 +347,9 @@ class Funding < ApplicationRecord
 
   def round
     round_arr = CacheBox::dm_rounds.select { |e| e["id"] == self.round_id }
-    round = ""
-    round = round_arr.first["name"] unless round_arr.empty?
-    round
+    round_name = ""
+    round_name = round_arr.first["name"] unless round_arr.empty?
+    round_name
   end
 
   def is_list?

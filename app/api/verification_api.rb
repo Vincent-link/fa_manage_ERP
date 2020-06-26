@@ -3,26 +3,24 @@ class VerificationApi < Grape::API
 
     desc '我发起的'
     params do
+      # nil 表示未审核，true和false表示已审核
       optional :status, type: Boolean, desc: '状态', values: [true, false]
       optional :page, type: Integer, desc: '页数', default: 1
       optional :page_size, as: :per_page, type: Integer, desc: '页数', default: 10
     end
     get :sponsored do
-      # nil为未审核， true、false为已审核
-      params[:status] ||= nil
       verifications = Verification.where(status: params[:status], sponsor: User.current.id).paginate(page: params[:page], per_page: params[:per_page])
       present verifications, with: Entities::Verification
     end
 
     desc '我审核的'
     params do
+      # nil 表示未审核，true和false表示已审核
       optional :status, type: Boolean, desc: '状态', values: [true, false]
       optional :page, type: Integer, desc: '页数', default: 1
       optional :page_size, as: :per_page, type: Integer, desc: '页数', default: 10
     end
     get :verified do
-      # nil 表示未审核，true和false表示已审核
-      params[:status] ||= nil
       # 是否有权限审核权限
       if can? :verify, Verification
         # 权限审核&&普通审核

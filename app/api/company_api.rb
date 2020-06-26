@@ -24,14 +24,15 @@ class CompanyApi < Grape::API
       optional :website, type: String, desc: '网址'
       requires :one_sentence_intro, type: String, desc: '一句话简介'
       optional :detailed_intro, type: String, desc: '公司详细介绍'
-      requires :address_id, as: :location_province_id, type: Integer, desc: '地址'
+      requires :location_province_id, type: Integer, desc: '地址'
+      requires :location_city_id, type: Integer, desc: '地址'
       optional :detailed_address, type: String, desc: '详细地址'
       optional :business_id, type: Integer, desc: '工商数据'
       requires :sector_ids, type: Array[Integer], desc: '所属行业'
       optional :company_tag_ids, type: Array[Integer], desc: '标签'
       requires :contacts, type: Array[JSON], desc: '联系人' do
         requires :name, type: String, desc: '姓名'
-        optional :position, type: String, desc: '职位'
+        optional :position, type: Integer, desc: '职位'
         optional :tel, type: String, desc: '电话'
         optional :email, type: String, desc: '邮箱'
         optional :wechat, type: String, desc: '微信'
@@ -54,6 +55,11 @@ class CompanyApi < Grape::API
 
         contacts_params.map { |e| Contact.create!(e.merge(company_id: @company.id)) }
       end
+
+      # 从金丝雀获取最近融资
+      financing_events = Zombie::DmInvestevent.includes(:company, :invest_type, :invest_round).public_data.not_deleted.where(company_id: @company.id)._select(:invest_round_id).sort_by(&:invest_round_id)
+      @company.recent_financing = financing_events.last.invest_round_id
+      @company.save!
       true
     end
 

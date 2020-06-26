@@ -6,7 +6,8 @@ module Entities
     expose :website, documentation: {type: 'string', desc: '公司网址'}
     expose :one_sentence_intro, documentation: {type: 'string', desc: '一句话简介'}
     expose :detailed_intro, documentation: {type: 'string', desc: '详细介绍'}
-    expose :location_province_id, as: :address_id, documentation: {type: 'integer', desc: '省份'}
+    expose :location_province_id, documentation: {type: 'integer', desc: '省份'}
+    expose :location_city_id, documentation: {type: 'integer', desc: '城市'}
     expose :detailed_address, documentation: {type: 'string', desc: '详细地址'}
     expose :sectors, documentation: {type: 'string', desc: '所属行业'}
     expose :company_tags, documentation: {type: 'string', desc: '标签'}

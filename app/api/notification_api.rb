@@ -2,17 +2,15 @@ class NotificationApi < Grape::API
   resource :notifications do
     desc '通知', entity: Entities::Notification
     params do
-      optional :notification_type, type: Integer, desc: '类型', values: [1, 2, 3]
-      optional :is_read, type: Boolean, desc: '是否已读'
+      optional :notification_type, type: String, desc: '类型', values: ["ir_review", "project", "investor"]
+      optional :is_read, type: Boolean, desc: '是否已读', values: [true, false]
       optional :page, type: Integer, desc: '页数', default: 1
       optional :page_size, as: :per_page, type: Integer, desc: '页数', default: 10
     end
     get do
-      params[:notification_type] ||= [
-        Notification.notification_type_ir_review_value,
-        Notification.notification_type_project_value,
-        Notification.notification_type_investor_value
-      ]
+      # 如果不选，表示全部通知
+      params[:notification_type] = Notification.notification_type_config[params[:notification_type].to_sym][:value] unless params[:notification_type].nil?
+      params[:notification_type] ||= [1,2,3]
       params[:is_read] = [true, false] if params[:is_read].nil?
 
       notifications = User.current.notifications.where(notification_type: params[:notification_type], is_read: params[:is_read]).paginate(page: params[:page], per_page: params[:per_page])
