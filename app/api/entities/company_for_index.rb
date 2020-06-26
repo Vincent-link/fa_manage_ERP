@@ -5,7 +5,7 @@ module Entities
     expose :sectors, documentation: {type: 'string', desc: '行业'}
     expose :location_province_id, documentation: {type: 'integer', desc: '省份'}
     expose :recent_financing, documentation: {type: 'string', desc: '最近融资'}
-    expose :callreport_num, documentation: {type: 'string', desc: '最近融资'} do |ins|
+    expose :callreport_num, documentation: {type: 'string', desc: 'callreport数量'} do |ins|
       '假数据'
     end
     expose :is_ka, documentation: {type: 'boolean', desc: '是否ka'}

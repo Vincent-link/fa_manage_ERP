@@ -10,7 +10,7 @@ class ContactApi < Grape::API
         desc '新建联系人'
         params do
           requires :name, type: String, desc: '姓名'
-          optional :position, type: String, desc: '职位'
+          optional :position, type: Integer, desc: '职位'
           optional :tel, type: String, desc: '电话'
           optional :email, type: String, desc: '邮箱'
           optional :wechat, type: String, desc: '微信'
@@ -31,7 +31,7 @@ class ContactApi < Grape::API
       desc '编辑联系人'
       params do
         requires :name, type: String, desc: '姓名'
-        optional :position, type: String, desc: '职位'
+        optional :position, type: Integer, desc: '职位'
         optional :tel, type: String, desc: '电话'
         optional :email, type: String, desc: '邮箱'
         optional :wechat, type: String, desc: '微信'

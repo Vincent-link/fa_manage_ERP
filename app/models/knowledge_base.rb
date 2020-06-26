@@ -10,8 +10,4 @@ class KnowledgeBase < ApplicationRecord
     research_report:{value: 1, desc: "research_report"},
     sector_report:  {value: 2, desc: "sector_report"}
   }
-
-  def user_name
-    User.find(self.user_id).name
-  end
 end

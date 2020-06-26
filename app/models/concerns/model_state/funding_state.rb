@@ -40,9 +40,10 @@ module ModelState
       }
 
       state_config :bsc_status, config: {
-          started:      { value: 1,  desc: "Started"     },
-          evaluatting:  { value: 2,  desc: "Evaluatting" },
-          finished:     { value: 3,  desc: "Finished"    }
+          initial:      { value: nil,   desc: "Initial",     zh_desc: "未启动bsc" },
+          started:      { value: 1,     desc: "Started",     zh_desc: "bsc已启动" },
+          evaluatting:  { value: 2,     desc: "Evaluatting", zh_desc: "进行中"    },
+          finished:     { value: 3,     desc: "Finished",    zh_desc: "已完成"    }
       }
 
       state_config :confidentiality_level, config: {

@@ -37,7 +37,9 @@ class KnowledgeBaseApi < Grape::API
         optional :page_size, as: :per_page, type: Integer, desc: '页数', default: 10
       end
       get :files do
-        present @knowledge_base.files_attachments.paginate(page: params[:page], per_page: params[:per_page]), with: Entities::KnowledgeBaseFile
+        users = User.where(id: @knowledge_base.files_attachments.map(&:user_id)).index_by(&:id)
+
+        present @knowledge_base.files_attachments.paginate(page: params[:page], per_page: params[:per_page]), with: Entities::KnowledgeBaseFile, users: users
       end
 
       desc "删除目录"
