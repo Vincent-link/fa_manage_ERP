@@ -63,6 +63,24 @@ class CompanyApi < Grape::API
       true
     end
 
+    desc '关联企业搜索'
+    params do
+      requires :name, type: String, desc: '名称'
+    end
+    get :registered_company_search do
+      registered_companies = Zombie::DmRegisteredCompany.where("name like ?", "%#{params[:name]}%")._select(:name, :info_url).inspect
+      present registered_companies, with: Entities::RegisteredCompany
+    end
+
+    desc '关联企业添加'
+    params do
+      requires :name, type: String, desc: '工商名称'
+      requires :info_url, type: String, desc: '天眼查网址'
+    end
+    post :registered_company_add do
+      @relation_company = Zombie::DmRegisteredCompany.create_registered_company(declared(params))
+    end
+
     resource ':id' do
       before do
         @company = Company.find params[:id]
@@ -115,24 +133,6 @@ class CompanyApi < Grape::API
         end
 
         true if @company.update!(declared(params, include_missing: false))
-      end
-
-      desc '关联企业搜索'
-      params do
-        requires :name, type: String, desc: '名称'
-      end
-      post :registered_company_search do
-        registered_companies = Zombie::DmRegisteredCompany.where("name like ?", "%#{params[:name]}%")._select(:name, :info_url).inspect
-        present registered_companies, with: Entities::RegisteredCompany
-      end
-
-      desc '关联企业添加'
-      params do
-        requires :name, type: String, desc: '工商名称'
-        requires :info_url, type: String, desc: '天眼查网址'
-      end
-      post :registered_company_add do
-        @relation_company = Zombie::DmRegisteredCompany.create_registered_company(declared(params))
       end
 
       desc '设为KA'

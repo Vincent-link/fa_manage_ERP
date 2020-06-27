@@ -2,10 +2,6 @@ class KnowledgeBaseFileApi < Grape::API
   mounted do
     resource configuration[:owner] do
       resource ':id' do
-        before do
-          @knowledge_base = KnowledgeBase.find(params[:id])
-        end
-
         desc "上传文件"
         params do
           requires :file, type: Hash, desc: '文件' do
@@ -31,26 +27,19 @@ class KnowledgeBaseFileApi < Grape::API
     desc "搜索"
     params do
       optional :query, type: String, desc: "搜索文件"
+      optional :page, type: Integer, desc: '页数', default: 1
+      optional :page_size, as: :per_page, type: Integer, desc: '页数', default: 10
     end
     get :search do
-      files = ActiveStorage::Blob.where("filename like ?", "%#{params[:query]}%")
-      files_with_folders = files.map do |file|
-        attachment = ActiveStorage::Attachment.find_by(blob_id: file.id)
-        {
-          id: attachment.id,
-          filename: file.filename,
-          created_at: file.created_at,
-          user: User.find(file.user_id).name,
-          folder: attachment.record.name,
-          file_desc: file.file_desc
-        }
-      end
-      present files_with_folders, with: Entities::KnowledgeBaseFile, type: "folder"
+      files = ActiveStorage::Attachment.joins(:blob).where(record_type: "KnowledgeBase").where("active_storage_blobs.filename like ?", "%#{params[:query]}%")
+      users = User.where(id: files.map(&:user_id)).index_by(&:id)
+
+      present files.paginate(page: params[:page], per_page: params[:per_page]), with: Entities::KnowledgeBaseFile, users: users, folders: "folders"
     end
 
-    resource ':id' do
+    resource ':attachment_id' do
       before do
-        @file = ActiveStorage::Attachment.find(params[:file_id])
+        @file = ActiveStorage::Attachment.find(params[:attachment_id])
       end
       desc "预览"
       get :preview do
@@ -73,7 +62,8 @@ class KnowledgeBaseFileApi < Grape::API
 
       desc "删除"
       delete do
-        @file.destroy
+        binding.pry
+        @file.destroy!
       end
     end
   end
