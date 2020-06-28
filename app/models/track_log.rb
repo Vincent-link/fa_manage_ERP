@@ -83,7 +83,7 @@ class TrackLog < ApplicationRecord
         self.file_ts_attachment.update(blob_id: blob_id)
         action = 'update'
       else
-        ActiveStorage::Attachment.create!(name: 'file_ts', record_type: 'TrackLog', record_id: self.id, blob_id: params[:file_spa][:blob_id])
+        ActiveStorage::Attachment.create!(name: 'file_ts', record_type: 'TrackLog', record_id: self.id, blob_id: blob_id)
         action = 'create'
       end
     end
