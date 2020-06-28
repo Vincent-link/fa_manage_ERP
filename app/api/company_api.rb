@@ -155,6 +155,6 @@ class CompanyApi < Grape::API
     end
   end
 
-  # mount AddressApi
+  mount AddressApi, with: {owner: 'companies'}
   mount ContactApi, with: {owner: 'companies'}
 end

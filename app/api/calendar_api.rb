@@ -28,9 +28,16 @@ class CalendarApi < Grape::API
       requires :meeting_category, type: Integer, desc: '会议类型'
       requires :meeting_type, type: Integer, desc: '约见类型'
       requires :desc, type: String, desc: '会议描述'
-      optional :company_id, type: Integer, desc: '约见公司id'
-      optional :funding_id, type: Integer, desc: '项目id'
-      optional :organization_id, type: Integer, desc: '约见机构id'
+      given meeting_category: ->(val) {val.in?([Calendar.meeting_category_com_meeting_value, Calendar.meeting_category_roadshow_value])} do
+        requires :company_id, type: Integer, desc: '约见公司id'
+      end
+      given meeting_category: ->(val) {val == Calendar.meeting_category_roadshow_value} do
+        requires :funding_id, type: Integer, desc: '项目id'
+      end
+      given meeting_category: ->(val) {val.in?([Calendar.meeting_category_org_meeting_value, Calendar.meeting_category_roadshow_value])} do
+        requires :organization_id, type: Integer, desc: '约见机构id'
+      end
+      optional :track_log_id, type: Integer, desc: '融资进度id'
       optional :contact_ids, type: Array[Integer], desc: '公司联系人id'
       optional :member_ids, type: Array[Integer], desc: '投资人id'
       requires :cr_user_ids, type: Array[Integer], desc: '华兴参与人id'

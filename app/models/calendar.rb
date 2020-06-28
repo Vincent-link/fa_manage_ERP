@@ -30,7 +30,7 @@ class Calendar < ApplicationRecord
   state_config :meeting_category, config: {
       roadshow: {value: 1, desc: '路演会议'},
       com_meeting: {value: 2, desc: '约见公司'},
-      org_meeting: {value: 2, desc: '约见投资人'},
+      org_meeting: {value: 3, desc: '约见投资人'},
   }
 
   state_config :status, config: {
@@ -59,19 +59,27 @@ class Calendar < ApplicationRecord
   end
 
   def gen_track_log_detail
-    if self.track_log.present?
-      action = if self.previous_changes.has_key? :id
-                 'create'
-               else
-                 case self.status
-                 when Calendar.status_cancel_value
-                   'delete'
+    if self.meeting_category_roadshow?
+      if self.track_log.present?
+        action = if self.previous_changes.has_key? :id
+                   'create'
                  else
-                   'update'
+                   case self.status
+                   when Calendar.status_cancel_value
+                     'delete'
+                   else
+                     'update'
+                   end
                  end
-               end
-      self.track_log.gen_meeting_detail(User.current.id, self.id, action)
-      self.track_log.change_status_by_calendar(self.track_result)
+        self.track_log.gen_meeting_detail(User.current.id, self.id, action)
+        self.track_log.change_status_by_calendar(self.track_result)
+      else
+        self.funding.track_logs.find_or_create_by(organization_id: self.organization_id) do |track_log|
+          org_members.each do |cal_member|
+            track_log.track_log_members.build(member_id: cal_member.memberable_id)
+          end
+        end
+      end
     end
   end
 
