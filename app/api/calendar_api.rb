@@ -27,10 +27,18 @@ class CalendarApi < Grape::API
     params do
       requires :meeting_category, type: Integer, desc: '会议类型'
       requires :meeting_type, type: Integer, desc: '约见类型'
-      requires :desc, type: String, desc: '会议描述'
-      optional :company_id, type: Integer, desc: '约见公司id'
-      optional :funding_id, type: Integer, desc: '项目id'
-      optional :organization_id, type: Integer, desc: '约见机构id'
+      given meeting_category: ->(val) {val.in?([Calendar.meeting_category_com_meeting_value, Calendar.meeting_category_roadshow_value])} do
+        requires :company_id, type: Integer, desc: '约见公司id'
+      end
+      given meeting_category: ->(val) {val == Calendar.meeting_category_roadshow_value} do
+        requires :funding_id, type: Integer, desc: '项目id'
+      end
+      given meeting_category: ->(val) {val.in?([Calendar.meeting_category_org_meeting_value, Calendar.meeting_category_roadshow_value])} do
+        requires :organization_id, type: Integer, desc: '约见机构id'
+      end
+      optional :track_log_id, type: Integer, desc: '融资进度id'
+      optional :desc, type: String, desc: '会议描述', default: '由项目进度生成'
+      at_least_one_of :track_log_id, :desc
       optional :contact_ids, type: Array[Integer], desc: '公司联系人id'
       optional :member_ids, type: Array[Integer], desc: '投资人id'
       requires :cr_user_ids, type: Array[Integer], desc: '华兴参与人id'
@@ -71,17 +79,31 @@ class CalendarApi < Grape::API
         @calendar.destroy!
       end
 
+      desc '取消日程'
+      post :cancel do
+        calendar = Calendar.find params[:id]
+        calendar.update(status: Calendar.status_cancel_value)
+      end
+
       desc '填写纪要'
       params do
         requires :summary, type: String, desc: '纪要'
         optional :investor_summary, type: JSON, desc: '投资人信息更新 investor_summary[member_id] = xxxxx'
         optional :ir_review_syn, type: Boolean, desc: '是否同步到IR Review'
         optional :newsfeed_syn, type: Boolean, desc: '是否同步到Newsfeed'
+        optional :track_result, type: String, desc: 'track_log跟进', values: %w(continue pass)
       end
       post :summary do
-        @calendar = Calendar.find params[:id]
-        @calendar.update! summary: params[:summary]
-        present @calendar, with: Entities::Calendar
+        calendar = Calendar.find params[:id]
+        calendar.update! declared(params)
+        present calendar, with: Entities::Calendar
+      end
+
+      desc '清空会议纪要'
+      delete :summary do
+        calendar = Calendar.find params[:id]
+        calendar.update! summary: nil
+        present calendar, with: Entities::Calendar
       end
 
       desc '约见详情'

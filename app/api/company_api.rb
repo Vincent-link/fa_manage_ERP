@@ -60,6 +60,11 @@ class CompanyApi < Grape::API
         @company.recent_financing = financing_events.last.invest_round_id
         @company.save!
       end
+
+      # 从金丝雀获取最近融资
+      financing_events = Zombie::DmInvestevent.includes(:company, :invest_type, :invest_round).public_data.not_deleted.where(company_id: @company.id)._select(:invest_round_id).sort_by(&:invest_round_id)
+      @company.recent_financing = financing_events.last.invest_round_id
+      @company.save!
       true
     end
 
@@ -155,6 +160,6 @@ class CompanyApi < Grape::API
     end
   end
 
-  # mount AddressApi
+  mount AddressApi, with: {owner: 'companies'}
   mount ContactApi, with: {owner: 'companies'}
 end

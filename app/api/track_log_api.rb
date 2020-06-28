@@ -47,13 +47,13 @@ class TrackLogApi < Grape::API
           optional :content, type: String, desc: '跟进信息'
           optional :track_log_id, type: Integer, desc: '合并到另一条项目进度的项目进度id'
 
-          given status: ->(val) { val == TrackLog.status_issue_ts_value } do
+          given status: ->(val) {val == TrackLog.status_issue_ts_value} do
             requires :file_ts, type: Hash do
               optional :blob_id, type: Integer, desc: 'ts文件id'
             end
           end
 
-          given status: ->(val) { val == TrackLog.status_spa_sha_value } do
+          given status: ->(val) {val == TrackLog.status_spa_sha_value} do
             requires :pay_date, type: Date, desc: '结算日期'
             requires :is_fee, type: Boolean, desc: '是否收费'
             requires :fee_rate, type: Float, desc: '费率'
@@ -75,7 +75,7 @@ class TrackLogApi < Grape::API
         end
 
         post do
-          raise '项目进度状态选择错误' if params[:calendar].present? && params[:track_log_id].nil? && params[:status] != TrackLog.status_meeting_value
+          # raise '项目进度状态选择错误' if params[:calendar].present? && params[:track_log_id].nil? && params[:status] != TrackLog.status_meeting_value
           organziation = Organization.find(params[:organization_id])
           params[:member_ids] = organziation.members.where(id: params[:member_ids]).map(&:id)
           if params[:track_log_id].present?
@@ -91,7 +91,7 @@ class TrackLogApi < Grape::API
             when TrackLog.status_issue_ts_value
               tracklog.change_ts(current_user.id, params[:file_spa][:blob_id])
             when TrackLog.status_contacted_value
-              raise '状态选择错误' if params[:calendar].present?
+              raise '项目进度状态选择错误' if params[:calendar].present?
             end
           end
           tracklog.member_ids = params[:member_ids]
@@ -188,6 +188,11 @@ class TrackLogApi < Grape::API
       get 'track_log_details' do
         track_log_details = @track_log.track_log_details
         present track_log_details, with: Entities::TrackLogDetail
+      end
+
+      desc '会议', entity: Entities::Calendar
+      get :calendars do
+        present @track_log.calendars, with: Entities::Calendar
       end
     end
   end

@@ -24,9 +24,9 @@ class EcmGroupApi < Grape::API
         @ecm_group.destroy!
       end
 
-      desc 'ecm_group详情', entity: Entities::EcmGroupOrganization
+      desc 'ecm_group详情', entity: Entities::EcmGroupForShow
       get do
-        present @ecm_group.investor_group_organizations, with: Entities::EcmGroupOrganization
+        present @ecm_group, with: Entities::EcmGroupForShow
       end
 
       desc '更新ecm_group', entity: Entities::EcmGroupForSelect
@@ -54,6 +54,16 @@ class EcmGroupApi < Grape::API
           end
         end
         present @ecm_group, with: Entities::EcmGroupForShow
+      end
+    end
+  end
+
+  resource :ecm_group_details do
+    resource ':id' do
+      delete do
+        detail = InvestorGroupOrganization.find(params[:id])
+        detail.destroy!
+        present detail.investor_group, with: Entities::EcmGroupForShow
       end
     end
   end

@@ -8,7 +8,6 @@ class Calendar < ApplicationRecord
   has_many :com_members, -> {where(memberable_type: 'Contact')}, class_name: 'CalendarMember'
   has_many :user_members, -> {where(memberable_type: 'User')}, class_name: 'CalendarMember'
   belongs_to :user
-  belongs_to :address, optional: true
   belongs_to :funding, optional: true
   belongs_to :company, optional: true
   belongs_to :organization, optional: true
@@ -16,8 +15,14 @@ class Calendar < ApplicationRecord
   has_many :track_log_deatils, as: :linkable
 
   before_validation :set_current_user
-  after_create :gen_create_track_log_detail
-  after_update :gen_update_track_log_detail
+  before_save :set_meeting_status
+  after_save :gen_track_log_detail
+  after_save :gen_org_meeting_info
+
+  delegate :name, to: :organization, allow_nil: true, prefix: true
+  delegate :status_desc, to: :funding, allow_nil: true, prefix: true
+
+  attr_accessor :ir_review_syn, :newsfeed_syn, :track_result, :investor_summary
 
   state_config :meeting_type, config: {
       face: {value: 1, desc: '线下约见'},
@@ -27,7 +32,7 @@ class Calendar < ApplicationRecord
   state_config :meeting_category, config: {
       roadshow: {value: 1, desc: '路演会议'},
       com_meeting: {value: 2, desc: '约见公司'},
-      org_meeting: {value: 2, desc: '约见投资人'},
+      org_meeting: {value: 3, desc: '约见投资人'},
   }
 
   state_config :status, config: {
@@ -55,25 +60,57 @@ class Calendar < ApplicationRecord
     end
   end
 
-  def gen_create_track_log_detail
-    if self.track_log.present?
-      self.track_log.gen_meeting_detail(User.current.id, self.id, 'create')
+  def address
+    Zombie::DmAddress.find(self.address_id)
+  end
+
+  def gen_track_log_detail
+    if self.meeting_category_roadshow?
+      if self.track_log.present?
+        action = if self.previous_changes.has_key? :id
+                   'create'
+                 else
+                   case self.status
+                   when Calendar.status_cancel_value
+                     'delete'
+                   else
+                     'update'
+                   end
+                 end
+        self.track_log.gen_meeting_detail(User.current.id, self.id, action)
+        self.track_log.change_status_by_calendar(self.track_result)
+      else
+        self.funding.track_logs.find_or_create_by(organization_id: self.organization_id) do |track_log|
+          org_members.each do |cal_member|
+            track_log.track_log_members.build(member_id: cal_member.memberable_id)
+          end
+        end
+      end
     end
   end
 
-  def gen_update_track_log_detail
-    user_id = User.current.id
-    if self.track_log.present?
-      case self.status
-      when Calendar.status_cancel_value
-        self.track_log.gen_meeting_detail(user_id, self.id, 'delete')
-      else
-        self.track_log.gen_meeting_detail(user_id, self.id, 'update')
+  def gen_org_meeting_info
+    if self.meeting_category_org_meeting?
+      if self.ir_review_syn
+        self.organization.ir_reviews.create(content: self.summary)
+      end
+      if self.newsfeed_syn
+        self.organization.newsfeeds.create(content: self.summary)
+      end
+      if self.investor_summary.present?
+        investor_summary.each do |k, v|
+          member = Member.find(k)
+          member.update ir_review: v
+        end
       end
     end
   end
 
   def set_current_user
     self.user_id ||= User.current&.id
+  end
+
+  def set_meeting_status
+    self.status = Calendar.status_done_value if self.summary.present? && !self.status_cancel?
   end
 end
