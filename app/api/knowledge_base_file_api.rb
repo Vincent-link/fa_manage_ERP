@@ -18,7 +18,6 @@ class KnowledgeBaseFileApi < Grape::API
             end
           end
         end
-
       end
     end
   end
@@ -39,7 +38,7 @@ class KnowledgeBaseFileApi < Grape::API
 
     resource ':attachment_id' do
       before do
-        @file = ActiveStorage::Attachment.find(params[:attachment_id])
+        @attach = ActiveStorage::Attachment.find(params[:attachment_id])
       end
       desc "预览"
       get :preview do
@@ -56,14 +55,13 @@ class KnowledgeBaseFileApi < Grape::API
         requires :folder_id, type: Integer, desc: "文件夹id"
       end
       post :move do
-        raise "无权限！" if User.current.id != @file.blob.user_id
-        @file.update!(record_id: params[:folder_id], record_type: "KnowledgeBase", name: "files")
+        raise "无权限！" if User.current.id != @attach.blob.user_id
+        @attach.update!(record_id: params[:folder_id], record_type: "KnowledgeBase", name: "files")
       end
 
       desc "删除"
       delete do
-        binding.pry
-        @file.destroy!
+        @attach.destroy
       end
     end
   end

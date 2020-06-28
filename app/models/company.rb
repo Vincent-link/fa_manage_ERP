@@ -3,7 +3,7 @@ class Company < ApplicationRecord
 
   has_many :calendars
   has_many :contacts, dependent: :destroy
-  has_many :fundings
+  has_many :fundings, dependent: :destroy
 
   acts_as_taggable_on :company_tags
   acts_as_taggable_on :sectors
