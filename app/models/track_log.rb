@@ -6,7 +6,7 @@ class TrackLog < ApplicationRecord
   has_one_attached :file_ts
   has_one_attached :file_spa
 
-  has_many :track_log_details, -> { order(created_at: :desc) }
+  has_many :track_log_details, -> {order(created_at: :desc)}
   has_many :calendars
   belongs_to :organization
   belongs_to :funding
@@ -15,13 +15,13 @@ class TrackLog < ApplicationRecord
   has_many :members, through: :track_log_members, class_name: 'Member'
 
   state_config :status, config: {
-      contacted:   {value: 0, desc: "Contacted",   level: 1},
-      interested:  {value: 1, desc: "Interested",  level: 1},
-      meeting:     {value: 2, desc: "Meeting",     level: 1},
-      issue_ts:    {value: 3, desc: "Issue TS",    level: 2},
-      spa_sha:     {value: 4, desc: "SPA/SHA",     level: 3},
-      pass:        {value: 5, desc: "Pass",        level: 1},
-      drop:        {value: 6, desc: "Drop",        level: 1}
+      contacted: {value: 0, desc: "Contacted", level: 1},
+      interested: {value: 1, desc: "Interested", level: 1},
+      meeting: {value: 2, desc: "Meeting", level: 1},
+      issue_ts: {value: 3, desc: "Issue TS", level: 2},
+      spa_sha: {value: 4, desc: "SPA/SHA", level: 3},
+      pass: {value: 5, desc: "Pass", level: 1},
+      drop: {value: 6, desc: "Drop", level: 1}
   }
 
   def self.search(params)
@@ -52,7 +52,7 @@ class TrackLog < ApplicationRecord
         params[:need_content] = false
       end
     when TrackLog.status_spa_sha_value
-      [:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency].each{|ins| raise '融资结算信息不全' unless params[ins].present?}
+      [:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency].each {|ins| raise '融资结算信息不全' unless params[ins].present?}
       raise '未传SPA不能进行状态变更' unless (params[:file_spa] || self.file_spa).present?
       if params[:file_spa].present? && params[:file_spa][:blob_id].present?
         self.update_spa_msg(params.slice(:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency, :file_spa))
@@ -68,8 +68,8 @@ class TrackLog < ApplicationRecord
     before_status = self.status_desc
     self.update(status: params[:status])
     if params[:need_content]
-      content = "状态变更：#{before_status} → #{TrackLog.status_desc_for_value(params[:status])}"
-      self.track_log_details.create(content: content, user_id: params[:user_id], detail_type: TrackLogDetail.detail_type_base_value)
+      content = "#{params[:content_key] || '状态变更'}：#{before_status} → #{TrackLog.status_desc_for_value(params[:status])}"
+      self.track_log_details.create(content: content, user_id: params[:user_id] || User.current.id, detail_type: TrackLogDetail.detail_type_base_value)
     end
   end
 
@@ -131,7 +131,7 @@ class TrackLog < ApplicationRecord
             id: self.organization_id,
             name: self.organization.name
         },
-        members: self.members.map{|ins| {id: ins.id, name: ins.name}},
+        members: self.members.map {|ins| {id: ins.id, name: ins.name}},
         amount: self.amount,
         currency: self.currency,
         ratio: self.ratio,
@@ -221,5 +221,14 @@ class TrackLog < ApplicationRecord
         }
     }
     self.track_log_details.create!(user_id: user_id, content: content, linkable_id: self.id, linkable_type: 'TrackLog', history: history, detail_type: TrackLogDetail.detail_type_spa_value)
+  end
+
+  def change_status_by_calendar(status)
+    case status
+    when 'pass'
+      self.change_status_and_gen_detail(status: TrackLog.status_pass_value, need_content: true, content_key: '由约见结论变更')
+    when 'continue'
+      self.change_status_and_gen_detail(status: TrackLog.status_interested_value, need_content: true, content_key: '由约见结论变更')
+    end
   end
 end

@@ -87,7 +87,7 @@ class CalendarApi < Grape::API
       end
       post :summary do
         calendar = Calendar.find params[:id]
-        calendar.update! summary: params[:summary]
+        calendar.update! declared(params)
         present calendar, with: Entities::Calendar
       end
 

@@ -16,8 +16,11 @@ class Calendar < ApplicationRecord
   has_many :track_log_deatils, as: :linkable
 
   before_validation :set_current_user
-  after_create :gen_create_track_log_detail
-  after_update :gen_update_track_log_detail
+  before_save :set_meeting_status
+  after_save :gen_track_log_detail
+  after_save :gen_org_meeting_info
+
+  attr_accessor :ir_review_syn, :newsfeed_syn, :track_result, :investor_summary
 
   state_config :meeting_type, config: {
       face: {value: 1, desc: '线下约见'},
@@ -55,25 +58,45 @@ class Calendar < ApplicationRecord
     end
   end
 
-  def gen_create_track_log_detail
+  def gen_track_log_detail
     if self.track_log.present?
-      self.track_log.gen_meeting_detail(User.current.id, self.id, 'create')
+      action = if self.previous_changes.has_key? :id
+                 'create'
+               else
+                 case self.status
+                 when Calendar.status_cancel_value
+                   'delete'
+                 else
+                   'update'
+                 end
+               end
+      self.track_log.gen_meeting_detail(User.current.id, self.id, action)
+      self.track_log.change_status_by_calendar(self.track_result)
     end
   end
 
-  def gen_update_track_log_detail
-    user_id = User.current.id
-    if self.track_log.present?
-      case self.status
-      when Calendar.status_cancel_value
-        self.track_log.gen_meeting_detail(user_id, self.id, 'delete')
-      else
-        self.track_log.gen_meeting_detail(user_id, self.id, 'update')
+  def gen_org_meeting_info
+    if self.meeting_category_org_meeting?
+      if self.ir_review_syn
+        self.organization.ir_reviews.create(content: self.summary)
+      end
+      if self.newsfeed_syn
+        self.organization.newsfeeds.create(content: self.summary)
+      end
+      if self.investor_summary.present?
+        investor_summary.each do |k, v|
+          member = Member.find(k)
+          member.update ir_review: v
+        end
       end
     end
   end
 
   def set_current_user
     self.user_id ||= User.current&.id
+  end
+
+  def set_meeting_status
+    self.status = Calendar.status_done_value if self.summary.present? && !self.status_cancel?
   end
 end
