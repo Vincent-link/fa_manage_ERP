@@ -126,5 +126,16 @@ class InvesteventApi < Grape::API
 
       present events.inspect, with: Entities::InvesteventForIndex
     end
+
+    resource ':id' do
+      desc "删除融资事件"
+      params do
+        optional :delete_note, type: String, desc: "删除理由"
+      end
+      patch do
+        @event = Zombie::DmInvestevent.find(params[:id])
+        @event.update!(delete_note: params[:delete_note])
+      end
+    end
   end
 end

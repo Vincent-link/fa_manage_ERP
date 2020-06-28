@@ -146,7 +146,11 @@ class FundingStateMachineApi < Grape::API
       end
       patch 'status' do
         # todo 判断管理员权限
-        @funding.update!(status: params[:status])
+        if params[:status] == Funding.status_pursue_value
+          @funding.update!(status: params[:status], agree_time: Time.now)
+        else
+          @funding.update!(status: params[:status])
+        end
         present @funding, with: Entities::FundingLite
       end
     end

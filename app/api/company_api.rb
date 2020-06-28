@@ -7,7 +7,7 @@ class CompanyApi < Grape::API
       optional :is_ka, type: Boolean, desc: 'KA'
       optional :recent_financing, type: String, desc: '最近融资'
       requires :page, type: Integer, desc: '页数', default: 1
-      optional :per_page, type: Integer, desc: '每页条数', default: 30
+      optional :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 30
     end
     get do
       companies = Company.es_search(params)
@@ -54,12 +54,12 @@ class CompanyApi < Grape::API
         end
 
         contacts_params.map { |e| Contact.create!(e.merge(company_id: @company.id)) }
-      end
 
-      # 从金丝雀获取最近融资
-      financing_events = Zombie::DmInvestevent.includes(:company, :invest_type, :invest_round).public_data.not_deleted.where(company_id: @company.id)._select(:invest_round_id).sort_by(&:invest_round_id)
-      @company.recent_financing = financing_events.last.invest_round_id
-      @company.save!
+        # 从金丝雀获取最近融资
+        financing_events = Zombie::DmInvestevent.includes(:company, :invest_type, :invest_round).public_data.not_deleted.where(company_id: @company.id)._select(:invest_round_id).sort_by(&:invest_round_id)
+        @company.recent_financing = financing_events.last.invest_round_id
+        @company.save!
+      end
       true
     end
 
