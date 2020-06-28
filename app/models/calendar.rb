@@ -8,7 +8,6 @@ class Calendar < ApplicationRecord
   has_many :com_members, -> {where(memberable_type: 'Contact')}, class_name: 'CalendarMember'
   has_many :user_members, -> {where(memberable_type: 'User')}, class_name: 'CalendarMember'
   belongs_to :user
-  belongs_to :address, optional: true
   belongs_to :funding, optional: true
   belongs_to :company, optional: true
   belongs_to :organization, optional: true
@@ -56,6 +55,10 @@ class Calendar < ApplicationRecord
     cr_user_ids.each do |user_id|
       self.calendar_members.build(memberable_type: 'User', memberable_id: user_id)
     end
+  end
+
+  def address
+    Zombie::DmAddress.find(self.address_id)
   end
 
   def gen_track_log_detail
