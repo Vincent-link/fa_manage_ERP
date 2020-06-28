@@ -89,7 +89,7 @@ class TrackLogApi < Grape::API
             when TrackLog.status_spa_sha_value
               @funding.change_spas(current_user.id, {spas: [params.slice(:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency, :file_spa).merge(action: 'update', id: tracklog.id)]})
             when TrackLog.status_issue_ts_value
-              tracklog.change_ts(current_user.id, params[:file_spa][:blob_id])
+              tracklog.change_ts(current_user.id, params[:file_ts][:blob_id])
             when TrackLog.status_contacted_value
               raise '项目进度状态选择错误' if params[:calendar].present?
             end
