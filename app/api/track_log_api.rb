@@ -75,7 +75,7 @@ class TrackLogApi < Grape::API
         end
 
         post do
-          raise '项目进度状态选择错误' if params[:calendar].present? && params[:track_log_id].nil? && params[:status] != TrackLog.status_meeting_value
+          # raise '项目进度状态选择错误' if params[:calendar].present? && params[:track_log_id].nil? && params[:status] != TrackLog.status_meeting_value
           organziation = Organization.find(params[:organization_id])
           params[:member_ids] = organziation.members.where(id: params[:member_ids]).map(&:id)
           if params[:track_log_id].present?
@@ -91,7 +91,7 @@ class TrackLogApi < Grape::API
             when TrackLog.status_issue_ts_value
               tracklog.change_ts(current_user.id, params[:file_spa][:blob_id])
             when TrackLog.status_contacted_value
-              raise '状态选择错误' if params[:calendar].present?
+              raise '项目进度状态选择错误' if params[:calendar].present?
             end
           end
           tracklog.member_ids = params[:member_ids]
