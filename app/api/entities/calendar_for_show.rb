@@ -1,5 +1,5 @@
 module Entities
-  class Calendar < Base
+  class CalendarForShow < Base
     expose :id, documentation: {type: 'integer', desc: 'id'}
     expose :title, documentation: {type: String, desc: '标题'}
     expose :desc, documentation: {type: String, desc: '内容'}
@@ -13,6 +13,8 @@ module Entities
     expose :summary, documentation: {type: 'boolean', desc: '会议纪要'}
     expose :track_log_id, documentation: {type: Integer, desc: '关联的track_log id'}
     expose :summary_detail, documentation: {type: 'hash', desc: 'summary详细'}
+
+    expose :track_log_details, using: Entities::TrackLogDetail, documentation: {type: Entities::TrackLogDetail, desc: '关联的track_log跟进'}
 
     expose :org_members, using: Entities::CalendarMember
     expose :com_members, using: Entities::CalendarMember

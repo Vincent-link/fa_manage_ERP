@@ -112,7 +112,7 @@ class CalendarApi < Grape::API
       desc '约见详情'
       get do
         @calendar = Calendar.find params[:id]
-        present @calendar, with: Entities::Calendar
+        present @calendar, with: Entities::CalendarForShow
       end
     end
   end
