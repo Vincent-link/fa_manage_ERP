@@ -121,11 +121,8 @@ class FundingApi < Grape::API
         optional :confidentiality_reason, type: String, desc: '保密原因'
         optional :is_reportable, type: Boolean, desc: '是否出现周日报'
         optional :is_complicated, type: Boolean, desc: '是否复杂项目'
-
-        #todo 约见（5个字段的swagger）（李靖超）
       end
       patch do
-        #todo 约见
         auth_source_type(params)
         raise '咨询类型的项目不能修改类型' if params[:category].present? && @funding.category == Funding.category_advisory_value && @funding.category != params[:category]
         Funding.transaction do

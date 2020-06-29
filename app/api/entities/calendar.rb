@@ -14,6 +14,8 @@ module Entities
     expose :track_log_id, documentation: {type: Integer, desc: '关联的track_log id'}
     expose :summary_detail, documentation: {type: 'hash', desc: 'summary详细'}
 
+    expose :track_log_details, using: Entities::TrackLogDetail, documentation: {type: Entities::TrackLogDetail, desc: '关联的track_log跟进'}
+
     expose :org_members, using: Entities::CalendarMember
     expose :com_members, using: Entities::CalendarMember
     expose :user_members, using: Entities::CalendarMember

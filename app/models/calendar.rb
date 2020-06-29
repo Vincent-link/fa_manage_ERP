@@ -12,7 +12,7 @@ class Calendar < ApplicationRecord
   belongs_to :company, optional: true
   belongs_to :organization, optional: true
   belongs_to :track_log, optional: true
-  has_many :track_log_deatils, as: :linkable
+  has_many :track_log_details, as: :linkable
 
   before_validation :set_current_user
   before_save :set_meeting_status
