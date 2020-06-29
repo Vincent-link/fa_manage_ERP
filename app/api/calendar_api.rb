@@ -64,7 +64,7 @@ class CalendarApi < Grape::API
         optional :member_ids, type: Array[Integer], desc: '投资人id'
         requires :cr_user_ids, type: Array[Integer], desc: '华兴参与人id'
         requires :started_at, type: DateTime, desc: '开始时间'
-        requires :during, type: Integer, desc: '持续时间（分钟）'
+        requires :ended_at, type: DateTime, desc: '结束时间'
         optional :address_id, type: Integer, desc: '会议地点id'
       end
       patch do
