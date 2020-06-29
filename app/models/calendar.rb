@@ -60,31 +60,30 @@ class Calendar < ApplicationRecord
   end
 
   def address
-    Zombie::DmAddress.find(self.address_id)
+    self.address_id && Zombie::DmAddress.find(self.address_id)
   end
 
   def gen_track_log_detail
     if self.meeting_category_roadshow?
-      if self.track_log.present?
-        action = if self.previous_changes.has_key? :id
-                   'create'
-                 else
-                   case self.status
-                   when Calendar.status_cancel_value
-                     'delete'
-                   else
-                     'update'
-                   end
-                 end
-        self.track_log.gen_meeting_detail(User.current.id, self.id, action)
-        self.track_log.change_status_by_calendar(self.track_result)
-      else
-        self.funding.track_logs.find_or_create_by(organization_id: self.organization_id) do |track_log|
-          org_members.each do |cal_member|
-            track_log.track_log_members.build(member_id: cal_member.memberable_id)
-          end
+      self.funding.track_logs.find_or_create_by!(organization_id: self.organization_id) do |track_log|
+        org_members.each do |cal_member|
+          track_log.track_log_members.build(member_id: cal_member.memberable_id)
         end
+        track_log.status = TrackLog.status_meeting_value
+        self.track_log = track_log
       end
+      action = if self.previous_changes.has_key? :id
+                 'create'
+               else
+                 case self.status
+                 when Calendar.status_cancel_value
+                   'delete'
+                 else
+                   'update'
+                 end
+               end
+      self.track_log.gen_meeting_detail(User.current.id, self.id, action)
+      self.track_log.change_status_by_calendar(self.track_result) if self.track_result
     end
   end
 
