@@ -87,7 +87,7 @@ class TrackLog < ApplicationRecord
         action = 'create'
       end
     end
-    self.gen_ts_detail(user_id, action)
+    self.reload.gen_ts_detail(user_id, action)
   end
 
   def gen_meeting_detail(user_id, calendar_id, action)

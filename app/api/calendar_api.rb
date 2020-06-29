@@ -60,11 +60,14 @@ class CalendarApi < Grape::API
         optional :company_id, type: Integer, desc: '约见公司id'
         optional :funding_id, type: Integer, desc: '项目id'
         optional :organization_id, type: Integer, desc: '约见机构id'
+        optional :track_log_id, type: Integer, desc: '融资进度id'
+        optional :desc, type: String, desc: '会议描述', default: '由项目进度生成'
+        at_least_one_of :track_log_id, :desc
         optional :contact_ids, type: Array[Integer], desc: '公司联系人id'
         optional :member_ids, type: Array[Integer], desc: '投资人id'
         requires :cr_user_ids, type: Array[Integer], desc: '华兴参与人id'
         requires :started_at, type: DateTime, desc: '开始时间'
-        requires :during, type: Integer, desc: '持续时间（分钟）'
+        requires :ended_at, type: DateTime, desc: '结束时间'
         optional :address_id, type: Integer, desc: '会议地点id'
       end
       patch do
@@ -109,7 +112,7 @@ class CalendarApi < Grape::API
       desc '约见详情'
       get do
         @calendar = Calendar.find params[:id]
-        present @calendar, with: Entities::Calendar
+        present @calendar, with: Entities::CalendarForShow
       end
     end
   end

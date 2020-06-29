@@ -20,7 +20,7 @@ class ApiBase < Grape::API
     message = "您访问的数据已经失效，请刷新页面或后退重新访问"
     Honeybadger.notify(e) if Object.const_defined?('Honeybadger')
     error!({code: 404, msg: message}, 200)
-  end
+  end if Rails.env.production?
 
   rescue_from CanCan::AccessDenied do
     message = "您没有操作权限！"
