@@ -2,7 +2,7 @@ class UserTitleApi < Grape::API
   resource :user_titles do
     desc '所有对外title', entity: Entities::UserTitle
     get do
-      present UserTitle.all, with: Entities::UserTitle
+      present UserTitle.all.order(created_at: :desc), with: Entities::UserTitle
     end
 
     desc "新增对外title", entity: Entities::UserTitle

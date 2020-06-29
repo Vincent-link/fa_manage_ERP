@@ -2,7 +2,7 @@ class RoleApi < Grape::API
   resource :roles do
     desc '所有权限组', entity: Entities::Role
     get do
-      present Role.all, with: Entities::Role
+      present Role.all.order(created_at: :desc), with: Entities::Role
     end
 
     desc "新增权限组", entity: Entities::Role

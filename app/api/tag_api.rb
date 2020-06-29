@@ -9,7 +9,7 @@ class TagApi < Grape::API
 
         desc '一级标签'
         get :tags do
-          present @root_category.tags, with: Entities::Tag
+          present @root_category.tags.order(created_at: :desc), with: Entities::Tag
         end
 
         desc '创建一级标签'
@@ -49,7 +49,7 @@ class TagApi < Grape::API
 
             desc '一级标签的所有二级标签'
             get :tags do
-              present @one_level_tag.sub_tags, with: Entities::Tag
+              present @one_level_tag.sub_tags.order(created_at: :desc), with: Entities::Tag
             end
 
             desc '增加二级标签'
