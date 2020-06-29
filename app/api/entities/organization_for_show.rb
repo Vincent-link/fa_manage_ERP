@@ -21,7 +21,6 @@ module Entities
     expose :round_ids, documentation: {type: 'integer', desc: '轮次', is_array: true}
     expose :currency_ids, documentation: {type: 'integer', desc: '币种', is_array: true}
     expose :organization_tags, documentation: {type: 'integer', desc: '标签', is_array: true}
-    expose :tag_desc, documentation: {type: String, desc: '标签', is_array: true}
     expose :any_round, documentation: {type: 'boolean', desc: '不限轮次'}
 
     expose :teams, documentation: {type: 'string', desc: '机构团队', is_array: true}
