@@ -17,7 +17,7 @@ module Entities
     expose :intro, documentation: {type: 'string', desc: '机构介绍'}
     expose :logo_attachment, as: :logo, using: Entities::File, documentation: {type: Entities::File, desc: '机构logo'}
 
-    expose :sector_ids, documentation: {type: 'integer', desc: '行业', is_array: true}
+    expose :sectors, documentation: {type: 'integer', desc: '行业', is_array: true}
     expose :round_ids, documentation: {type: 'integer', desc: '轮次', is_array: true}
     expose :currency_ids, documentation: {type: 'integer', desc: '币种', is_array: true}
     expose :organization_tags, documentation: {type: 'integer', desc: '标签', is_array: true}
