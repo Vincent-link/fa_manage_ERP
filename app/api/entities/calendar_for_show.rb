@@ -21,6 +21,10 @@ module Entities
     expose :user_members, using: Entities::CalendarMember
 
     expose :organization_name, documentation: {type: String, desc: '机构名称'}
+    expose :organization_id, documentation: {type: Integer, desc: '机构id'}
+    expose :company_id, documentation: {type: Integer, desc: '公司id'}
+    expose :company_name, documentation: {type: String, desc: '公司名称'}
+
     expose :status, documentation: {type: Integer, desc: '会议状态'}
 
     with_options(format_with: :time_to_s_minute) do
