@@ -19,7 +19,7 @@ module Entities
     expose :user_members, using: Entities::CalendarMember
 
     expose :organization_name, documentation: {type: String, desc: '机构名称'}
-    expose :funding_status_desc, documentation: {type: String, desc: '项目状态'}
+    expose :status, documentation: {type: Integer, desc: '会议状态'}
 
     with_options(format_with: :time_to_s_minute) do
       expose :started_at, documentation: {type: String, desc: '开始时间'}

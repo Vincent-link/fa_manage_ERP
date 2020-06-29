@@ -20,7 +20,6 @@ class Calendar < ApplicationRecord
   after_save :gen_org_meeting_info
 
   delegate :name, to: :organization, allow_nil: true, prefix: true
-  delegate :status_desc, to: :funding, allow_nil: true, prefix: true
 
   attr_accessor :ir_review_syn, :newsfeed_syn, :track_result, :investor_summary
 
