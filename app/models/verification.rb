@@ -30,6 +30,7 @@ class Verification < ApplicationRecord
         op: -> (params){
           evaluation = Evaluation.find_by(user_id: User.current.id, funding_id: params[:funding_id])
           Question.create!(params.merge(evaluation_id: evaluation.id, user_id: User.current.id)) unless evaluation.nil?
+          # todo 给项目成员发通知，提醒项目成员去回答
       }},
       email: {
         value: 6

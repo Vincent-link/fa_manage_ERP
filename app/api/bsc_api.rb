@@ -176,6 +176,7 @@ class BscApi < Grape::API
         end
         post "bsc/answers" do
           @answer = Answer.create(desc: params[:desc], question_id: params[:question_id], user_id: User.current.id)
+          # todo 给投委会成员发通知，提醒投委会成员他的问题已被回答
         end
       end
     end
