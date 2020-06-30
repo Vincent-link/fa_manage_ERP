@@ -95,7 +95,7 @@ class TrackLogApi < Grape::API
             end
           end
           tracklog.member_ids = params[:member_ids]
-          current_user.created_calendars.create!(params[:calendar].slice(:started_at, :ended_at, :address_id, :meeting_type).merge(meeting_category: Calendar.meeting_category_roadshow_value, track_log_id: tracklog.id)) if params[:calendar].present?
+          current_user.created_calendars.create!(params[:calendar].slice(:started_at, :ended_at, :address_id, :meeting_type).merge(meeting_category: Calendar.meeting_category_roadshow_value, track_log_id: tracklog.id, funding_id: tracklog.funding_id)) if params[:calendar].present?
           tracklog.track_log_details.create(params.slice(:content).merge(user_id: current_user.id))
           present tracklog, with: Entities::TrackLogBase
         end
