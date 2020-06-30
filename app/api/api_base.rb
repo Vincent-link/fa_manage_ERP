@@ -12,8 +12,11 @@ class ApiBase < Grape::API
                 GrapeLogging::Loggers::SessionInfo.new]
   before do
     authenticate_user! unless skip_auth?
-    Zombie.current_user = current_user.id if current_user
     User.current = current_user
+    if current_user
+      Zombie.current_user = current_user.id
+      PaperTrail.request.whodunnit = current_user.name
+    end
   end
 
   rescue_from ActiveRecord::RecordNotFound do |e|
