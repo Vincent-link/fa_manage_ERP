@@ -51,5 +51,20 @@ class AddressApi < Grape::API
         Zombie::DmAddress.update_address(params[:id], nil, params[:location_id], params[:address_desc])
       end
     end
+
+    desc '创建其他地址'
+    params do
+      requires :location_id, type: Integer, desc: '地区id'
+      requires :address_desc, type: String, desc: '地址详细'
+    end
+    post do
+      # Dm create method：DmAddress.create_address(owner_type, owner_id, iso_location_id, location_id, address_desc)
+      Zombie::DmAddress.create_address('FaCustomer', nil, nil, params[:location_id], params[:address_desc])
+    end
+
+    desc '获取其他地址'
+    get do
+      present Zombie::DmAddress.where(owner_type: 'FaCustomer').inspect, with: Entities::Address
+    end
   end
 end
