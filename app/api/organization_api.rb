@@ -73,12 +73,16 @@ class OrganizationApi < Grape::API
       optional :alias, type: Array[String], desc: '机构别名'
     end
     post do
-      @organization.organization_tag_ids = params[:organization_tag_ids]
-      @organization.sector_ids = params[:sector_ids]
-      params.delete(:organization_tag_ids)
-      params.delete(:sector_ids)
+      Organization.transaction do
+        organization_tag_ids = params.delete(:organization_tag_ids)
+        sector_ids = params.delete(:sector_ids)
 
-      present Organization.create!(declared(params, include_missing: false)), with: Entities::OrganizationForShow
+        @organization = Organization.create!(declared(params, include_missing: false))
+
+        @organization.organization_tag_ids = organization_tag_ids
+        @organization.sector_ids = sector_ids
+      end
+      true
     end
 
     desc '动态（假）'
@@ -162,7 +166,16 @@ class OrganizationApi < Grape::API
         optional :alias, type: Array[String], desc: '机构别名'
       end
       patch do
-        params.delete(:part) #todo part validate
+        part = params.delete(:part)
+        case part
+        when 'head'
+          raise "中文名称不能为空" if params[:name].nil?
+          raise "level不能为空" if params[:level].nil?
+        when 'basic'
+          raise "行业不能为空" if params[:sector_ids].nil?
+          raise "轮次不能为空" if params[:round_ids].nil?
+          raise "投资币种不能为空" if params[:currency_ids].nil?
+        end
 
         @organization.organization_tag_ids = params[:organization_tag_ids]
         @organization.sector_ids = params[:sector_ids]

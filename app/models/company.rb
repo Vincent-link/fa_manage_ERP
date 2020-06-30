@@ -20,12 +20,13 @@ class Company < ApplicationRecord
   validates_presence_of :location_city_id
 
   def search_data
-    attributes.merge
+    attributes.merge sector_ids: self.sectors.ids
   end
 
   def self.es_search(params)
+    binding.pry
     where_hash = {}
-    where_hash[:sector_list] = {all: params[:sector_ids]} if params[:sector_ids].present?
+    where_hash[:sector_ids] = params[:sector_ids] if params[:sector_ids].present?
     where_hash[:is_ka] = params[:is_ka] if !params[:is_ka].nil?
     where_hash[:recent_financing] = params[:recent_financing] if params[:recent_financing].present?
 

@@ -38,7 +38,7 @@ class MemberApi < Grape::API
         optional :position_rank_id, type: Integer, desc: '职级'
         optional :position, type: String, desc: '实际职位'
         optional :address_id, type: Integer, desc: '办公地点'
-        optional :tag_ids, type: Array[Integer], desc: '热点标签'
+        optional :investor_tag_ids, type: Array[Integer], desc: '热点标签'
         optional :sector_ids, type: Array[Integer], desc: '关注行业'
         optional :round_ids, type: Array[Integer], desc: '关注轮次'
         optional :currency_ids, type: Array[Integer], desc: '可投币种'
@@ -69,7 +69,7 @@ class MemberApi < Grape::API
     params do
       optional :query, type: String, desc: '检索文本', default: '*'
       optional :followed, type: Boolean, desc: '我关注的'
-      optional :sector, type: Array[Integer], desc: '行业', default: []
+      optional :sector_ids, type: Array[Integer], desc: '行业', default: []
       optional :round, type: Array[Integer], desc: '轮次', default: []
       optional :position_rank_id, type: Array[Integer], desc: '职级'
       optional :currency, type: Array[Integer], desc: '币种', default: []
@@ -148,7 +148,7 @@ class MemberApi < Grape::API
         optional :position_rank_id, type: Integer, desc: '职级'
         optional :position, type: String, desc: '实际职位'
         optional :address_id, type: Integer, desc: '办公地点'
-        optional :tag_ids, type: Array[Integer], desc: '热点标签'
+        optional :investor_tag_ids, type: Array[Integer], desc: '热点标签'
         optional :sector_ids, type: Array[Integer], desc: '关注行业'
         optional :round_ids, type: Array[Integer], desc: '关注轮次'
         optional :currency_ids, type: Array[Integer], desc: '可投币种'
