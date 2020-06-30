@@ -88,7 +88,7 @@ class OrganizationApi < Grape::API
 
     resources ':id' do
       before do
-        @organization = Organization.find(params.delete(:id))
+        @organization = Organization.find(params[:id])
       end
 
       desc '机构详情', entity: Entities::OrganizationForShow
@@ -121,6 +121,7 @@ class OrganizationApi < Grape::API
 
       desc '更新机构', entity: Entities::OrganizationForShow
       params do
+        optional :id, type: Integer, desc: '公海机构id'
         optional :name, type: String, desc: '机构名称'
         optional :en_name, type: String, desc: '机构英文名称'
         optional :level, type: String, desc: '级别，见公共字典值level'
