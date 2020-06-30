@@ -2,7 +2,7 @@ class OrganizationApi < Grape::API
   resource :organizations do
     desc '投资机构列表', entity: Entities::OrganizationForIndex
     params do
-      optional :query, type: String, desc: '检索文本', default: '*'
+      optional :query, type: String, desc: '检索文本', default: '*', coerce_with: ->(val) { val.present? ? val : '*' }
       optional :sector, type: Array[Integer], desc: '行业', default: []
       optional :round, type: Array[Integer], desc: '轮次', default: []
       optional :any_round, type: Boolean, desc: '是否不限轮次', default: false
