@@ -98,8 +98,10 @@ class Organization < ApplicationRecord
   end
 
   def save_to_dm
-    dm_org = Zombie::DmInvestor.create_from_attribute self.attributes_for_dm
-    self.id = dm_org.id
+    if self.new_record?
+      dm_org = Zombie::DmInvestor.create_from_attribute self.attributes_for_dm
+      self.id = dm_org.id
+    end
   end
 
   def attributes_for_dm
