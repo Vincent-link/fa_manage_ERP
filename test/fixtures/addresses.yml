@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  location_id: 1
+  address_desc: MyString
+  deleted_at: 2020-06-30 18:01:21
+  user_id: 1
+
+two:
+  location_id: 1
+  address_desc: MyString
+  deleted_at: 2020-06-30 18:01:21
+  user_id: 1
