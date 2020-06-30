@@ -116,12 +116,12 @@ class InvesteventApi < Grape::API
                  Zombie::DmInvestevent.public_data
                end
       search_params = {}
-      search_params[:sector] = params[:sectors] if params[:sectors]
-      search_params[:round] = params[:rounds] if params[:rounds]
-      search_params[:company_name] = params[:company_name] if params[:company_name]
+      search_params[:sector] = params[:sectors] if params[:sectors].present?
+      search_params[:round] = params[:rounds] if params[:rounds].present?
+      search_params[:company_name] = params[:company_name] if params[:company_name].present?
       events = events.search(search_params) if search_params.present?
-      events = events.by_member(params[:member_id]) if params[:member_id]
-      events = events.by_investor(params[:organization_id]) if params[:organization_id]
+      events = events.by_member(params[:member_id]) if params[:member_id].present?
+      events = events.by_investor(params[:organization_id]) if params[:organization_id].present?
       events = events.order_by_date._select(:id, :birth_date, :company_name, :company_category_id, :invest_round_id, :company_location_province_id, :lead_type, :investevent_investors, :invest_type_id, :company_id, :detail_money_des, :overview).paginate(page: params[:page], per_page: params[:per_page])
 
       present events.inspect, with: Entities::InvesteventForIndex
