@@ -65,7 +65,7 @@ class InvesteventApi < Grape::API
               optional :select, type: Array[String], desc: '图表数据白名单 sector/round/time/location/next_round/last_round 不传返回所有'
             end
             get 'stat' do
-              events = Zombie::DmInvestevent.includes(:investevent_investor_relations).where(investevent_investor_relations: {investor_id: params[:id]})._select(:id, :birth_date, :company_category_id, :invest_round_id, :company_location_province_id, :lead_type, :investevent_investor_rels)
+              events = Zombie::DmInvestevent.public_data.includes(:investevent_investor_relations).where(investevent_investor_relations: {investor_id: params[:id]})._select(:id, :birth_date, :company_category_id, :invest_round_id, :company_location_province_id, :lead_type, :investevent_investor_rels)
 
               if params[:start_time] || params[:end_time]
                 params[:start_time] ||= '1970-01-01'
@@ -111,9 +111,9 @@ class InvesteventApi < Grape::API
     end
     get do
       events = if params[:start_date] || params[:end_date]
-                 Zombie::DmInvestevent.by_birth_date_range(params[:start_date] || '1000-01-01', params[:end_date] || '3000-01-01')
+                 Zombie::DmInvestevent.public_data.by_birth_date_range(params[:start_date] || '1000-01-01', params[:end_date] || '3000-01-01')
                else
-                 Zombie::DmInvestevent
+                 Zombie::DmInvestevent.public_data
                end
       search_params = {}
       search_params[:sector] = params[:sectors] if params[:sectors]
@@ -133,7 +133,7 @@ class InvesteventApi < Grape::API
         optional :delete_note, type: String, desc: "删除理由"
       end
       delete do
-        @event = Zombie::DmInvestevent.find(params[:id])
+        @event = Zombie::DmInvestevent.public_data.find(params[:id])
         @event.contribute_delete(params[:delete_note])
         true
       end
