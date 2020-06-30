@@ -114,16 +114,6 @@ class OrganizationApi < Grape::API
         present relations, with: Entities::DmMemberReportRelation
       end
 
-      desc '案例（假）'
-      get :investment_event do
-        []
-      end
-
-      desc '案例统计（假）'
-      get :investment_stat do
-
-      end
-
       desc 'kick机构'
       delete do
         @organization.destroy!

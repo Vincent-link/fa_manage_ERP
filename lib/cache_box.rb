@@ -35,12 +35,18 @@ class CacheBox
     end
   end
 
-  def self.dm_locations
-    Rails.cache.fetch('dm_locations') do
+  def self.dm_location_tree
+    Rails.cache.fetch('dm_location_tree') do
       Zombie::DmLocation.location_tree.map do |ins|
         ins.id = 0 - ins.id
         ins
       end
+    end
+  end
+
+  def self.dm_locations
+    Rails.cache.fetch('dm_locations') do
+      Zombie::DmLocation.all._select(:id, :name, :parent_id).index_by(&:id)
     end
   end
 

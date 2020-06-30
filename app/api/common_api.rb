@@ -7,7 +7,7 @@ class CommonApi < Grape::API
           rounds: CacheBox.dm_rounds,
           org_level: Organization.level_id_name,
           currencies: CacheBox.dm_currencies,
-          locations: CacheBox.dm_locations,
+          locations: CacheBox.dm_location_tree,
           org_tier: Organization.tier_id_name,
           member_report_type: Member.report_type_id_name,
           member_position_rank: CacheBox.dm_position_ranks,
