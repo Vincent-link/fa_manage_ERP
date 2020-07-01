@@ -9,7 +9,7 @@ class CommentApi < Grape::API
           optional :page_size, as: :per_page, type: Integer, desc: '页数', default: 10
         end
         get :comments do
-          present Comment.where(commentable_type: configuration[:owner].classify, commentable_id: params[:commentable_id], type: params[:type].classify).order(updated_at: :desc).paginate(page: params[:page], per_page: params[:per_page]), with: Entities::Comment
+          present params[:type].classify.where(commentable_type: configuration[:owner].classify, commentable_id: params[:commentable_id]).order(updated_at: :desc).paginate(page: params[:page], per_page: params[:per_page]), with: Entities::Comment
         end
 
         desc '创建comments', entity: Entities::Comment
