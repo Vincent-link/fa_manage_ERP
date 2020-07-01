@@ -18,6 +18,7 @@ class Organization < ApplicationRecord
   has_many :mate_organization_relations, -> {relation_type_mate}, class_name: 'OrganizationRelation'
   has_many :lead_organizations, through: :lead_organization_relations, source: :relation_organization, class_name: 'Organization'
   has_many :mate_organizations, through: :mate_organization_relations, source: :relation_organization, class_name: 'Organization'
+  has_many :organization_relations
   has_many :organization_teams
   has_many :calendars
 

@@ -21,7 +21,7 @@ class FundingPolymer < ApplicationRecord
   has_many :funding_users
   has_many :funding_all_users, through: :funding_users, source: :user
 
-  has_many :pipelines
+  has_many :pipelines, foreign_key: :funding_id
 
   has_many :funding_members, through: :funding_users, source: :user
 

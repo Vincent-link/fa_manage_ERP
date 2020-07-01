@@ -2,7 +2,7 @@ class OrganizationApi < Grape::API
   resource :organizations do
     desc '投资机构列表', entity: Entities::OrganizationForIndex
     params do
-      optional :query, type: String, desc: '检索文本', default: '*', coerce_with: ->(val) { val.present? ? val : '*' }
+      optional :query, type: String, desc: '检索文本', default: '*', coerce_with: ->(val) {val.present? ? val : '*'}
       optional :sector, type: Array[Integer], desc: '行业', default: []
       optional :round, type: Array[Integer], desc: '轮次', default: []
       optional :any_round, type: Boolean, desc: '是否不限轮次', default: false
@@ -183,13 +183,10 @@ class OrganizationApi < Grape::API
         requires :relation_organization_ids, type: Array[Integer], desc: '机构ids'
       end
       patch :organization_relations do
-        ids_name = case params[:relation_type]
-                   when 1
-                     'lead_organization_ids='
-                   when 2
-                     'mate_organization_ids='
-                   end
-        @organization.send(ids_name, params[:relation_organization_ids])
+        @organization.organization_relations.where(relation_type: params[:relation_type]).where.not(relation_organization_id: params[:relation_organization_ids]).destroy_all
+        params[:relation_organization_ids].each do |org_id|
+          @organization.organization_relations.find_or_create_by! relation_type: params[:relation_type], relation_organization_id: org_id
+        end
         present @organization, with: Entities::OrganizationForShow
       end
 
