@@ -30,6 +30,8 @@ class User < ApplicationRecord
   delegate :name, to: :team, :prefix => true, allow_nil: true
   delegate :name, to: :grade, :prefix => true, allow_nil: true
 
+  belongs_to :kpi_group, optional: true
+
   def position
     ''
   end

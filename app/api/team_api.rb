@@ -38,4 +38,6 @@ class TeamApi < Grape::API
       end
     end
   end
+
+  mount KpiGroupApi, with: {owner: "teams"}
 end
