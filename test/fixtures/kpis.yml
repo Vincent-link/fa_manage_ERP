@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  kpi_type: 1
+  coverage: 1
+  value: 1
+  desc: MyString
+  relation: MyString
+  parent_id: 1
+  kpi_group_id: 1
+
+two:
+  kpi_type: 1
+  coverage: 1
+  value: 1
+  desc: MyString
+  relation: MyString
+  parent_id: 1
+  kpi_group_id: 1

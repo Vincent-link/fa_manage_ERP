@@ -19,7 +19,7 @@ module Entities
     expose :round_ids, documentation: {type: 'integer', desc: '关注轮次', is_array: true}
     expose :currency_ids, documentation: {type: 'integer', desc: '关注币种', is_array: true}
     expose :scale_ids, documentation: {type: 'integer', desc: '关注投资规模', is_array: true}
-    expose :investor_tags, documentation: {type: 'integer', desc: '标签', is_array: true}
+    expose :hot_tags, documentation: {type: 'integer', desc: '标签', is_array: true}
     expose :followed_location_ids, documentation: {type: 'integer', desc: '关注地区', is_array: true}
 
     expose :users, as: :covered_by, using: Entities::UserForShow, documentation: {type: 'Entities::UserLite', desc: '对接成员'}

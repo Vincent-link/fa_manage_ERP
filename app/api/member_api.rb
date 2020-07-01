@@ -38,7 +38,7 @@ class MemberApi < Grape::API
         optional :position_rank_id, type: Integer, desc: '职级'
         optional :position, type: String, desc: '实际职位'
         optional :address_id, type: Integer, desc: '办公地点'
-        optional :investor_tag_ids, type: Array[Integer], desc: '热点标签'
+        optional :hot_tag_ids, type: Array[Integer], desc: '热点标签'
         optional :sector_ids, type: Array[Integer], desc: '关注行业'
         optional :round_ids, type: Array[Integer], desc: '关注轮次'
         optional :currency_ids, type: Array[Integer], desc: '可投币种'
@@ -59,7 +59,12 @@ class MemberApi < Grape::API
         optional :intro, type: String, desc: '简介'
       end
       post :members do
-        present Member.create!(params), with: Entities::MemberForShow
+        Company.transaction do
+          hot_tag_ids = params.delete(:hot_tag_ids)
+          @member = Member.create!(params)
+          @member.hot_tag_ids = hot_tag_ids
+          present @member, with: Entities::MemberForShow
+        end
       end
     end
   end
@@ -148,7 +153,7 @@ class MemberApi < Grape::API
         optional :position_rank_id, type: Integer, desc: '职级'
         optional :position, type: String, desc: '实际职位'
         optional :address_id, type: Integer, desc: '办公地点'
-        optional :investor_tag_ids, type: Array[Integer], desc: '热点标签'
+        optional :hot_tag_ids, type: Array[Integer], desc: '热点标签'
         optional :sector_ids, type: Array[Integer], desc: '关注行业'
         optional :round_ids, type: Array[Integer], desc: '关注轮次'
         optional :currency_ids, type: Array[Integer], desc: '可投币种'
@@ -175,6 +180,9 @@ class MemberApi < Grape::API
         #todo part validation
         params.delete :part
         member = Member.find(params[:id])
+
+        member.hot_tag_ids = params.delete(:hot_tag_ids)
+
         member.update!(params)
         present member, with: Entities::MemberForShow
       end

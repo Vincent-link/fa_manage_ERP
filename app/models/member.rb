@@ -10,7 +10,7 @@ class Member < ApplicationRecord
   has_blob_upload :avatar, :card
 
 
-  acts_as_taggable_on :investor_tags
+  acts_as_taggable_on :hot_tags
 
   belongs_to :organization, optional: true
   belongs_to :sponsor, class_name: 'User', optional: true

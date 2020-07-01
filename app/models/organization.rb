@@ -147,7 +147,7 @@ class Organization < ApplicationRecord
         organization.intro = dm_organization.investor_des
         organization.logo = dm_organization.logo
         organization.site = dm_organization.url
-        organization.tag_ids = dm_organization.investor_tags.map(&:id)
+        organization.organization_tag_ids = dm_organization.investor_tags.map(&:id)
         organization.sector_ids = dm_organization.sectors.map(&:id)
         organization.invest_stage_ids = dm_organization.invest_stages.map(&:id)
         organization.currency_ids = dm_organization.currencies.map(&:id)
