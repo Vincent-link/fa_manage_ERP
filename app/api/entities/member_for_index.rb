@@ -10,7 +10,7 @@ module Entities
     expose :wechat, documentation: {type: 'string', desc: '微信'}
     expose :email, documentation: {type: 'string', desc: '邮箱'}
     expose :team_ids, documentation: {type: 'integer', desc: '所属团队', is_array: true}
-    expose :sectors, documentation: {type: 'integer', desc: '关注行业', is_array: true}
+    expose :sector_ids, documentation: {type: 'integer', desc: '关注行业', is_array: true}
     expose :currency_ids, documentation: {type: 'integer', desc: '币种', is_array: true}
     expose :round_ids, documentation: {type: 'integer', desc: '轮次', is_array: true}
     expose :followed_location_ids, documentation: {type: 'integer', desc: '关注地区', is_array: true}
