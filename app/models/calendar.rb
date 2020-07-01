@@ -65,7 +65,7 @@ class Calendar < ApplicationRecord
   end
 
   def gen_track_log_detail
-    if self.meeting_category_roadshow?
+    if self.meeting_category_roadshow? && self.funding
       self.funding.track_logs.find_or_create_by!(organization_id: self.organization_id) do |track_log|
         org_members.each do |cal_member|
           track_log.track_log_members.build(member_id: cal_member.memberable_id)
