@@ -80,10 +80,10 @@ class TrackLog < ApplicationRecord
       action = 'delete'
     else
       if self.file_ts_attachment.present?
-        self.file_ts_attachment.update(blob_id: blob_id)
+        self.file_ts_file_only_change(blob_id: blob_id)
         action = 'update'
       else
-        ActiveStorage::Attachment.create!(name: 'file_ts', record_type: 'TrackLog', record_id: self.id, blob_id: blob_id)
+        self.file_ts_file={blob_id: blob_id}
         action = 'create'
       end
     end
@@ -172,10 +172,10 @@ class TrackLog < ApplicationRecord
     [:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency].each {|ins| raise '融资结算信息不全' unless (params[ins] || ins.try(ins.to_s)).present?}
     self.update!(params.slice(:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency))
     if self.file_spa.present?
-      self.file_spa.attachment.update!(blob_id: params[:file_spa][:blob_id]) if params[:file_spa][:blob_id].present?
+      self.file_spa_file_only_change(params[:file_spa]) if params[:file_spa][:blob_id].present?
       action = 'update'
     else
-      ActiveStorage::Attachment.create!(name: 'file_spa', record_type: 'TrackLog', record_id: self.id, blob_id: params[:file_spa][:blob_id])
+      self.file_spa_file=params[:file_spa]
       action = 'create'
     end
     user_id = User.current.id
@@ -184,10 +184,10 @@ class TrackLog < ApplicationRecord
 
   def change_spa(user_id, blob_id)
     if self.file_spa.present?
-      self.file_spa_attachment.update(blob_id: blob_id)
+      self.file_spa_file_only_change(blob_id: blob_id)
       action = 'update'
     else
-      ActiveStorage::Attachment.create!(name: 'file_spa', record_type: 'TrackLog', record_id: self.id, blob_id: blob_id)
+      self.file_spa_file={blob_id: blob_id}
       action = 'create'
     end
     self.gen_file_spa_detail(user_id, action)

@@ -62,5 +62,12 @@ module Entities
           name: ins.bsc_status_desc
       }
     end
+    expose :funding_source, documentation: {type: 'string', desc: '项目来源'} do |ins|
+      if ins.class == 'Funding'
+        "FA"
+      else
+        ins.other_funding_type_desc
+      end
+    end
   end
 end

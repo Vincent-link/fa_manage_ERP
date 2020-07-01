@@ -1,0 +1,3 @@
+class FundingExtra < FundingPolymer
+
+end

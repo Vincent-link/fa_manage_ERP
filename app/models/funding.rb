@@ -1,9 +1,5 @@
-class Funding < ApplicationRecord
-  acts_as_paranoid
-  has_paper_trail
-  searchkick
-
-  include ModelState::FundingState
+class Funding < FundingPolymer
+  include BlobFileSupport
 
   has_many_attached :file_materials
   has_one_attached :file_teaser
@@ -12,38 +8,27 @@ class Funding < ApplicationRecord
   has_one_attached :file_model
   has_one_attached :file_el
 
-  belongs_to :company
+  has_blob_upload :file_teaser, :file_bp, :file_nda, :file_model, :file_el
+  have_blob_upload :file_materials
+
   belongs_to :funding_source_member, class_name: 'Member', foreign_key: :source_member, optional: true
 
   has_many :time_lines, -> {order(created_at: :desc)}, class_name: 'TimeLine'
   has_many :funding_company_contacts, class_name: 'FundingCompanyContact'
 
-  has_many :funding_normal_users, -> {kind_normal_users}, class_name: 'FundingUser'
-  has_many :normal_users, through: :funding_normal_users, source: :user
-
-  has_many :funding_bd_leader, -> {kind_bd_leader}, class_name: 'FundingUser'
-  has_many :bd_leader, through: :funding_bd_leader, source: :user
-
-  has_many :funding_execution_leader, -> {kind_execution_leader}, class_name: 'FundingUser'
-  has_many :execution_leader, through: :funding_execution_leader, source: :user
-
-  has_many :funding_users
-  has_many :funding_all_users, through: :funding_users, source: :user
-
   has_many :calendars
-  has_many :pipelines
 
   has_many :track_logs
   has_many :spas, -> {where(:status => TrackLog.status_spa_sha_value)}, class_name: 'TrackLog'
 
-  has_many :track_logs
-  has_many :spas, -> {where(:status => TrackLog.status_spa_sha_value)}, class_name: 'TrackLog'
+  has_many :evaluations
+  has_many :questions
+
+  has_many :verifications, as: :verifyable
 
   before_create :gen_serial_number
   after_create :base_time_line
   after_create :reviewing_status
-
-  scope :search_import, -> {includes(:company)}
 
   def gen_serial_number
     current_year = Time.now.year
@@ -59,47 +44,6 @@ class Funding < ApplicationRecord
 
   def base_time_line
     self.time_lines.create(status: self.status)
-  end
-
-  def search_data
-    attributes.merge pipeline_status: self.pipelines.pluck(:status)
-    # attributes.merge company: self.company
-    # attributes.merge company_name: self.company&.name,
-    #                  company_sector_names: self.company&.sector_ids.map { |ins| CacheBox.dm_single_sector_tree[ins] },
-    #                  sector_ids: self.company&.sector_ids
-    # todo 约见
-    # todo Tracklog
-  end
-
-  def self.es_search(params)
-    where_hash = {}
-    if params[:location_ids]
-
-    end
-
-    if params[:sector_ids]
-
-    end
-
-    if params[:round_ids]
-      where_hash[:round_id] = params[:round_ids]
-    end
-
-    #pipeline status
-    where_hash[:pipeline_status] = {all: params[:pipeline_status]} if params[:pipeline_status].present?
-
-    if params[:keyword]
-      Funding.search(params[:keyword], where: where_hash, highlight: DEFAULT_HL_TAG.merge(fields: []))
-    else
-      Funding.search(where: where_hash)
-    end
-    # where_hash[:sector_ids] = {all: params[:sector]} if params[:sector].present?
-    # where_hash[:round_ids] = {all: params[:round]} if !params[:any_round] && params[:round].present?
-    # where_hash[:location_ids] = {all: params[:round]} if !params[:any_round] && params[:round].present?
-    # todo 搜索还没好
-    # Organization.search(params[:query], where: where_hash, order: order_hash, page: params[:page], per_page: params[:per_page], highlight: DEFAULT_HL_TAG)
-
-
   end
 
   def add_project_follower(params)
@@ -144,30 +88,8 @@ class Funding < ApplicationRecord
   end
 
   def funding_various_file(params)
-    if params[:attachments].present? || params[:attachment_ids].present?
-      self.funding_materials.each do |funding_material|
-        unless params[:attachment_ids].map {|ins| ins.to_i}.include? funding_material.id
-          funding_material.purge
-        end
-      end
-      params[:attachments].each do |attachment|
-        self.funding_materials.attach ActionDispatch::Http::UploadedFile.new(attachment)
-      end
-    end
-    if params[:teaser].present?
-      self.funding_teaser = ActionDispatch::Http::UploadedFile.new(params[:teaser])
-    end
-    if params[:bp].present?
-      self.funding_bp = ActionDispatch::Http::UploadedFile.new(params[:bp])
-    end
-    if params[:nda].present?
-      self.funding_nda = ActionDispatch::Http::UploadedFile.new(params[:nda])
-    end
-    if params[:model].present?
-      self.funding_model = ActionDispatch::Http::UploadedFile.new(params[:model])
-    end
-    if params[:el].present?
-      self.funding_el = ActionDispatch::Http::UploadedFile.new(params[:el])
+    [:file_materials, :file_bp, :file_el, :file_model, :file_nda, :file_teaser].each do |attr|
+      self.try("#{attr.to_s}_file=", params[attr]) if params[attr].present?
     end
   end
 
@@ -226,13 +148,6 @@ class Funding < ApplicationRecord
       end
     end
   end
-
-  has_many :funding_users
-  has_many :funding_members, through: :funding_users, source: :user
-
-  has_many :evaluations
-  has_many :questions
-
 
   def investment_committee_ids=(*ids)
     self.evaluations.destroy_all
@@ -316,13 +231,13 @@ class Funding < ApplicationRecord
         [:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency].each {|ins| raise '融资结算信息不全' unless (spa[ins] || spa_track_log.try(ins.to_s)).present?}
         spa_track_log.update!(spa.slice(:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency))
         if spa[:file_spa][:blob_id].present?
-          spa_track_log.file_spa.attachment.update!(blob_id: spa[:file_spa][:blob_id])
+          spa_track_log.file_spa_file=spa[:file_spa]
         end
       when 'create'
         [:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency].each {|ins| raise '融资结算信息不全' unless spa[ins].present?}
         raise 'SPA文件必传' unless spa[:file_spa][:blob_id].present?
         spa_track_log = self.spas.create(spa.slice(:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency))
-        ActiveStorage::Attachment.create!(name: 'file_spa', record_type: 'TrackLog', record_id: spa_track_log.id, blob_id: spa[:file_spa][:blob_id])
+        spa_track_log.file_spa_file=spa[:file_spa]
       end
 
       spa_track_log.gen_spa_detail(user_id, spa[:action])
@@ -358,5 +273,70 @@ class Funding < ApplicationRecord
     else
       is_list = self.is_list ? "是" : "否"
     end
+  end
+
+  def financing_events
+    self_financing_events = self.company.fundings.where(type: 'Funding').includes(:spas => [:members, :organization])
+    financing_events = Zombie::DmInvestevent.includes(:company, :invest_round, :investevent_investor_relations).order_by_date.public_data.not_deleted.where(company_id: self.company_id).where.not(invest_round_id: self_financing_events.map(&:round_id))._select(:investevent_investors, :invest_round_id, :birth_date, :currency_id)
+    all_events = (financing_events + self_financing_events).sort_by {|p| p.try(:round_id) || p.try(:invest_round_id)}
+    units = Zombie::DmInvestevent.money_unit_array.prepend([1, '']).to_h
+
+    arr = []
+    all_events.map do |event|
+      event_hash = {}
+      if event.class.name == "Funding"
+        event_hash[:is_event] = false
+        event_hash[:round_id] = event.round_id
+        event_hash[:target_amount] = event.target_amount
+        event_hash[:target_amount_currency] = event.target_amount_currency
+        event_hash[:event_data] = event.spas.map do |spa|
+          spa_hash = {}
+          spa_hash[:organization] = {
+              id: spa.organization&.id,
+              name: spa.organization&.name
+          }
+          # spa_hash[:members] = spa.members.map do |member|
+          #   {
+          #       id: member.id,
+          #       name: member.name
+          #   }
+          # end
+          spa_hash[:pay_date] = spa.pay_date
+          spa_hash[:amount] = "#{spa.amount}万"
+          spa_hash[:currency] = spa.currency
+          spa_hash[:ratio] = spa.ratio
+        end
+      else
+        event_hash[:is_event] = true
+        event_hash[:round_id] = event.invest_round_id
+        event_hash[:target_amount] = "#{event.detail_money.to_s}#{units[event.detail_money_unit.to_i]}"
+        event_hash[:target_amount_currency] = event.currency_id
+        event_hash[:event_data] = event.investevent_investors.map do |event_investor|
+          spa_hash = {}
+          spa_hash[:organization] = {
+              id: event_investor[:investor_id],
+              name: event_investor[:investor_name]
+          }
+          # spa_hash[:members] = spa.members.map do |member|
+          #   {
+          #       id: member.id,
+          #       name: member.name
+          #   }
+          # end
+          spa_hash[:pay_date] = event.birth_date
+          spa_hash[:amount] = "#{event_investor[:investment_money].to_s}#{units[event_investor[:investment_money_unit].to_i]}"
+          spa_hash[:currency] = event.currency_id
+          spa_hash[:ratio] = event_investor[:investment_ratio]
+        end
+      end
+      arr << event_hash
+    end
+    arr
+  end
+
+  def gen_ka_verification
+    raise '不能重复提交审核' if self.verifications.verification_type_funding_ka.where(status: nil).present?
+    desc = Verification.verification_type_config[:funding_ka][:desc].call(self.name)
+    self.verifications.create(verification_type: Verification.verification_type_funding_ka_value, desc: desc, sponor: User.current.id, verifi_type: Verification.verifi_type_resource_value)
   end
 end

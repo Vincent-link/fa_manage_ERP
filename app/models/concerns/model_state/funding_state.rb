@@ -13,7 +13,7 @@ module ModelState
                                                    :share, :shiny_word, :com_desc, :products_and_business, :financial,
                                                    :operational, :market_competition, :financing_plan, :source_type,
                                                    :source_member, :source_detail, :funding_score, :normal_user_ids]},
-          advisory: {value: 3, desc: '咨询', code: [:category, :normal_user_ids]}
+          advisory: {value: 3, desc: '其他', code: [:category, :normal_user_ids]}
       }
 
       state_config :status, config: {
@@ -59,6 +59,11 @@ module ModelState
           el:        {value: 6, desc: 'EL',     file: 'file_el',        },
           ts:        {value: 7, desc: 'TS',     file: 'file_ts',        },
           spa:       {value: 8, desc: 'SPA',    file: 'file_spa',       },
+      }
+
+      state_config :other_funding_type, config: {
+          ibd: {value: 1, desc: 'IBD', model: 'Zombie::AbFunding'},
+          hc:  {value: 2, desc: 'HC',  model: 'Zombie::HcFunding' }
       }
     end
   end
