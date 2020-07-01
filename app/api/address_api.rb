@@ -2,19 +2,19 @@ class AddressApi < Grape::API
   mounted do
     resource configuration[:owner] do
       resource ':id' do
-        desc '机构地址', entity: Entities::AddressDm
+        desc '机构地址', entity: Entities::Address
         get :addresses do
           case configuration[:owner]
           when 'organizations'
-            present Zombie::DmAddress.where(owner_type: 'Investor', owner_id: params[:id]).inspect, with: Entities::AddressDm
+            present Zombie::DmAddress.where(owner_type: 'Investor', owner_id: params[:id]).inspect, with: Entities::Address
           when 'companies'
-            present Zombie::DmAddress.where(owner_type: 'Company', owner_id: params[:id]).inspect, with: Entities::AddressDm
+            present Zombie::DmAddress.where(owner_type: 'Company', owner_id: params[:id]).inspect, with: Entities::Address
           else
             raise '不支持该类型的地址'
           end
         end
 
-        desc '创建地址', entity: Entities::AddressDm
+        desc '创建地址', entity: Entities::Address
         params do
           requires :location_id, type: Integer, desc: '地区id'
           requires :address_desc, type: String, desc: '地址详细'
@@ -28,7 +28,7 @@ class AddressApi < Grape::API
           else
             raise '不支持该类型的地址'
           end
-          present address, with: Entities::AddressDm
+          present address, with: Entities::Address
         end
       end
     end

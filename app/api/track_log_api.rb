@@ -192,7 +192,7 @@ class TrackLogApi < Grape::API
 
       desc '会议', entity: Entities::Calendar
       get :calendars do
-        present @track_log.calendars, with: Entities::Calendar
+        present @track_log.calendars, with: Entities::CalendarForShow
       end
     end
   end
