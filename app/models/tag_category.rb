@@ -4,10 +4,15 @@ class TagCategory < ApplicationRecord
   include StateConfig
 
   state_config :tag_category_type, config: {
-      organization_tag: { value: 1, desc: "机构标签" },
-      company_tag: { value: 2, desc: "公司标签" },
-      sector: { value: 3, desc: "行业标签" },
-      investor_tag: { value: 4, desc: "投资人标签" },
+      organization_tag: { value: 1, desc: "organization_tag" },
+      company_tag: { value: 2, desc: "company_tag" },
+      sector: { value: 3, desc: "sector" },
+      investor_tag: { value: 4, desc: "investor_tag" },
+      hot_tag: { value: 5, desc: "hot_tag" },
   }
+
+  def tag_category_type
+    TagCategory.tag_category_type_desc_for_value(self.id)
+  end
 
 end

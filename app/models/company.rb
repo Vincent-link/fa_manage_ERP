@@ -24,7 +24,6 @@ class Company < ApplicationRecord
   end
 
   def self.es_search(params)
-    binding.pry
     where_hash = {}
     where_hash[:sector_ids] = params[:sector_ids] if params[:sector_ids].present?
     where_hash[:is_ka] = params[:is_ka] if !params[:is_ka].nil?

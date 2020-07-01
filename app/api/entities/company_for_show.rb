@@ -16,5 +16,6 @@ module Entities
     with_options(format_with: :time_to_s_second) do
       expose :updated_at, documentation: {type: 'datetime', desc: '最近更新时间'}
     end
+    expose :contacts, using: Entities::Contact
   end
 end
