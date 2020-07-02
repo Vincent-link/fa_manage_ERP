@@ -26,7 +26,7 @@ class FundingApi < Grape::API
       optional :source_detail, type: String, desc: '来源明细'
       optional :funding_score, type: Integer, desc: '项目评分'
 
-      requires :file_materials, type: Hash do
+      optional :file_materials, type: Hash do
         optional :blob_id, type: Array[Integer], desc: '附件blob文件id'
         optional :id, type: Array[Integer], desc: '新建里这个字段没用'
       end
@@ -35,23 +35,23 @@ class FundingApi < Grape::API
       optional :bd_leader_id, type: Integer, desc: 'BD负责人id'
       optional :execution_leader_id, type: Integer, desc: '执行负责人id'
 
-      requires :file_teaser, type: Hash do
+      optional :file_teaser, type: Hash do
         optional :blob_id, type: Integer, desc: 'Teaser文件blob_id'
         optional :id, type: Integer, desc: '新建里这个字段没用'
       end
-      requires :file_bp, type: Hash do
+      optional :file_bp, type: Hash do
         optional :blob_id, type: Integer, desc: 'BP文件blob_id'
         optional :id, type: Integer, desc: '新建里这个字段没用'
       end
-      requires :file_nda, type: Hash do
+      optional :file_nda, type: Hash do
         optional :blob_id, type: Integer, desc: 'NDA文件blob_id'
         optional :id, type: Integer, desc: '新建里这个字段没用'
       end
-      requires :file_model, type: Hash do
+      optional :file_model, type: Hash do
         optional :blob_id, type: Integer, desc: 'Model文件blob_id'
         optional :id, type: Integer, desc: '新建里这个字段没用'
       end
-      requires :file_el, type: Hash do
+      optional :file_el, type: Hash do
         optional :blob_id, type: Integer, desc: 'EL文件blob_id'
         optional :id, type: Integer, desc: '新建里这个字段没用'
       end
@@ -140,7 +140,7 @@ class FundingApi < Grape::API
         optional :source_detail, type: String, desc: '来源明细'
         optional :funding_score, type: Integer, desc: '项目评分'
 
-        requires :file_materials, type: Hash do
+        optional :file_materials, type: Hash do
           optional :blob_id, type: Array[Integer], desc: '附件blob文件id'
           optional :id, type: Array[Integer], desc: '保留的附件id'
         end
