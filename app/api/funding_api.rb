@@ -116,6 +116,13 @@ class FundingApi < Grape::API
       present current_user, with: Entities::UserFundingStatusSort
     end
 
+    desc '获取项目状态排序', entity: Entities::UserFundingStatusSort
+    params do
+    end
+    get :status_sort do
+      present current_user, with: Entities::UserFundingStatusSort
+    end
+
     resource ':id' do
       before do
         @funding = Funding.find params[:id]
