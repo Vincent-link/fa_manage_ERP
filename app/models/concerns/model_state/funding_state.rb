@@ -65,6 +65,13 @@ module ModelState
           ibd: {value: 1, desc: 'IBD', model: 'Zombie::AbFunding'},
           hc:  {value: 2, desc: 'HC',  model: 'Zombie::HcFunding' }
       }
+
+      state_config :type_range, config: {
+          ka:        {value: 1, desc: '只看KA项目' },
+          my_team:   {value: 2, desc: '只看本组项目'},
+          system:    {value: 3, desc: '只看FA项目' },
+          other:     {value: 4, desc: '只看外部项目'}
+      }
     end
   end
 end

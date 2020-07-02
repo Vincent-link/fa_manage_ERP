@@ -28,7 +28,6 @@ module Entities
           name: ins.bsc_status_desc
       }
     end
-    # todo tracklog
-    # todo 约见
+    expose :tf_search_highlights, as: :search_highlights, documentation: {type: 'hash', desc: 'es结果高亮'}
   end
 end

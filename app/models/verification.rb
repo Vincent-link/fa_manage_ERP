@@ -42,7 +42,10 @@ class Verification < ApplicationRecord
       funding_ka: {
           value: 8,
           desc: -> (funding){"项目【#{funding}】申请进入KA"},
-          op: ->{}
+          op: ->(verification){
+            # 把项目变成ka的
+            verification.verifyable&.update!(is_ka: true)
+          }
       }
   }
 

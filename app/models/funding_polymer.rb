@@ -25,44 +25,85 @@ class FundingPolymer < ApplicationRecord
 
   has_many :funding_members, through: :funding_users, source: :user
 
-  scope :search_import, -> {includes(:company)}
+  scope :search_import, -> { includes(:company) }
 
   def search_data
-    attributes.merge pipeline_status: self.pipelines.pluck(:status)
-    # attributes.merge company: self.company
-    # attributes.merge company_name: self.company&.name,
-    #                  company_sector_names: self.company&.sector_ids.map { |ins| CacheBox.dm_single_sector_tree[ins] },
-    #                  sector_ids: self.company&.sector_ids
-    # todo 约见
-    # todo Tracklog
+    data = attributes.merge({pipeline_status: self.pipelines.pluck(:status),
+                             company_sector_ids: self.company&.sector_ids,
+                             company_sector_names: self.company&.sectors&.map(&:name)&.join("、"),
+                             company_location_ids: [self.company&.location_province_id, self.company&.location_city_id].compact,
+                             company_name: self.company&.name,
+                             funding_user_ids: self.funding_user_ids,
+                             funding_team_ids: self.funding_all_users.map(&:team_id)})
+    self.track_logs.each do |track_log|
+      data.merge! "track_log_#{track_log.id}" => track_log.track_log_details.map(&:content).compact.join("/n")
+    end
+    self.calendars.where.not(summary: nil).each do |calendar|
+      data.merge! "call_report_#{calendar.id}" => calendar.summary
+    end
+    data
   end
 
   def self.es_search(params)
+    fundings = FundingPolymer.all
+
     where_hash = {}
-    if params[:location_ids]
 
-    end
+    params[:type_range] ||= []
 
-    if params[:sector_ids]
+    where_hash[:is_ka] = true if params[:type_range].include? FundingPolymer.type_range_ka_value
 
-    end
+    where_hash[:funding_team_ids] = User.current.team_id if params[:type_range].include? FundingPolymer.type_range_my_team_value
 
-    if params[:round_ids]
-      where_hash[:round_id] = params[:round_ids]
-    end
+    where_hash[:type] = 'Funding' if params[:type_range].include? FundingPolymer.type_range_system_value
+
+    where_hash[:type] = {not: 'Funding'} if params[:type_range].include? FundingPolymer.type_range_other_value
+
+    where_hash[:status] = params[:status] if params[:status].present?
+
+    where_hash[:funding_user_ids] = {all: [User.current.id]} if params[:is_me]
+
+    where_hash[:company_location_ids] = {all: params[:location_ids]} if params[:location_ids].present?
+
+    where_hash[:company_sector_ids] = {all: params[:sector_ids]} if params[:sector_ids].present?
+
+    where_hash[:round_id] = params[:round_ids] if params[:round_ids].present?
 
     #pipeline status
     where_hash[:pipeline_status] = {all: params[:pipeline_status]} if params[:pipeline_status].present?
+    puts where_hash
+
+    # FundingPolymer.search(params[:keyword], where: where_hash, page: params[:page], per_page: params[:per_page], highlight: DEFAULT_HL_TAG)
 
     if params[:keyword]
-      Funding.search(params[:keyword], where: where_hash, highlight: DEFAULT_HL_TAG.merge(fields: []))
+      fundings.search(params[:keyword], where: where_hash, page: params[:page], per_page: params[:per_page], highlight: DEFAULT_HL_TAG)
     else
-      Funding.search(where: where_hash)
+      fundings.search(where: where_hash, page: params[:page], per_page: params[:per_page])
     end
-    # where_hash[:sector_ids] = {all: params[:sector]} if params[:sector].present?
-    # where_hash[:round_ids] = {all: params[:round]} if !params[:any_round] && params[:round].present?
-    # where_hash[:location_ids] = {all: params[:round]} if !params[:any_round] && params[:round].present?
-    # todo 搜索还没好
-    # Organization.search(params[:query], where: where_hash, order: order_hash, page: params[:page], per_page: params[:per_page], highlight: DEFAULT_HL_TAG)
+  end
+
+  def tf_search_highlights
+    unless self.respond_to?(:search_highlights)
+      nil
+    else
+      result_hash = {'CallReport' => [], 'TrackLog' => []}
+      self.search_highlights.each do |k, v|
+        if k =~ /^track_log_\d/
+          result_hash[:TrackLog] << {
+              id: k.slice(/\d{1,}/),
+              name: v
+          }
+        elsif k =~ /^call_report_\d/
+          result_hash[:CallReport] << {
+              id: k.slice(/\d{1,}/),
+              name: v
+          }
+        else
+          result_hash[Funding.human_attribute_name(k)] = v
+        end
+      end
+      result_hash.delete_if{|k,v| ['CallReport', 'TrackLog'].include?(k) && v.empty?}
+      result_hash
+    end
   end
 end

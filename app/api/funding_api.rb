@@ -74,9 +74,10 @@ class FundingApi < Grape::API
     end
     post do
       auth_funding_code(params)
+      params[:is_ka] = Company.find(params[:company_id]).is_ka
       Funding.transaction do
         @funding = Funding.create(params.slice(:category, :company_id, :round_id, :target_amount_currency, :target_amount,
-                                               :share, :shiny_word, :com_desc, :products_and_business, :financial,
+                                               :share, :shiny_word, :com_desc, :products_and_business, :financial, :is_ka,
                                                :operational, :market_competition, :financing_plan, :other_desc, :source_type,
                                                :source_member, :source_detail, :funding_score, :name, :category_name).merge(operating_day: Date.today))
         @funding.add_project_follower(params)
@@ -94,9 +95,14 @@ class FundingApi < Grape::API
       optional :sector_ids, type: Array[Integer], desc: '行业（字典sector_tree）'
       optional :round_ids, type: Array[Integer], desc: '轮次(字典rounds)'
       optional :pipeline_status, type: Array[Integer], desc: 'Pipeline阶段'
+      optional :type_range, type: Array[Integer], desc: "范围#{Funding.type_range_id_name}", values: Funding.type_range_values
+      optional :status, type: Integer, desc: '项目状态', values: Funding.status_values
+      optional :is_me, type: Boolean, desc: '是否查询我的项目'
+      optional :page, type: Integer, desc: '页码', default: 1
+      optional :per_page, type: Integer, desc: '数量', default: 10
     end
     get do
-      fundings = Funding.es_search(params)
+      fundings = FundingPolymer.es_search(params)
       present fundings, with: Entities::FundingBaseInfo
     end
 
