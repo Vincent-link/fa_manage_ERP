@@ -211,6 +211,12 @@ class MemberApi < Grape::API
       patch :relate_event do
         Zombie::DmInvestevent._by_id(params[:event_id]).add_members(params[:id], true)
       end
+
+      desc '与投资人交互'
+      get :track_logs do
+        member = Member.find(params[:id])
+        present member.track_logs, with: Entities::TrackLogForInteract
+      end
     end
   end
 
