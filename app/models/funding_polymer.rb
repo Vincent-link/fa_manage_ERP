@@ -89,12 +89,12 @@ class FundingPolymer < ApplicationRecord
       result_hash = {'CallReport' => [], 'TrackLog' => []}
       self.search_highlights.each do |k, v|
         if k =~ /^track_log_\d/
-          result_hash[:TrackLog] << {
+          result_hash['TrackLog'] << {
               id: k.slice(/\d{1,}/),
               name: v
           }
         elsif k =~ /^call_report_\d/
-          result_hash[:CallReport] << {
+          result_hash['CallReport'] << {
               id: k.slice(/\d{1,}/),
               name: v
           }
