@@ -9,16 +9,16 @@ class FundingPolymer < ApplicationRecord
 
   belongs_to :company
 
-  has_many :funding_normal_users, -> {kind_normal_users}, class_name: 'FundingUser'
+  has_many :funding_normal_users, -> {kind_normal_users}, class_name: 'FundingUser', foreign_key: :funding_id
   has_many :normal_users, through: :funding_normal_users, source: :user
 
-  has_many :funding_bd_leader, -> {kind_bd_leader}, class_name: 'FundingUser'
+  has_many :funding_bd_leader, -> {kind_bd_leader}, class_name: 'FundingUser', foreign_key: :funding_id
   has_many :bd_leader, through: :funding_bd_leader, source: :user
 
-  has_many :funding_execution_leader, -> {kind_execution_leader}, class_name: 'FundingUser'
+  has_many :funding_execution_leader, -> {kind_execution_leader}, class_name: 'FundingUser', foreign_key: :funding_id
   has_many :execution_leader, through: :funding_execution_leader, source: :user
 
-  has_many :funding_users
+  has_many :funding_users, foreign_key: :funding_id
   has_many :funding_all_users, through: :funding_users, source: :user
 
   has_many :pipelines, foreign_key: :funding_id
