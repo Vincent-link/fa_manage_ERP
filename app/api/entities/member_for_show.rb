@@ -15,7 +15,7 @@ module Entities
     expose :position_rank_id, documentation: {type: 'integer', desc: '职级'}
     expose :address, using: Entities::Address, documentation: {type: 'Entities::Address', desc: '办公地点'}
 
-    expose :sectors, documentation: {type: 'integer', desc: '关注行业', is_array: true}
+    expose :sector_ids, documentation: {type: 'integer', desc: '关注行业', is_array: true}
     expose :round_ids, documentation: {type: 'integer', desc: '关注轮次', is_array: true}
     expose :currency_ids, documentation: {type: 'integer', desc: '关注币种', is_array: true}
     expose :scale_ids, documentation: {type: 'integer', desc: '关注投资规模', is_array: true}

@@ -37,6 +37,9 @@ class AddressApi < Grape::API
   resource :addresses do
     resource ':id' do
       desc '删除地址'
+      params do
+        requires :id, type: Integer, desc: '地址id'
+      end
       delete do
         if params[:id] >= 100001
           Address.find(params[:id]).destroy!
@@ -49,6 +52,7 @@ class AddressApi < Grape::API
       params do
         requires :location_id, type: Integer, desc: '地区id'
         requires :address_desc, type: String, desc: '地址详细'
+        requires :id, type: Integer, desc: '地址id'
       end
       patch do
         if params[:id] >= 100001

@@ -5,6 +5,7 @@ class FundingApi < Grape::API
     desc '创建项目', entity: Entities::FundingLite
     params do
       requires :category, type: Integer, desc: '项目类型（字典funding_category）'
+      optional :category_name, type: String, desc: '其他类型的名字'
       requires :company_id, type: Integer, desc: '公司id'
       requires :name, type: String, desc: '项目名称'
 
@@ -25,17 +26,35 @@ class FundingApi < Grape::API
       optional :source_detail, type: String, desc: '来源明细'
       optional :funding_score, type: Integer, desc: '项目评分'
 
-      optional :attachments, type: Array[File], desc: '附件'
+      optional :file_materials, type: Hash do
+        optional :blob_id, type: Array[Integer], desc: '附件blob文件id'
+        optional :id, type: Array[Integer], desc: '新建里这个字段没用'
+      end
 
       optional :normal_user_ids, type: Array[Integer], desc: '项目成员id'
       optional :bd_leader_id, type: Integer, desc: 'BD负责人id'
       optional :execution_leader_id, type: Integer, desc: '执行负责人id'
 
-      optional :teaser, type: File, desc: 'Teaser'
-      optional :bp, type: File, desc: 'BP'
-      optional :nda, type: File, desc: 'NDA'
-      optional :model, type: File, desc: 'Model'
-      optional :el, type: File, desc: 'EL'
+      optional :file_teaser, type: Hash do
+        optional :blob_id, type: Integer, desc: 'Teaser文件blob_id'
+        optional :id, type: Integer, desc: '新建里这个字段没用'
+      end
+      optional :file_bp, type: Hash do
+        optional :blob_id, type: Integer, desc: 'BP文件blob_id'
+        optional :id, type: Integer, desc: '新建里这个字段没用'
+      end
+      optional :file_nda, type: Hash do
+        optional :blob_id, type: Integer, desc: 'NDA文件blob_id'
+        optional :id, type: Integer, desc: '新建里这个字段没用'
+      end
+      optional :file_model, type: Hash do
+        optional :blob_id, type: Integer, desc: 'Model文件blob_id'
+        optional :id, type: Integer, desc: '新建里这个字段没用'
+      end
+      optional :file_el, type: Hash do
+        optional :blob_id, type: Integer, desc: 'EL文件blob_id'
+        optional :id, type: Integer, desc: '新建里这个字段没用'
+      end
 
       # optional :funding_company_contacts, type: Array[JSON] do
       #   requires :name, type: String, desc: '成员名称'
@@ -50,16 +69,17 @@ class FundingApi < Grape::API
         requires :cr_user_ids, type: Array[Integer], desc: '华兴参与人id'
         requires :started_at, type: DateTime, desc: '开始时间'
         requires :ended_at, type: DateTime, desc: '结束时间'
-        requires :address_id, type: Integer, desc: '会议地点id'
+        optional :address_id, type: Integer, desc: '会议地点id'
       end
     end
     post do
       auth_funding_code(params)
+      params[:is_ka] = Company.find(params[:company_id]).is_ka
       Funding.transaction do
         @funding = Funding.create(params.slice(:category, :company_id, :round_id, :target_amount_currency, :target_amount,
-                                               :share, :shiny_word, :com_desc, :products_and_business, :financial,
+                                               :share, :shiny_word, :com_desc, :products_and_business, :financial, :is_ka,
                                                :operational, :market_competition, :financing_plan, :other_desc, :source_type,
-                                               :source_member, :source_detail, :funding_score, :name).merge(operating_day: Date.today))
+                                               :source_member, :source_detail, :funding_score, :name, :category_name).merge(operating_day: Date.today))
         @funding.add_project_follower(params)
         @funding.gen_funding_company_contacts(params)
         @funding.funding_various_file(params)
@@ -75,10 +95,25 @@ class FundingApi < Grape::API
       optional :sector_ids, type: Array[Integer], desc: '行业（字典sector_tree）'
       optional :round_ids, type: Array[Integer], desc: '轮次(字典rounds)'
       optional :pipeline_status, type: Array[Integer], desc: 'Pipeline阶段'
+      optional :type_range, type: Array[Integer], desc: "范围#{Funding.type_range_id_name}", values: Funding.type_range_values
+      optional :status, type: Integer, desc: '项目状态', values: Funding.status_values
+      optional :is_me, type: Boolean, desc: '是否查询我的项目'
+      optional :page, type: Integer, desc: '页码', default: 1
+      optional :per_page, type: Integer, desc: '数量', default: 10
     end
     get do
-      fundings = Funding.es_search(params)
+      fundings = FundingPolymer.es_search(params)
       present fundings, with: Entities::FundingBaseInfo
+    end
+
+    desc '项目状态排序', entity: Entities::UserFundingStatusSort
+    params do
+      requires 'funding_status_sort', type: Array[Integer], desc: "项目状态排序数组"
+    end
+    post :status_sort do
+      raise '排序数量或状态选择不对' if (params[:funding_status_sort].uniq - Funding.status_values).present? || (Funding.status_values - params[:funding_status_sort].uniq).present?
+      current_user.update!(funding_status_sort: params[:funding_status_sort])
+      present current_user, with: Entities::UserFundingStatusSort
     end
 
     resource ':id' do
@@ -89,6 +124,7 @@ class FundingApi < Grape::API
       desc '编辑项目', entity: Entities::FundingLite
       params do
         optional :category, type: Integer, desc: '项目类型（字典funding_category）'
+        optional :category_name, type: String, desc: '其他类型的名字'
         optional :name, type: String, desc: '项目名称'
 
         optional :round_id, type: Integer, desc: '轮次（字典rounds）'
@@ -110,8 +146,10 @@ class FundingApi < Grape::API
         optional :source_detail, type: String, desc: '来源明细'
         optional :funding_score, type: Integer, desc: '项目评分'
 
-        optional :attachments, type: Array[File], desc: '附件'
-        optional :attachment_ids, type: Array[Integer], desc: '附件id'
+        optional :file_materials, type: Hash do
+          optional :blob_id, type: Array[Integer], desc: '附件blob文件id'
+          optional :id, type: Array[Integer], desc: '保留的附件id'
+        end
 
         optional :normal_user_ids, type: Array[Integer], desc: '项目成员id'
         optional :bd_leader_id, type: Integer, desc: 'BD负责人id'
@@ -124,13 +162,13 @@ class FundingApi < Grape::API
       end
       patch do
         auth_source_type(params)
-        raise '咨询类型的项目不能修改类型' if params[:category].present? && @funding.category == Funding.category_advisory_value && @funding.category != params[:category]
+        raise ' 其他类型的项目不能修改类型' if params[:category].present? && @funding.category == Funding.category_advisory_value && @funding.category != params[:category]
         Funding.transaction do
           @funding.update(params.slice(:category, :name, :round_id, :shiny_word, :post_investment_valuation, :post_valuation_currency,
                                        :target_amount, :target_amount_currency, :share, :source_type, :source_member, :source_detail,
                                        :is_complicated, :funding_score, :confidentiality_level, :confidentiality_reason, :is_reportable,
                                        :com_desc, :products_and_business, :financial, :operational, :market_competition, :financing_plan,
-                                       :other_desc))
+                                       :other_desc, :category_name))
           @funding.add_project_follower(params)
           @funding.funding_various_file(params)
         end
@@ -178,6 +216,14 @@ class FundingApi < Grape::API
         present @funding, with: Entities::FundingUser
       end
 
+      desc '融资历史', entity: Entities::FundingUser
+      params do
+      end
+      get 'financing_events' do
+        financing_events = @funding.financing_events
+        present financing_events, with: Entities::FundingFinancingEvent
+      end
+
       desc '上传文档', entity: Entities::Attachment
       params do
         requires :type, type: Integer, desc: "文件类型: #{Funding.all_funding_file_type_hash.invert}", values: Funding.all_funding_file_type_values
@@ -185,27 +231,35 @@ class FundingApi < Grape::API
           requires :blob_id, type: Integer, desc: '文件blob_id'
         end
         optional :track_log_id, type: Integer, desc: 'TrackLog id'
+        optional :organization_id, type: Integer, desc: '机构id'
+        optional :member_ids, type: Array[Integer], desc: '投资人id'
       end
       post 'files' do
         params[:type] = params[:type].to_i
+        track_log = TrackLog.find(params[:track_log_id]) if params[:track_log_id].present?
         case
         when params[:type] == Funding.all_funding_file_type_spa_value
-          track_log = TrackLog.find(params[:track_log_id])
-          track_log.change_spa(current_user.id, params[:file][:blob_id])
+          if track_log.present?
+            track_log.change_spa(current_user.id, params[:file][:blob_id])
+          else
+            track_log = @funding.track_logs.create(organization_id: params[:organization_id], status: TrackLog.status_spa_sha_value)
+            track_log.change_spa(current_user.id, params[:file][:blob_id])
+            track_log.member_ids = params[:member_ids]
+          end
           file = track_log.file_spa_attachment
         when params[:type] == Funding.all_funding_file_type_ts_value
-          track_log = TrackLog.find(params[:track_log_id])
-          track_log.change_ts(current_user.id, params[:file][:blob_id])
+          if track_log.present?
+            track_log.change_ts(current_user.id, params[:file][:blob_id])
+          else
+            track_log = @funding.track_logs.create(organization_id: params[:organization_id], status: TrackLog.status_issue_ts_value)
+            track_log.change_ts(current_user.id, params[:file][:blob_id])
+            track_log.member_ids = params[:member_ids]
+          end
           file = track_log.file_ts_attachment
         when params[:type] == Funding.all_funding_file_type_materials_value
-          file = ActiveStorage::Attachment.create!(name: 'file_materials', record_type: 'Funding', record_id: @funding.id, blob_id: params[:file][:blob_id])
+          file = @funding.file_materials_file_add(blob_id: params[:file][:blob_id]).first
         when Funding.all_funding_file_type_filter(:bp, :el, :teaser, :nda, :model).include?(params[:type])
-          if @funding.try(Funding.all_funding_file_type_value_code(params[:type], :file).first).present?
-            file = @funding.try("#{Funding.all_funding_file_type_value_code(params[:type], :file).first}_attachment")
-            file.update!(blob_id: params[:file][:blob_id])
-          else
-            file = ActiveStorage::Attachment.create!(name: Funding.all_funding_file_type_value_code(params[:type], :file).first, record_type: 'Funding', record_id: @funding.id, blob_id: params[:file][:blob_id])
-          end
+          file = @funding.try("#{Funding.all_funding_file_type_value_code(params[:type], :file).first}_file=", params[:file])
         end
         present file, with: Entities::Attachment
       end
@@ -246,6 +300,15 @@ class FundingApi < Grape::API
         }
         organizations = @funding.track_logs.map {|ins| [ins.id, ins.organization]}.to_h
         present files, with: Entities::FundingAttachment, organizations: organizations
+      end
+
+      desc '设置为ka', entity: Entities::FundingLite
+      params do
+      end
+      post 'set_as_ka' do
+        #todo 判断管理员权限 如果是管理员直接设置ka
+        @funding.gen_ka_verification
+        present @funding, with: Entities::FundingLite
       end
     end
   end

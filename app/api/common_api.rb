@@ -26,6 +26,7 @@ class CommonApi < Grape::API
           pipeline_status: Pipeline.status_id_name,
           track_log_status: TrackLog.status_id_name,
           funding_all_funding_file_type: Funding.all_funding_file_type_id_name,
+          funding_type_range: Funding.type_range_id_name
       }
     end
 

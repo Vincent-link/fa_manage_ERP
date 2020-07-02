@@ -8,12 +8,12 @@ module ModelState
           pp:       {value: 1, desc: 'PP', code: [:category, :company_id, :round_id, :target_amount_currency, :target_amount,
                                                   :share, :shiny_word, :com_desc, :products_and_business, :financial,
                                                   :operational, :market_competition, :financing_plan, :source_type,
-                                                  :source_member, :source_detail, :funding_score, :normal_user_ids]},
+                                                  :source_member, :funding_score, :normal_user_ids]},
           ma:       {value: 2, desc: 'M&A', code: [:category, :company_id, :round_id, :target_amount_currency, :target_amount,
                                                    :share, :shiny_word, :com_desc, :products_and_business, :financial,
                                                    :operational, :market_competition, :financing_plan, :source_type,
-                                                   :source_member, :source_detail, :funding_score, :normal_user_ids]},
-          advisory: {value: 3, desc: '咨询', code: [:category, :normal_user_ids]}
+                                                   :source_member, :funding_score, :normal_user_ids]},
+          advisory: {value: 3, desc: '其他', code: [:category, :normal_user_ids]}
       }
 
       state_config :status, config: {
@@ -59,6 +59,18 @@ module ModelState
           el:        {value: 6, desc: 'EL',     file: 'file_el',        },
           ts:        {value: 7, desc: 'TS',     file: 'file_ts',        },
           spa:       {value: 8, desc: 'SPA',    file: 'file_spa',       },
+      }
+
+      state_config :other_funding_type, config: {
+          ibd: {value: 1, desc: 'IBD', model: 'Zombie::AbFunding'},
+          hc:  {value: 2, desc: 'HC',  model: 'Zombie::HcFunding' }
+      }
+
+      state_config :type_range, config: {
+          ka:        {value: 1, desc: '只看KA项目' },
+          my_team:   {value: 2, desc: '只看本组项目'},
+          system:    {value: 3, desc: '只看FA项目' },
+          other:     {value: 4, desc: '只看外部项目'}
       }
     end
   end

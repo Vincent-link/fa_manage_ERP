@@ -39,6 +39,14 @@ class Verification < ApplicationRecord
         value: 7,
         desc:  -> (funding){"【#{funding}】已完成BSC投票，赞成票+中立票数之和 = 反对票数，待管理员手动推进"},
       },
+      funding_ka: {
+          value: 8,
+          desc: -> (funding){"项目【#{funding}】申请进入KA"},
+          op: ->(verification){
+            # 把项目变成ka的
+            verification.verifyable&.update!(is_ka: true)
+          }
+      }
   }
 
   state_config :verifi_type, config: {

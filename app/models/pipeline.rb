@@ -1,10 +1,11 @@
 class Pipeline < ApplicationRecord
   include StateConfig
 
-  belongs_to :funding
+  belongs_to :funding, class_name: 'FundingPolymer'
 
   has_many :pipeline_divides
   has_many :payments
+  belongs_to :user, optional: true
 
   after_commit :reindex_funding
 
@@ -24,6 +25,7 @@ class Pipeline < ApplicationRecord
   }
 
   delegate :status_desc, to: :funding, prefix: true
+  delegate :name, to: :user, prefix: true, allow_nil: true
 
   def reindex_funding
     if self.saved_changes[:status].present?
