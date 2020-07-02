@@ -18,8 +18,8 @@ module Helpers
 
     def auth_source_type(params)
       case
-      when Funding.source_type_filter(:find_company, :company_find, :colleague_introduction).include?(params[:source_type])
-        raise '来源明细未填' unless params[:source_detail]
+      # when Funding.source_type_filter(:find_company, :company_find, :colleague_introduction).include?(params[:source_type])
+      #   raise '来源明细未填' unless params[:source_detail]
       when Funding.source_type_filter(:member_referral, :member_recommend).include?(params[:source_type])
         raise '投资者未填' unless params[:source_member].present?
       end
