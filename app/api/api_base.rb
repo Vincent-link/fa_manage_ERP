@@ -80,6 +80,7 @@ class ApiBase < Grape::API
   mount CompanyApi
   mount TeamApi
   mount KnowledgeBaseApi
+  mount StatisticsApi
 
   add_swagger_documentation array_use_braces: true
 end
