@@ -69,7 +69,7 @@ class FundingApi < Grape::API
         requires :cr_user_ids, type: Array[Integer], desc: '华兴参与人id'
         requires :started_at, type: DateTime, desc: '开始时间'
         requires :ended_at, type: DateTime, desc: '结束时间'
-        requires :address_id, type: Integer, desc: '会议地点id'
+        optional :address_id, type: Integer, desc: '会议地点id'
       end
     end
     post do
