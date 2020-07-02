@@ -25,10 +25,14 @@ class Funding < FundingPolymer
   has_many :questions
 
   has_many :verifications, as: :verifyable
+  has_many :funding_users
+  has_many :users, through: :funding_users
 
   before_create :gen_serial_number
   after_create :base_time_line
   after_create :reviewing_status
+
+  delegate :sector_list, to: :company
 
   def gen_serial_number
     current_year = Time.now.year
@@ -44,6 +48,10 @@ class Funding < FundingPolymer
 
   def base_time_line
     self.time_lines.create(status: self.status)
+  end
+
+  def user_names
+    self.users.map(&:name).join('、')
   end
 
   def add_project_follower(params)

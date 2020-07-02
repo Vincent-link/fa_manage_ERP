@@ -82,7 +82,7 @@ class OrganizationApi < Grape::API
         @organization.organization_tag_ids = organization_tag_ids
         @organization.sector_ids = sector_ids
       end
-      true
+      present @organization, with: Entities::OrganizationForShow
     end
 
     desc '动态（假）'
@@ -190,9 +190,9 @@ class OrganizationApi < Grape::API
         present @organization, with: Entities::OrganizationForShow
       end
 
-      desc '跟进情况（假）'
+      desc '跟进情况'
       get :track_logs do
-
+        present @organization.track_logs, with: Entities::TrackLogForInteract
       end
 
       desc '未跟进项目（假）'

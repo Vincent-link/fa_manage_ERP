@@ -14,6 +14,9 @@ class TrackLog < ApplicationRecord
   has_many :track_log_members
   has_many :members, through: :track_log_members, class_name: 'Member'
 
+  delegate :name, :round_id, :user_names, :sector_list, to: :funding, prefix: true
+  delegate :name, to: :organization, prefix: true
+
   state_config :status, config: {
       contacted: {value: 0, desc: "Contacted", level: 1},
       interested: {value: 1, desc: "Interested", level: 1},
@@ -83,7 +86,7 @@ class TrackLog < ApplicationRecord
         self.file_ts_file_only_change(blob_id: blob_id)
         action = 'update'
       else
-        self.file_ts_file={blob_id: blob_id}
+        self.file_ts_file = {blob_id: blob_id}
         action = 'create'
       end
     end
@@ -175,7 +178,7 @@ class TrackLog < ApplicationRecord
       self.file_spa_file_only_change(params[:file_spa]) if params[:file_spa][:blob_id].present?
       action = 'update'
     else
-      self.file_spa_file=params[:file_spa]
+      self.file_spa_file = params[:file_spa]
       action = 'create'
     end
     user_id = User.current.id
@@ -187,7 +190,7 @@ class TrackLog < ApplicationRecord
       self.file_spa_file_only_change(blob_id: blob_id)
       action = 'update'
     else
-      self.file_spa_file={blob_id: blob_id}
+      self.file_spa_file = {blob_id: blob_id}
       action = 'create'
     end
     self.gen_file_spa_detail(user_id, action)
@@ -230,5 +233,13 @@ class TrackLog < ApplicationRecord
     when 'continue'
       self.change_status_and_gen_detail(status: TrackLog.status_interested_value, need_content: true, content_key: '由约见结论变更')
     end
+  end
+
+  def member_names
+    self.members.map(&:name).join('、')
+  end
+
+  def last_detail
+    self.track_log_details.order(updated_at: :desc).first
   end
 end
