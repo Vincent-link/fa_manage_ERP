@@ -129,12 +129,15 @@ class TrackLogApi < Grape::API
 
         desc '导出项目进度列表', entity: Entities::FundingLite
         params do
-          requires :status, type: Integer, desc: '项目进度状态'
           optional :keyword, type: String, desc: '关键字'
         end
 
         get 'export' do
-          @funding.expose_track_logs
+          file_path, file_name = @funding.export_track_log(params)
+          header['Content-Disposition'] = "attachment; filename=\"#{File.basename(file_name)}.xls\""
+          content_type("application/octet-stream")
+          env['api.format'] = :binary
+          body File.read file_path
         end
       end
     end

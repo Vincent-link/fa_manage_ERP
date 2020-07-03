@@ -106,6 +106,24 @@ class FundingApi < Grape::API
       present fundings, with: Entities::FundingBaseInfo
     end
 
+    desc '项目列表导出'
+    params do
+      optional :keyword, type: String, desc: '关键字'
+      optional :location_ids, type: Array[Integer], desc: '地点（字典locations）'
+      optional :sector_ids, type: Array[Integer], desc: '行业（字典sector_tree）'
+      optional :round_ids, type: Array[Integer], desc: '轮次(字典rounds)'
+      optional :pipeline_status, type: Array[Integer], desc: 'Pipeline阶段'
+      optional :type_range, type: Array[Integer], desc: "范围#{Funding.type_range_id_name}", values: Funding.type_range_values
+      optional :is_me, type: Boolean, desc: '是否查询我的项目'
+    end
+    get do
+      file_path, file_name = FundingPolymer.export(params)
+      header['Content-Disposition'] = "attachment; filename=\"#{File.basename(file_name)}.xls\""
+      content_type("application/octet-stream")
+      env['api.format'] = :binary
+      body File.read file_path
+    end
+
     desc '项目状态排序', entity: Entities::UserFundingStatusSort
     params do
       requires 'funding_status_sort', type: Array[Integer], desc: "项目状态排序数组"
