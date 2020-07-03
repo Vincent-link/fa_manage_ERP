@@ -71,7 +71,7 @@ class Funding < FundingPolymer
     end
 
     if params[:execution_leader_id].present?
-      if self.bd_leader.present?
+      if self.execution_leader.present?
         self.funding_execution_leader.first.update(user_id: params[:execution_leader_id])
       else
         self.funding_execution_leader.create(kind: FundingUser.kind_execution_leader_value, user_id: params[:execution_leader_id])
