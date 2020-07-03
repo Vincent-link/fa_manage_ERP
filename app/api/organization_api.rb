@@ -148,7 +148,7 @@ class OrganizationApi < Grape::API
           optional :id, type: Integer, desc: 'file_id 已有文件id'
           optional :blob_id, type: Integer, desc: 'blob_id 新文件id'
         end
-        requires :part, type: String, desc: '更新区域', values: ['basic', 'head']
+        requires :part, type: String, desc: '更新区域', values: ['basic', 'head', 'logo']
 
         optional :invest_period, type: Integer, desc: '投资周期'
         optional :decision_flow, type: String, desc: '投资决策流程'
@@ -165,6 +165,8 @@ class OrganizationApi < Grape::API
           raise "行业不能为空" if params[:sector_ids].nil?
           raise "轮次不能为空" if params[:round_ids].nil?
           raise "投资币种不能为空" if params[:currency_ids].nil?
+        when 'logo'
+          
         end
 
         @organization.organization_tag_ids = params[:organization_tag_ids]
