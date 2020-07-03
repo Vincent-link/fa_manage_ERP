@@ -241,14 +241,6 @@ class FundingApi < Grape::API
         present @funding, with: Entities::FundingUser
       end
 
-      desc '融资历史', entity: Entities::FundingFinancingEvent
-      params do
-      end
-      get 'financing_events' do
-        financing_events = @funding.financing_events
-        present financing_events, with: Entities::FundingFinancingEvent
-      end
-
       desc '上传文档', entity: Entities::Attachment
       params do
         requires :type, type: Integer, desc: "文件类型: #{Funding.all_funding_file_type_hash.invert}", values: Funding.all_funding_file_type_values
