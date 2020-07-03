@@ -115,7 +115,6 @@ class CompanyApi < Grape::API
         optional :detailed_address, type: String, desc: '详细地址'
         optional :detailed_intro, type: String, desc: '公司详细介绍'
         optional :company_tag_ids, type: Array[Integer], desc: '标签'
-        optional :sector_ids, type: Array[Integer], desc: '所属行业'
         requires :part, type: String, desc: '更新区域', values: ['basic', 'head']
       end
       patch do
