@@ -21,6 +21,7 @@ class Organization < ApplicationRecord
   has_many :organization_relations
   has_many :organization_teams
   has_many :calendars
+  has_many :track_logs
 
   after_validation :save_to_dm
 
