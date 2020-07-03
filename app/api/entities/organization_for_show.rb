@@ -43,5 +43,6 @@ module Entities
 
     expose :last_ir_review, using: Entities::Comment, documentation: {type: Entities::Comment, desc: '最新ir'}
     expose :last_newsfeed, using: Entities::Comment, documentation: {type: Entities::Comment, desc: '最新newsfeed'}
+    expose :can_delete?, documentation: {type: 'boolean', desc: '是否可以删除'}
   end
 end

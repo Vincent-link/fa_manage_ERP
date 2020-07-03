@@ -68,6 +68,14 @@ class Organization < ApplicationRecord
     end
   end
 
+  def can_delete?
+    if track_logs.present? || calendars.present? || members.present? || comments.present? || organization_relations.present?
+      false
+    else
+      true
+    end
+  end
+
   def search_data
     attributes.merge last_investevent_date: self.last_investevent&.birth_date,
                      ir_reviews: "#{self.ir_reviews.map(&:content).join(' ')}",
