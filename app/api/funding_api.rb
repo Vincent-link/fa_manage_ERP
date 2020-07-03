@@ -223,7 +223,7 @@ class FundingApi < Grape::API
         present @funding, with: Entities::FundingUser
       end
 
-      desc '融资历史', entity: Entities::FundingUser
+      desc '融资历史', entity: Entities::FundingFinancingEvent
       params do
       end
       get 'financing_events' do
