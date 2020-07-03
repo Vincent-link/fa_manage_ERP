@@ -28,7 +28,7 @@ class CompanyApi < Grape::API
       requires :location_city_id, type: Integer, desc: '地址'
       optional :detailed_address, type: String, desc: '详细地址'
       optional :business_id, type: Integer, desc: '工商数据'
-      requires :sector_ids, type: Array[Integer], desc: '所属行业'
+      requires :sector_ids, type: Integer, desc: '所属行业'
       optional :company_tag_ids, type: Array[Integer], desc: '标签'
       requires :contacts, type: Array[JSON], desc: '联系人' do
         requires :name, type: String, desc: '姓名'
@@ -108,7 +108,7 @@ class CompanyApi < Grape::API
           optional :blob_id, type: Integer, desc: 'blob_id 新文件id'
         end
         optional :website, type: String, desc: '网址'
-        optional :sector_ids, type: Array[Integer], desc: '所属行业'
+        optional :sector_ids, type: Integer, desc: '所属行业'
         optional :one_sentence_intro, type: String, desc: '一句话简介'
         optional :location_province_id, type: Integer, desc: '省份'
         optional :location_city_id, type: Integer, desc: '城市'

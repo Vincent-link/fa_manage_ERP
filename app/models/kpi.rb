@@ -8,6 +8,9 @@ class Kpi < ApplicationRecord
     new_sign_bd_goal: {
       value: 1,
       desc: "BD总体目标（新签）",
+      unit: "个",
+      is_system: true,
+      op: 2
     },
     complete_bd_goal: {
       value: 2,
