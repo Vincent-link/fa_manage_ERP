@@ -106,6 +106,24 @@ class FundingApi < Grape::API
       present fundings, with: Entities::FundingBaseInfo
     end
 
+    desc '项目列表导出'
+    params do
+      optional :keyword, type: String, desc: '关键字'
+      optional :location_ids, type: Array[Integer], desc: '地点（字典locations）'
+      optional :sector_ids, type: Array[Integer], desc: '行业（字典sector_tree）'
+      optional :round_ids, type: Array[Integer], desc: '轮次(字典rounds)'
+      optional :pipeline_status, type: Array[Integer], desc: 'Pipeline阶段'
+      optional :type_range, type: Array[Integer], desc: "范围#{Funding.type_range_id_name}", values: Funding.type_range_values
+      optional :is_me, type: Boolean, desc: '是否查询我的项目'
+    end
+    get do
+      file_path, file_name = FundingPolymer.export(params)
+      header['Content-Disposition'] = "attachment; filename=\"#{File.basename(file_name)}.xls\""
+      content_type("application/octet-stream")
+      env['api.format'] = :binary
+      body File.read file_path
+    end
+
     desc '项目状态排序', entity: Entities::UserFundingStatusSort
     params do
       requires 'funding_status_sort', type: Array[Integer], desc: "项目状态排序数组"
@@ -113,6 +131,13 @@ class FundingApi < Grape::API
     post :status_sort do
       raise '排序数量或状态选择不对' if (params[:funding_status_sort].uniq - Funding.status_values).present? || (Funding.status_values - params[:funding_status_sort].uniq).present?
       current_user.update!(funding_status_sort: params[:funding_status_sort])
+      present current_user, with: Entities::UserFundingStatusSort
+    end
+
+    desc '获取项目状态排序', entity: Entities::UserFundingStatusSort
+    params do
+    end
+    get :status_sort do
       present current_user, with: Entities::UserFundingStatusSort
     end
 
@@ -214,14 +239,6 @@ class FundingApi < Grape::API
       end
       get 'funding_user' do
         present @funding, with: Entities::FundingUser
-      end
-
-      desc '融资历史', entity: Entities::FundingUser
-      params do
-      end
-      get 'financing_events' do
-        financing_events = @funding.financing_events
-        present financing_events, with: Entities::FundingFinancingEvent
       end
 
       desc '上传文档', entity: Entities::Attachment

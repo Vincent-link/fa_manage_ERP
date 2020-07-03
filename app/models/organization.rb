@@ -21,6 +21,7 @@ class Organization < ApplicationRecord
   has_many :organization_relations
   has_many :organization_teams
   has_many :calendars
+  has_many :track_logs
 
   after_validation :save_to_dm
 
@@ -64,6 +65,14 @@ class Organization < ApplicationRecord
       elsif file_hash[:id].blank?
         self.logo.destroy! if self.logo.present?
       end
+    end
+  end
+
+  def can_delete?
+    if track_logs.present? || calendars.present? || members.present? || comments.present? || organization_relations.present?
+      false
+    else
+      true
     end
   end
 

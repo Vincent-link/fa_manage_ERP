@@ -18,6 +18,8 @@ class Member < ApplicationRecord
   has_many :member_user_relations
   has_many :users, through: :member_user_relations
   has_many :member_resumes
+  has_many :track_log_members
+  has_many :track_logs, through: :track_log_members
 
   delegate :name, to: :organization, prefix: true
 
@@ -96,10 +98,12 @@ class Member < ApplicationRecord
 
   def self.es_search(params, options = {})
     where_hash = {}
-    where_hash[:sector_ids] = {all: params[:sector]} if params[:sector].present?
+    params[:query] = '*' if params[:query].blank?
+    where_hash[:sector_ids] = {all: params[:sector_ids]} if params[:sector_ids].present?
     where_hash[:round_ids] = {all: params[:round]} if params[:round].present?
     where_hash[:currency_ids] = {all: params[:currency]} if params[:currency].present?
     where_hash[:level] = params[:level] if params[:level].present?
+    where_hash[:organization_id] = params[:organization_id] if params[:organization_id].present?
     where_hash[:scale_ids] = params[:scale] if params[:scale].present?
     where_hash[:position_rank_id] = params[:position_rank_id] if params[:position_rank_id]
     where_hash[:tel] = params[:tel] if params[:tel]
