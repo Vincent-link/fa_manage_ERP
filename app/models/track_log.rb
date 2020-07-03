@@ -6,6 +6,8 @@ class TrackLog < ApplicationRecord
   has_one_attached :file_ts
   has_one_attached :file_spa
 
+  has_blob_upload :file_ts, :file_spa
+
   has_many :track_log_details, -> {order(created_at: :desc)}
   has_many :calendars
   belongs_to :organization
