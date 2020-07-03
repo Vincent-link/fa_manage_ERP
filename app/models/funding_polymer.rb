@@ -9,13 +9,15 @@ class FundingPolymer < ApplicationRecord
 
   belongs_to :company
 
-  has_many :funding_normal_users, -> {kind_normal_users}, class_name: 'FundingUser', foreign_key: :funding_id
+  has_many :time_lines, -> {order(created_at: :desc)}, class_name: 'TimeLine'
+
+  has_many :funding_normal_users, -> { kind_normal_users }, class_name: 'FundingUser', foreign_key: :funding_id
   has_many :normal_users, through: :funding_normal_users, source: :user
 
-  has_many :funding_bd_leader, -> {kind_bd_leader}, class_name: 'FundingUser', foreign_key: :funding_id
+  has_many :funding_bd_leader, -> { kind_bd_leader }, class_name: 'FundingUser', foreign_key: :funding_id
   has_many :bd_leader, through: :funding_bd_leader, source: :user
 
-  has_many :funding_execution_leader, -> {kind_execution_leader}, class_name: 'FundingUser', foreign_key: :funding_id
+  has_many :funding_execution_leader, -> { kind_execution_leader }, class_name: 'FundingUser', foreign_key: :funding_id
   has_many :execution_leader, through: :funding_execution_leader, source: :user
 
   has_many :funding_users, foreign_key: :funding_id
@@ -105,5 +107,35 @@ class FundingPolymer < ApplicationRecord
       result_hash.delete_if{|k,v| ['CallReport', 'TrackLog'].include?(k) && v.empty?}
       result_hash
     end
+  end
+
+  def self.export(params)
+    params[:page], params[:per_page], params[:status] = 1, 100000, FundingPolymer.status_interesting
+    fundings = self.es_search(params)
+    currency = CacheBox.dm_currencies.map{|ins| [ins['id'], ins['name']]}.to_h
+    round = CacheBox.dm_single_rounds
+
+    file_name = "Interesting项目 -#{Time.now.strftime("%Y-%m-%d").to_s}"
+    file_path = "#{Rails.root}/public/export/#{file_name + Time.now.strftime("%Y-%m-%d %H:%M:%S").to_s + '.xls'}"
+    res = [%w(编号 项目名称 一句话介绍 公司简介 所属行业 融资伦次 融资币种 融资额 当前状态 进入当前状态日期 项目成员)]
+    index = 0
+    fundings.includes(:time_lines, :company => [:sectors]).each do |funding|
+      res << [
+          index+=1,
+          funding.name,
+          funding.shiny_word,
+          funding.com_desc,
+          funding.company&.sectors&.map(&:name)&.join("、"),
+          round[funding.round_id],
+          currency[funding.target_amount_currency],
+          funding.target_amount,
+          funding.status_desc,
+          funding.time_lines.first.created_at.strftime("%Y-%m-%d").to_s,
+          funding.funding_all_users.map(&:name).join('、')
+      ]
+    end
+    book_data = [["sheet1", res]]
+    Common::ExcelGenerator.gen(file_path, book_data)
+    [file_path, file_name]
   end
 end

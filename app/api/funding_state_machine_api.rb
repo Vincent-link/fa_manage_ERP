@@ -22,13 +22,14 @@ class FundingStateMachineApi < Grape::API
         optional :market_competition, type: String, desc: '市场竞争分析'
         optional :financing_plan, type: String, desc: '融资计划'
         optional :other_desc, type: String, desc: '其他'
-        optional :bp, type: File, desc: 'BP'
+        optional :file_bp, type: Hash do
+          optional :blob_id, type: Integer, desc: 'BP文件blob_id'
+          optional :id, type: Integer, desc: '新建里这个字段没用'
+        end
       end
       post 'interesting' do
         @funding.funding_status_auth(Funding.status_reviewing_value, Funding.status_interesting_value, params)
-        if params[:bp].present?
-          # todo 上传bp文件
-        end
+        @funding.funding_various_file(params.slice(:file_bp))
         @funding.update(params.slice(:com_desc, :products_and_business, :financial, :operational, :market_competition,
                                      :financing_plan, :other_desc).merge(status: Funding.status_interesting_value))
         present @funding, with: Entities::FundingLite
@@ -128,13 +129,14 @@ class FundingStateMachineApi < Grape::API
         optional :financing_plan, type: String, desc: '融资计划'
         optional :other_desc, type: String, desc: '其他'
         optional :reason, type: String, desc: 'pass理由'
-        optional :bp, type: File, desc: 'BP'
+        optional :file_bp, type: Hash do
+          optional :blob_id, type: Integer, desc: 'BP文件blob_id'
+          optional :id, type: Integer, desc: '新建里这个字段没用'
+        end
       end
       post 'pass' do
         @funding.funding_status_auth(@funding.status, Funding.status_pass_value, params)
-        if params[:bp].present?
-          # todo 上传bp文件
-        end
+        @funding.funding_various_file(params.slice(:file_bp))
         @funding.update(params.slice(:com_desc, :products_and_business, :financial, :operational, :market_competition,
                                      :financing_plan, :other_desc, :reason).merge(status: Funding.status_pass_value))
         present @funding, with: Entities::FundingLite

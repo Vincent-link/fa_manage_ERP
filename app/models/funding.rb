@@ -13,7 +13,6 @@ class Funding < FundingPolymer
 
   belongs_to :funding_source_member, class_name: 'Member', foreign_key: :source_member, optional: true
 
-  has_many :time_lines, -> {order(created_at: :desc)}, class_name: 'TimeLine'
   has_many :funding_company_contacts, class_name: 'FundingCompanyContact'
 
   has_many :calendars
@@ -25,7 +24,7 @@ class Funding < FundingPolymer
   has_many :questions
 
   has_many :verifications, as: :verifyable
-  has_many :funding_users
+
   has_many :users, through: :funding_users
 
   before_create :gen_serial_number
@@ -114,15 +113,14 @@ class Funding < FundingPolymer
       end
       raise '公司简介不少于400字' if params[:com_desc].size < 400
     when Funding.status_execution_value
-      # todo 判断是否上传EL
-      # todo 判断是否有收入预测  update by 李靖超: self.pipeline.present?
+      raise '未传el' unless self.file_el_atttachment.present?
+      raise '未填收入预测' unless self.pipelines.present?
     when Funding.status_closing_value
-      # todo 判断是否有TS tracklog
-      # todo 判断是否有TS状态换过的 tracklog
+      raise '未传spa' unless ActiveStorage::Attachment.where(name: 'file_ts', record_type: 'TrackLog', record_id: self.track_log_ids).present?
     when Funding.status_closed_value
-      # todo 判断是否有SPA tracklog
+      raise '未传spa' unless ActiveStorage::Attachment.where(name: 'file_spa', record_type: 'TrackLog', record_id: self.track_log_ids).present?
     when Funding.status_paid_value
-      # todo 判断是否提交财务确认收款（李靖超）
+      raise '未提交财务确认收款' unless self.pipelines.status_fee_ed.present?
     end
   end
 
@@ -289,6 +287,7 @@ class Funding < FundingPolymer
     all_events = (financing_events + self_financing_events).sort_by {|p| p.try(:round_id) || p.try(:invest_round_id)}
     units = Zombie::DmInvestevent.money_unit_array.prepend([1, '']).to_h
     currency = CacheBox.dm_currencies.map{|ins| [ins['id'], ins['name']]}.to_h
+
     arr = []
     all_events.map do |event|
       event_hash = {}
@@ -350,5 +349,47 @@ class Funding < FundingPolymer
     raise '不能重复提交审核' if self.verifications.verification_type_funding_ka.where(status: nil).present?
     desc = Verification.verification_type_config[:funding_ka][:desc].call(self.name)
     self.verifications.create(verification_type: Verification.verification_type_funding_ka_value, desc: desc, sponsor: User.current.id, verifi_type: Verification.verifi_type_resource_value)
+  end
+
+  def export_track_log(params)
+    track_logs = self.track_logs.includes(:organization, :members, :track_log_details).search(params)
+
+    file_name = "#{self.name} TrackLog-#{Time.now.strftime("%Y-%m-%d").to_s}"
+    file_path = "#{Rails.root}/public/export/#{file_name + Time.now.strftime("%Y-%m-%d %H:%M:%S").to_s + '.xls'}"
+    title = [%w(项目名称 投资机构 投资人 状态 已发送文档 最新更新时间 跟进记录 备注)]
+    currency = CacheBox.dm_currencies.map{|ins| [ins['id'], ins['name']]}.to_h
+
+    res = {}
+    TrackLog.status_values.each{|ins| res[ins[:id]] = title}
+
+    track_logs.each do |track_log|
+      track_log_detail_contents = track_log.track_log_details.map do |track_log_detail|
+        case
+        when track_log_detail.detail_type_spa?
+          "#{track_log_detail.created_at.strftime("%Y-%m-%d").to_s}#{track_log_detail.content} (投资#{track_log_detail.history[:amount]}万#{currency[track_log_detail.history[:currency]]},占股#{track_log_detail.history[:ratio]}%)"
+        when track_log_detail.detail_type_calendar?
+          "#{track_log_detail.created_at.strftime("%Y-%m-%d").to_s}#{track_log_detail.content}，时间：#{track_log_detail.history[:started_at]}-#{track_log_detail.history[:ended_at]},地点：#{track_log_detail.history[:address_desc]}"
+        else
+          "#{track_log_detail.created_at.strftime("%Y-%m-%d").to_s}#{track_log_detail.content}"
+        end
+      end
+
+      res[track_log.status] << [
+          self.name,
+          track_log.organization&.name,
+          track_log.members&.map(&:name).join('、'),
+          track_log.status_desc,
+          [(track_log.has_nda ? 'NDA' : nil), (track_log.has_bp ? 'BP' : nil), (track_log.has_teaser ? 'TEASER' : nil), (track_log.has_model ? 'MODEL' : nil)].compact.join('、'),
+          track_log.track_log_details.first.created_at.strftime("%Y-%m-%d").to_s,
+          track_log_detail_contents.compact.join('\n'),
+          ''
+      ]
+    end
+    book_data = []
+    TrackLog.status_id_name.each do |ins|
+      book_data << [ins[:name], res[ins[:id]]]
+    end
+    Common::ExcelGenerator.gen(file_path, book_data)
+    [file_path, file_name]
   end
 end
