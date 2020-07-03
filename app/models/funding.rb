@@ -285,7 +285,7 @@ class Funding < FundingPolymer
 
   def financing_events
     self_financing_events = self.company.fundings.where(type: 'Funding').includes(:spas => [:members, :organization])
-    financing_events = Zombie::DmInvestevent.includes(:company, :invest_round, :investevent_investor_relations).order_by_date.public_data.not_deleted.where(company_id: self.company_id).where.not(invest_round_id: self_financing_events.map(&:round_id))._select(:investevent_investors, :invest_round_id, :birth_date, :currency_id)
+    financing_events = Zombie::DmInvestevent.includes(:company, :invest_round, :investevent_investor_relations).order_by_date.public_data.not_deleted.where(company_id: self.company_id).where("invest_round_id not in (?)", self_financing_events.map(&:round_id))._select(:investevent_investors, :invest_round_id, :birth_date, :currency_id)
     all_events = (financing_events + self_financing_events).sort_by {|p| p.try(:round_id) || p.try(:invest_round_id)}
     units = Zombie::DmInvestevent.money_unit_array.prepend([1, '']).to_h
 
@@ -313,6 +313,7 @@ class Funding < FundingPolymer
           spa_hash[:amount] = "#{spa.amount}万"
           spa_hash[:currency] = spa.currency
           spa_hash[:ratio] = spa.ratio
+          spa_hash
         end
       else
         event_hash[:is_event] = true
@@ -335,6 +336,7 @@ class Funding < FundingPolymer
           spa_hash[:amount] = "#{event_investor[:investment_money].to_s}#{units[event_investor[:investment_money_unit].to_i]}"
           spa_hash[:currency] = event.currency_id
           spa_hash[:ratio] = event_investor[:investment_ratio]
+          spa_hash
         end
       end
       arr << event_hash
