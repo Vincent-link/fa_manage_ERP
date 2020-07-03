@@ -288,15 +288,16 @@ class Funding < FundingPolymer
     financing_events = Zombie::DmInvestevent.includes(:company, :invest_round, :investevent_investor_relations).order_by_date.public_data.not_deleted.where(company_id: self.company_id).where("invest_round_id not in (?)", self_financing_events.map(&:round_id))._select(:investevent_investors, :invest_round_id, :birth_date, :currency_id)
     all_events = (financing_events + self_financing_events).sort_by {|p| p.try(:round_id) || p.try(:invest_round_id)}
     units = Zombie::DmInvestevent.money_unit_array.prepend([1, '']).to_h
-
+    currency = CacheBox.dm_currencies.map{|ins| [ins['id'], ins['name']]}.to_h
     arr = []
     all_events.map do |event|
       event_hash = {}
       if event.class.name == "Funding"
         event_hash[:is_event] = false
         event_hash[:round_id] = event.round_id
-        event_hash[:target_amount] = event.target_amount
-        event_hash[:target_amount_currency] = event.target_amount_currency
+        # event_hash[:target_amount] = event.target_amount
+        # event_hash[:target_amount_currency] = event.target_amount_currency
+        event_hash[:target_amount_des] = "#{event.target_amount}万#{currency[event.target_amount_currency]}"
         event_hash[:event_data] = event.spas.map do |spa|
           spa_hash = {}
           spa_hash[:organization] = {
@@ -318,8 +319,9 @@ class Funding < FundingPolymer
       else
         event_hash[:is_event] = true
         event_hash[:round_id] = event.invest_round_id
-        event_hash[:target_amount] = "#{event.detail_money.to_s}#{units[event.detail_money_unit.to_i]}"
-        event_hash[:target_amount_currency] = event.currency_id
+        # event_hash[:target_amount] = "#{event.detail_money.to_s}#{units[event.detail_money_unit.to_i]}"
+        # event_hash[:target_amount_currency] = event.currency_id
+        event_hash[:target_amount_des] = event.detail_money_des
         event_hash[:event_data] = event.investevent_investors.map do |event_investor|
           spa_hash = {}
           spa_hash[:organization] = {
