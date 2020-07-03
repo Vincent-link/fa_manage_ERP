@@ -11,6 +11,7 @@ module BlobFileSupport
               self.send("#{attr}_attachment").delete if self.send(attr).present?
               raise '出现已保存的文件' if ActiveStorage::Attachment.where(blob_id: file_hash[:blob_id]).present?
               file = self.send("build_#{attr}_attachment", blob_id: file_hash[:blob_id])
+              file.save
             elsif file_hash[:id].blank?
               self.send("#{attr}_attachment").delete if self.send(attr).present?
             end
