@@ -21,7 +21,7 @@ class MemberApi < Grape::API
 
       desc '创建投资人', entity: Entities::MemberForShow
       params do
-        optional :id, type: Integer, desc: '公海投资人id'
+        optional :id, type: Integer, desc: '机构id'
         optional :name, type: String, desc: '投资人名称'
         optional :en_name, type: String, desc: '投资人英文名称'
         optional :email, type: String, desc: '投资人邮箱'
