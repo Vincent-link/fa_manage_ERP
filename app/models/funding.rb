@@ -345,6 +345,6 @@ class Funding < FundingPolymer
   def gen_ka_verification
     raise '不能重复提交审核' if self.verifications.verification_type_funding_ka.where(status: nil).present?
     desc = Verification.verification_type_config[:funding_ka][:desc].call(self.name)
-    self.verifications.create(verification_type: Verification.verification_type_funding_ka_value, desc: desc, sponor: User.current.id, verifi_type: Verification.verifi_type_resource_value)
+    self.verifications.create(verification_type: Verification.verification_type_funding_ka_value, desc: desc, sponsor: User.current.id, verifi_type: Verification.verifi_type_resource_value)
   end
 end
