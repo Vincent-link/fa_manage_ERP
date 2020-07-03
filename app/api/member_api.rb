@@ -6,14 +6,16 @@ class MemberApi < Grape::API
         requires :layout, type: String, desc: 'index/select', default: 'index'
         optional :page, type: Integer, desc: '页数', default: 1
         optional :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 30
+        optional :sector_ids, type: Array[Integer], desc: '关注行业'
       end
       get :members do
-        organization = Organization.find(params[:id])
+        member = Member.es_search(params.merge(organization_id: params[:id]))
+
         case params[:layout]
         when 'index'
-          present organization.members.paginate(page: params[:page], per_page: params[:per_page]), with: Entities::MemberForIndex
+          present member, with: Entities::MemberForIndex
         when 'select'
-          present organization.members.paginate(page: params[:page], per_page: params[:per_page]), with: Entities::MemberLite
+          present member, with: Entities::MemberLite
         end
       end
 
