@@ -7,7 +7,7 @@ class StatisticsApi < Grape::API
       end
       get do
         teams = Team.order(created_at: :desc)
-        present teams, with: Entities::TeamForStatis
+        present teams, with: Entities::StatisKpiForAdmin, year: params[:year]
       end
     end
 

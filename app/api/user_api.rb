@@ -123,6 +123,22 @@ class UserApi < Grape::API
         @user_title = UserTitle.find(params[:user_title_id])
         present @user_title, with: Entities::UserTitle
       end
+
+      desc "下级kpi统计"
+      params do
+        requires :year, type: Integer, desc: "年度", default: 2020
+      end
+      get :sub_users_kpi do
+        present @user, with: Entities::StatisKpiForUser, year: params[:year]
+      end
+
+      desc "我的kpi"
+      params do
+        requires :year, type: Integer, desc: "年度", default: 2020
+      end
+      get :my_kpi do
+        present @user.kpi_group, with: Entities::StatisKpiForMe, year: params[:year]
+      end
     end
   end
 end
