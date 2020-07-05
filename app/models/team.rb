@@ -2,6 +2,8 @@ class Team < DefaultTeam
   has_many :users
   has_many :kpi_groups
 
+  has_many :sub_teams, class_name: "Team", foreign_key: :parent_id
+
   def statis_kpi_titles(year)
     arr = []
     titles = kpi_types(year)
