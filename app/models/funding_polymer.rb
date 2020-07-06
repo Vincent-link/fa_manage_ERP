@@ -73,7 +73,6 @@ class FundingPolymer < ApplicationRecord
 
     #pipeline status
     where_hash[:pipeline_status] = {all: params[:pipeline_status]} if params[:pipeline_status].present?
-    puts where_hash
 
     # FundingPolymer.search(params[:keyword], where: where_hash, page: params[:page], per_page: params[:per_page], highlight: DEFAULT_HL_TAG)
 

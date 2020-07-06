@@ -63,7 +63,7 @@ module Entities
       }
     end
     expose :funding_source, documentation: {type: 'string', desc: '项目来源'} do |ins|
-      if ins.class == 'Funding'
+      if ins.class.to_s == 'Funding'
         "FA"
       else
         ins.other_funding_type_desc
