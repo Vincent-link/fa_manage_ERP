@@ -2,9 +2,11 @@ class User < ApplicationRecord
   scope :user_title_id, -> {where(user_title_id: 2)}
 
   include RoleExtend
+  include BlobFileSupport
   attr_accessor :proxier_id
 
   has_one_attached :avatar
+  has_blob_upload :avatar
 
   has_many :investor_groups
   has_many :follows
