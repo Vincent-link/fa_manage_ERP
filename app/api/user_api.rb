@@ -50,6 +50,9 @@ class UserApi < Grape::API
         optional :avatar_file, type: Hash, desc: '头像' do
           optional :blob_id, type: Integer, desc: 'blob_id 新文件id'
         end
+        optional :tel, type: String, desc: '手机'
+        optional :wechat, type: String, desc: '微信'
+        optional :user_title_id, type: Integer, desc: 'title_id'
       end
       patch do
         @user.update! declared(params)
