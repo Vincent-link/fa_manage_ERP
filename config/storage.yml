@@ -16,6 +16,7 @@ minio:
   secret_access_key: eZJxgPFbeWjL9ptk
   region: us-east-1
   bucket: arrow-fa
+  force_path_style: true
 
 # Remember not to checkin your GCS keyfile to a repository
 # google:
