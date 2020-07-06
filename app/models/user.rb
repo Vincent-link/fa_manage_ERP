@@ -28,6 +28,7 @@ class User < ApplicationRecord
   has_many :group_users, -> {where(id: CacheBox.get_group_user_ids(self.id))}, class_name: 'User'
 
   belongs_to :team, optional: true
+  belongs_to :bu, optional: true, class_name: 'Team', foreign_key: :bu_id
   belongs_to :grade, optional: true
   delegate :name, to: :team, :prefix => true, allow_nil: true
   delegate :name, to: :grade, :prefix => true, allow_nil: true
