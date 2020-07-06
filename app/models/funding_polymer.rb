@@ -9,7 +9,7 @@ class FundingPolymer < ApplicationRecord
 
   belongs_to :company
 
-  has_many :time_lines, -> {order(created_at: :desc)}, class_name: 'TimeLine'
+  has_many :time_lines, -> {order(created_at: :desc)}, class_name: 'TimeLine', foreign_key: :funding_id
 
   has_many :funding_normal_users, -> { kind_normal_users }, class_name: 'FundingUser', foreign_key: :funding_id
   has_many :normal_users, through: :funding_normal_users, source: :user
