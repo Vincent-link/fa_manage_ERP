@@ -5,30 +5,60 @@ class Kpi < ApplicationRecord
   include StateConfig
 
   state_config :kpi_type, config: {
+    # kind:2 bd负责人，上传el为新签，status:7为完成，新签和完成的项目需要满足融资额和收入条件
     new_sign_bd_goal: {        value: 1, desc: "BD总体目标（新签）", unit: "个", is_system: true,
-      op: 2
+      op: -> (user_id) {
+        Funding.includes(:funding_users).where(funding_users: {user_id: 1988, kind: 2}).select{|e| e if !e.file_el_attachment.nil? && e.pipelines.where(status: 7).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= 40 || e.pipelines.where(status: 7).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= 10000000}
     },
     complete_bd_goal: {        value: 2, desc: "BD总体目标（完成）", unit: "个", is_system: true,
-      op: 2
+      op: -> (user_id) {
+        Funding.includes(:funding_users).where(funding_users: {user_id: 1988, kind: 2}, status: 7).select{|e| e.pipelines.where(status: 7).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= 40 || e.pipelines.where(status: 7).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= 10000000}
     },
-    new_sign_growth_bd_goal: { value: 3, desc: "成长期BD目标(新签)", unit: "个", is_system: true,
-      op: 2
+
+    new_sign_growth_bd_goal_for_pe: { value: 3, desc: "asso/PE及以下成长期BD目标(新签)", unit: "个", is_system: true,
+      op: -> (user_id) {
+        Funding.includes(:funding_users).where(funding_users: {user_id: user_id, kind: 2}).select{|e| e if !e.file_el_attachment.nil? && compare_target_amount(e.target_amount, e.target_amount_currency, 150000000, 3)}.count
+      }
     },
-    complete_growth_bd_goal: { value: 4, desc: "成长期BD目标(完成)", unit: "个", is_system: true,
-      op: 2
+    new_sign_growth_bd_goal_for_vp: { value: 3, desc: "VP成长期BD目标(新签)", unit: "个", is_system: true,
+      op: -> (user_id) {
+        Funding.includes(:funding_users).where(funding_users: {user_id: user_id, kind: 2}).select{|e| e if !e.file_el_attachment.nil? && compare_target_amount(e.target_amount, e.target_amount_currency, 300000000, 3)}.count
+      }
     },
+    new_sign_growth_bd_goal_for_director: { value: 3, desc: "Director成长期BD目标(新签)", unit: "个", is_system: true,
+      op: -> (user_id) {
+        Funding.includes(:funding_users).where(funding_users: {user_id: user_id, kind: 2}).select{|e| e if !e.file_el_attachment.nil? && compare_target_amount(e.target_amount, e.target_amount_currency, 500000000, 3)}.count
+      }
+    },
+
+    complete_growth_bd_goal_for_pe: { value: 3, desc: "asso/PE及以下成长期BD目标(完成)", unit: "个", is_system: true,
+      op: -> (user_id) {
+        Funding.includes(:funding_users).where(funding_users: {user_id: user_id, kind: 2}, status: 7).select{|e| e if compare_target_amount(e.target_amount, e.target_amount_currency, 150000000, 3)}.count
+      }
+    },
+    complete_growth_bd_goal_for_vp: { value: 3, desc: "VP成长期BD目标(完成)", unit: "个", is_system: true,
+      op: -> (user_id) {
+        Funding.includes(:funding_users).where(funding_users: {user_id: user_id, kind: 2}, status: 7).select{|e| e if compare_target_amount(e.target_amount, e.target_amount_currency, 300000000, 3)}.count
+      }
+    },
+    complete_growth_bd_goal_for_director: { value: 3, desc: "Director成长期BD目标(完成)", unit: "个", is_system: true,
+      op: -> (user_id) {
+        Funding.includes(:funding_users).where(funding_users: {user_id: user_id, kind: 2}, status: 7).select{|e| e if compare_target_amount(e.target_amount, e.target_amount_currency, 500000000, 3)}.count
+      }
+    },
+
     visit_company: {           value: 5, desc: "拜访公司", unit: "个", is_system: true,
       op: -> (user_id){
         user = User.find(user_id)
         # 类别为约见公司，且约见已完成
-        Calendar.where(user_id: user_id).where(meeting_category: 2, status: 3).map{|e| e.company if !e.company.callreport_num.nil? && e.company.callreport_num > 0}.count
+        Calendar.where(user_id: user_id, meeting_category: 2, status: 3).select{|e| e.company if !e.company.callreport_num.nil? && e.company.callreport_num > 0}.count
       }
     },
     visit_investor: {         value: 6, desc: "拜访投资人", unit: "个", is_system: true,
       op: -> (user_id){
         user = User.find(user_id)
         # 类别为约见投资人，且约见已完成
-        Calendar.where(user_id: user_id).where(meeting_category: 3, status: 3).map{|e| e.org_members.map{|e| e.memberable if !e.memberable.ir_review.nil?}}.count
+        Calendar.where(user_id: user_id, meeting_category: 3, status: 3).map{|e| e.org_members.select{|e| e.memberable if !e.memberable.ir_review.nil?}}.flatten.count
       }
     },
     dept_coverage_investor: {
@@ -77,6 +107,7 @@ class Kpi < ApplicationRecord
     },
 
     # 执行组
+    # 担任项目成员即可
     project_execution: {value: 12, desc: "项目执行", unit: "个", is_system: true,
       op: 2
     },
@@ -93,6 +124,7 @@ class Kpi < ApplicationRecord
       is_system: false,
       op: 2
     },
+    # 担任执行负责人
     serving_as_project_po: {
       value: 7,
       desc: "担任项目PO",
@@ -117,7 +149,20 @@ class Kpi < ApplicationRecord
         fundings.count
       }
     },
-
-
   }
+
+  def compare_target_amount(target_amount, target_amount_currency, kpi_target_amount, kpi_target_amount_currency)
+    target_amount >= kpi_target_amount && target_amount_currency == kpi_target_amount_currency || target_amount >= ConfigBox.rmb_usd_rate * kpi_target_amount && target_amount_currency == 1 if !target_amount.nil? && !target_amount_currency.nil?
+  end
+
+  def transform_to_usd(total_fee, total_fee_currency)
+    if !total_fee.nil?
+      case total_fee_currency
+      when 1
+        total_fee/ConfigBox.rmb_usd_rate
+      when 3
+        total_fee
+      end
+    end
+  end
 end
