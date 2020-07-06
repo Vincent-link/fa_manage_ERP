@@ -2,9 +2,11 @@ class User < ApplicationRecord
   scope :user_title_id, -> {where(user_title_id: 2)}
 
   include RoleExtend
+  include BlobFileSupport
   attr_accessor :proxier_id
 
   has_one_attached :avatar
+  has_blob_upload :avatar
 
   has_many :investor_groups
   has_many :follows
@@ -26,6 +28,7 @@ class User < ApplicationRecord
   has_many :group_users, -> {where(id: CacheBox.get_group_user_ids(self.id))}, class_name: 'User'
 
   belongs_to :team, optional: true
+  belongs_to :bu, optional: true, class_name: 'Team', foreign_key: :bu_id
   belongs_to :grade, optional: true
   delegate :name, to: :team, :prefix => true, allow_nil: true
   delegate :name, to: :grade, :prefix => true, allow_nil: true

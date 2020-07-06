@@ -9,4 +9,8 @@ class ConfigBox
       member_avatar:            { value: 'member_avatar',       desc: "投资人头像", is_static: true},
       member_card:            { value: 'member_card',       desc: "投资人名片", is_static: false},
   }
+
+  def self.rmb_usd_rate
+    7
+  end
 end

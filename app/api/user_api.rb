@@ -40,12 +40,21 @@ class UserApi < Grape::API
         @user = User.find(params[:id])
       end
 
+      desc '获取用户'
+      get do
+        present @user, with: Entities::UserForShow
+      end
+
       desc '更新用户', entity: Entities::UserForShow
       params do
-        requires :avatar, type: File, desc: '头像'
+        optional :avatar_file, type: Hash, desc: '头像' do
+          optional :blob_id, type: Integer, desc: 'blob_id 新文件id'
+        end
+        optional :tel, type: String, desc: '手机'
+        optional :wechat, type: String, desc: '微信'
+        optional :user_title_id, type: Integer, desc: 'title_id'
       end
       patch do
-        params[:avatar] = ActionDispatch::Http::UploadedFile.new(params[:avatar]) if params[:avatar]
         @user.update! declared(params)
         present @user, with: Entities::UserForShow
       end
@@ -73,7 +82,7 @@ class UserApi < Grape::API
       desc '已选权限点', entity: Entities::Resource
       get :resources do
         user_roles = @user.user_roles
-        resources = Resource.resources.select{|e| RoleResource.where(role_id: user_roles.pluck(:role_id)).pluck(:name).include?(e.name)}
+        resources = Resource.resources.select {|e| RoleResource.where(role_id: user_roles.pluck(:role_id)).pluck(:name).include?(e.name)}
         present resources, with: Entities::Resource
       end
 
@@ -82,7 +91,7 @@ class UserApi < Grape::API
         optional 'ids', type: Array[String], desc: "权限组"
       end
       patch :roles do
-        @roles = Role.all.select { |e| params[:ids].include?(e.id.to_s) } unless params[:ids].nil?
+        @roles = Role.all.select {|e| params[:ids].include?(e.id.to_s)} unless params[:ids].nil?
         @user.role_ids = @roles.map(&:id) unless @roles.nil?
       end
 

@@ -327,6 +327,15 @@ class FundingApi < Grape::API
         @funding.gen_ka_verification
         present @funding, with: Entities::FundingLite
       end
+
+      desc '取消ka', entity: Entities::FundingLite
+      params do
+      end
+      post 'cancel_ka' do
+        raise '此项目不是ka项目' unless @funding.is_ka
+        @funding.update!(is_ka: false)
+        present @funding, with: Entities::FundingLite
+      end
     end
   end
 

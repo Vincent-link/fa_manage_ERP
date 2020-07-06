@@ -13,7 +13,7 @@ class FileApi < Grape::API
 
     get :oss_upload_url do
       params[:user_id] = current_user.id
-      bucket = ConfigBox.upload_type_value_code(params[:upload_type], :is_static).first ? 'arrow-fa/static' : 'arrow-fa/private'
+      bucket = ConfigBox.upload_type_value_code(params[:upload_type], :is_static).first ? 'static' : 'private'
       key = "#{bucket}/#{params[:upload_type]}/#{ActiveStorage::Blob.generate_unique_secure_token}"
       blob = ActiveStorage::Blob.create!(params.slice(:filename, :byte_size, :checksum, :content_type, :user_id).merge(key: key, metadata: {identified: true, analyzed: true}))
       url = blob.service_url_for_direct_upload
