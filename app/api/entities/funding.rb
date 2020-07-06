@@ -72,7 +72,7 @@ module Entities
     expose :has_ka_verification, documentation: {type: 'boolean', desc: '是否申请了ka'} do |ins|
       has_ka_verification = false
       ins.verifications.each do |verification|
-        if verification.verification_type == Verification.verification_type_funding_ka_value && verification.status.nil?
+        if verification.verification_type == 'Verification'.constantize.verification_type_funding_ka_value && verification.status.nil?
           has_ka_verification = true
           break
         end

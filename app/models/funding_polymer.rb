@@ -27,7 +27,9 @@ class FundingPolymer < ApplicationRecord
 
   has_many :funding_members, through: :funding_users, source: :user
 
-  scope :search_import, -> { includes(:company) }
+  has_many :verifications, as: :verifyable
+
+  scope :search_import, -> { includes(:company, :verifications) }
 
   def search_data
     data = attributes.merge({pipeline_status: self.pipelines.pluck(:status),

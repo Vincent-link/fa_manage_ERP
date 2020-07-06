@@ -28,6 +28,16 @@ module Entities
           name: ins.bsc_status_desc
       }
     end
+    expose :has_ka_verification, documentation: {type: 'boolean', desc: '是否申请了ka'} do |ins|
+      has_ka_verification = false
+      ins.verifications.each do |verification|
+        if verification.verification_type == 'Verification'.constantize.verification_type_funding_ka_value && verification.status.nil?
+          has_ka_verification = true
+          break
+        end
+      end
+      has_ka_verification
+    end
     expose :tf_search_highlights, as: :search_highlights, documentation: {type: 'hash', desc: 'es结果高亮'}
   end
 end
