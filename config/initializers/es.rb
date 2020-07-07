@@ -2,7 +2,6 @@
 ENV["ELASTICSEARCH_URL"] = Settings.es_host
 DEFAULT_HL_TAG = {tag: '<span class="highlight">'}
 
-# tmp
-# Searchkick.model_options = {
-#     language: 'chinese'
-# }
+Searchkick.model_options = {
+    language: 'chinese'
+}
