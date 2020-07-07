@@ -28,9 +28,10 @@ module Entities
     expose :is_head, documentation: {type: 'boolean', desc: '是否高层'}
     expose :is_ic, documentation: {type: 'boolean', desc: '是否投委会'}
     expose :is_president, documentation: {type: 'boolean', desc: '是否最高决策人'}
-    expose :report_relations, as: :report_lines, using: Entities::DmMemberReportRelation, documentation: {type: Entities::DmMemberReportRelation, desc: '汇报关系'}
-    expose :solid_report_lower, using: Entities::MemberLite, documentation: {type: 'integer', desc: '实线下级', is_array: true}
-    expose :virtual_report_lower, using: Entities::MemberLite, documentation: {type: 'integer', desc: '虚线下级', is_array: true}
+    expose :solid_report_superior, using: Entities::MemberLite, documentation: {type: Entities::MemberLite, desc: '实线上级', is_array: true}
+    expose :virtual_report_superior, using: Entities::MemberLite, documentation: {type: Entities::MemberLite, desc: '虚线上级', is_array: true}
+    expose :solid_report_lower, using: Entities::MemberLite, documentation: {type: Entities::MemberLite, desc: '实线下级', is_array: true}
+    expose :virtual_report_lower, using: Entities::MemberLite, documentation: {type: Entities::MemberLite, desc: '虚线下级', is_array: true}
 
     expose :ir_review, documentation: {type: 'string', desc: 'IrReview'}
     expose :intro, documentation: {type: 'string', desc: '简介'}

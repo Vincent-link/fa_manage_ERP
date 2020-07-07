@@ -41,7 +41,7 @@ class Member < ApplicationRecord
   after_validation :save_to_dm
   after_commit :save_report_relation
 
-  attr_accessor :solid_lower_ids, :virtual_lower_ids
+  attr_accessor :solid_lower_ids, :virtual_lower_ids, :report_line
 
   # searchkick scope and config
   scope :search_import, -> {includes(:organization, :users)}
@@ -91,11 +91,23 @@ class Member < ApplicationRecord
     @lower_report_relation ||= Zombie::DmMemberReportRelation.where(superior_id: self.id).inspect
   end
 
-  def update_dm_report_relation
-    relation_arr = []
-    relation_arr << dm_lower_report_relation.select {|relation| relation.report_type == 1 && relation.superior_id.in?(solid_lower_ids || [])}
-    relation_arr << dm_lower_report_relation.select {|relation| relation.report_type == 0 && relation.superior_id.in?(virtual_lower_ids || [])}
-    dm_member.update_report_relations(relation_arr)
+  def save_report_relation
+    if self.solid_lower_ids || self.virtual_lower_ids
+      self.solid_lower_ids ||= []
+      self.virtual_lower_ids ||= []
+      relation_arr = []
+      relation_arr |= dm_lower_report_relation.select {|relation| relation.report_type == 1 && self.solid_lower_ids.delete(relation.superior_id)}
+      relation_arr |= dm_lower_report_relation.select {|relation| relation.report_type == 0 && self.virtual_lower_ids.delete(relation.superior_id)}
+      solid_lower_ids.each {|ins| relation_arr << {member_id: ins, report_type: 1}}
+      virtual_lower_ids.each {|ins| relation_arr << {member_id: ins, report_type: 0}}
+      dm_member.update_report_relations(relation_arr, 'lower')
+    end
+
+    if self.report_line
+      dm_member.update_report_relations(self.report_line, 'superior')
+    end
+
+    @lower_report_relation = nil
   end
 
   def solid_report_lower
@@ -104,6 +116,14 @@ class Member < ApplicationRecord
 
   def virtual_report_lower
     Member.where(id: dm_lower_report_relation.select {|relation| relation.report_type == 0}.map(&:member_id))
+  end
+
+  def solid_report_superior
+    Member.where(id: report_relations.select {|relation| relation.report_type == 1}.map(&:superior_id))
+  end
+
+  def virtual_report_superior
+    Member.where(id: report_relations.select {|relation| relation.report_type == 0}.map(&:superior_id))
   end
 
   def self.es_search(params, options = {})
