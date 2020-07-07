@@ -55,7 +55,7 @@ class UserApi < Grape::API
         optional :user_title_id, type: Integer, desc: 'title_id'
       end
       patch do
-        @user.update! declared(params)
+        @user.update! declared(params, include_missing: false)
         present @user, with: Entities::UserForShow
       end
 
