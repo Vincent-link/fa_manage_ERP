@@ -3,7 +3,7 @@ class FundingPolymer < ApplicationRecord
 
   acts_as_paranoid
   has_paper_trail
-  searchkick
+  searchkick language: 'chinese'
 
   include ModelState::FundingState
 
