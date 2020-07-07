@@ -26,7 +26,7 @@ class Member < ApplicationRecord
 
   state_config :report_type, config: {
       solid: {value: 1, desc: '实线汇报'},
-      virtual: {value: 2, desc: '虚线汇报'},
+      virtual: {value: 0, desc: '虚线汇报'},
   }
 
   state_config :scale, config: {
@@ -39,6 +39,9 @@ class Member < ApplicationRecord
   }
 
   after_validation :save_to_dm
+  after_commit :save_report_relation
+
+  attr_accessor :solid_lower_ids, :virtual_lower_ids
 
   # searchkick scope and config
   scope :search_import, -> {includes(:organization, :users)}
@@ -72,7 +75,6 @@ class Member < ApplicationRecord
         'en_name' => 'en_name',
         'tel' => 'contact_tel',
         'email' => 'contact_email',
-        'wechat' => 'weixin_url',
         'position_rank_id' => 'position_rank_id',
         'position' => 'position',
         'intro' => 'intro',
@@ -87,6 +89,13 @@ class Member < ApplicationRecord
 
   def dm_lower_report_relation
     @lower_report_relation ||= Zombie::DmMemberReportRelation.where(superior_id: self.id).inspect
+  end
+
+  def update_dm_report_relation
+    relation_arr = []
+    relation_arr << dm_lower_report_relation.select {|relation| relation.report_type == 1 && relation.superior_id.in?(solid_lower_ids || [])}
+    relation_arr << dm_lower_report_relation.select {|relation| relation.report_type == 0 && relation.superior_id.in?(virtual_lower_ids || [])}
+    dm_member.update_report_relations(relation_arr)
   end
 
   def solid_report_lower
