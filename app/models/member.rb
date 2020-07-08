@@ -65,6 +65,10 @@ class Member < ApplicationRecord
     end
   end
 
+  def organization_teams
+    OrganizationTeam.where(id: self.team_ids)
+  end
+
   def dm_member
     @dm_member ||= Zombie::DmMember.find(self.id)
   end
@@ -85,6 +89,13 @@ class Member < ApplicationRecord
 
   def tag_desc
     self.tags.map(&:name)
+  end
+
+  def covered_by= ids
+    self.member_user_relations.where.not(user_id: ids).destroy_all
+    ids.each do |u_id|
+      self.member_user_relations.find_or_initialize_by(user_id: u_id)
+    end
   end
 
   def dm_lower_report_relation
