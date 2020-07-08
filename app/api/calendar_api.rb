@@ -63,8 +63,8 @@ class CalendarApi < Grape::API
         optional :track_log_id, type: Integer, desc: '融资进度id'
         optional :desc, type: String, desc: '会议描述', default: '由项目进度生成'
         at_least_one_of :track_log_id, :desc
-        optional :contact_ids, type: Array[Integer], desc: '公司联系人id'
-        optional :member_ids, type: Array[Integer], desc: '投资人id'
+        optional :contact_ids, type: Array[Integer], desc: '公司联系人id', default: []
+        optional :member_ids, type: Array[Integer], desc: '投资人id', default: []
         requires :cr_user_ids, type: Array[Integer], desc: '华兴参与人id'
         requires :started_at, type: DateTime, desc: '开始时间'
         requires :ended_at, type: DateTime, desc: '结束时间'

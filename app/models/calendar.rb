@@ -43,20 +43,23 @@ class Calendar < ApplicationRecord
   }
 
   def contact_ids=(contact_ids)
+    self.calendar_members.where(memberable_type: 'Contact').where.not(memberable_id: contact_ids).destroy_all
     contact_ids.each do |user_id|
-      self.calendar_members.build(memberable_type: 'Contact', memberable_id: user_id)
+      self.calendar_members.find_or_initialize_by(memberable_type: 'Contact', memberable_id: user_id)
     end
   end
 
   def member_ids=(member_ids)
+    self.calendar_members.where(memberable_type: 'Member').where.not(memberable_id: member_ids).destroy_all
     member_ids.each do |user_id|
-      self.calendar_members.build(memberable_type: 'Member', memberable_id: user_id)
+      self.calendar_members.find_or_initialize_by(memberable_type: 'Member', memberable_id: user_id)
     end
   end
 
   def cr_user_ids=(cr_user_ids)
+    self.calendar_members.where(memberable_type: 'User').where.not(memberable_id: cr_user_ids).destroy_all
     cr_user_ids.each do |user_id|
-      self.calendar_members.build(memberable_type: 'User', memberable_id: user_id)
+      self.calendar_members.find_or_initialize_by(memberable_type: 'User', memberable_id: user_id)
     end
   end
 
