@@ -1,7 +1,7 @@
 class Organization < ApplicationRecord
   acts_as_paranoid
   has_paper_trail
-  searchkick language: "chinese"
+  searchkick language: 'chinese'
 
   include StateConfig
 
@@ -104,7 +104,7 @@ class Organization < ApplicationRecord
       order_hash = {params[:order_by] => params[:order_type]}
     end
 
-    Organization.search(params[:query], where: where_hash, order: order_hash, page: params[:page], per_page: params[:per_page], highlight: DEFAULT_HL_TAG)
+    Organization.search(params[:query], match: :phrase, where: where_hash, order: order_hash, page: params[:page], per_page: params[:per_page], highlight: DEFAULT_HL_TAG)
   end
 
   def save_to_dm

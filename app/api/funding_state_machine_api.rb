@@ -63,6 +63,7 @@ class FundingStateMachineApi < Grape::API
 
       end
       post 'pursue' do
+        raise '需要补充bd负责人、执行负责人信息' unless @funding.bd_leader.present? && @funding.execution_leader.present?
         @funding.funding_status_auth(Funding.status_voting_value, Funding.status_pursue_value, params)
         # todo 判断是不是管理员
         # todo 然后就没用了

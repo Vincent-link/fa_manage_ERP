@@ -1,7 +1,8 @@
 class Member < ApplicationRecord
   acts_as_paranoid
   has_paper_trail
-  searchkick language: "chinese"
+  searchkick language: 'chinese'
+
   include StateConfig
   include BlobFileSupport
 
@@ -25,7 +26,7 @@ class Member < ApplicationRecord
 
   state_config :report_type, config: {
       solid: {value: 1, desc: '实线汇报'},
-      virtual: {value: 2, desc: '虚线汇报'},
+      virtual: {value: 0, desc: '虚线汇报'},
   }
 
   state_config :scale, config: {
@@ -38,6 +39,9 @@ class Member < ApplicationRecord
   }
 
   after_validation :save_to_dm
+  after_commit :save_report_relation
+
+  attr_accessor :solid_lower_ids, :virtual_lower_ids, :report_line
 
   # searchkick scope and config
   scope :search_import, -> {includes(:organization, :users)}
@@ -61,6 +65,10 @@ class Member < ApplicationRecord
     end
   end
 
+  def organization_teams
+    OrganizationTeam.where(id: self.team_ids)
+  end
+
   def dm_member
     @dm_member ||= Zombie::DmMember.find(self.id)
   end
@@ -71,7 +79,6 @@ class Member < ApplicationRecord
         'en_name' => 'en_name',
         'tel' => 'contact_tel',
         'email' => 'contact_email',
-        'wechat' => 'weixin_url',
         'position_rank_id' => 'position_rank_id',
         'position' => 'position',
         'intro' => 'intro',
@@ -84,8 +91,34 @@ class Member < ApplicationRecord
     self.tags.map(&:name)
   end
 
+  def covered_by= ids
+    self.member_user_relations.where.not(user_id: ids).destroy_all
+    ids.each do |u_id|
+      self.member_user_relations.find_or_initialize_by(user_id: u_id)
+    end
+  end
+
   def dm_lower_report_relation
     @lower_report_relation ||= Zombie::DmMemberReportRelation.where(superior_id: self.id).inspect
+  end
+
+  def save_report_relation
+    if self.solid_lower_ids || self.virtual_lower_ids
+      self.solid_lower_ids ||= []
+      self.virtual_lower_ids ||= []
+      relation_arr = []
+      relation_arr |= dm_lower_report_relation.select {|relation| relation.report_type == 1 && self.solid_lower_ids.delete(relation.superior_id)}
+      relation_arr |= dm_lower_report_relation.select {|relation| relation.report_type == 0 && self.virtual_lower_ids.delete(relation.superior_id)}
+      solid_lower_ids.each {|ins| relation_arr << {member_id: ins, report_type: 1}}
+      virtual_lower_ids.each {|ins| relation_arr << {member_id: ins, report_type: 0}}
+      dm_member.update_report_relations(relation_arr, 'lower')
+    end
+
+    if self.report_line
+      dm_member.update_report_relations(self.report_line, 'superior')
+    end
+
+    @lower_report_relation = nil
   end
 
   def solid_report_lower
@@ -94,6 +127,14 @@ class Member < ApplicationRecord
 
   def virtual_report_lower
     Member.where(id: dm_lower_report_relation.select {|relation| relation.report_type == 0}.map(&:member_id))
+  end
+
+  def solid_report_superior
+    Member.where(id: report_relations.select {|relation| relation.report_type == 1}.map(&:superior_id))
+  end
+
+  def virtual_report_superior
+    Member.where(id: report_relations.select {|relation| relation.report_type == 0}.map(&:superior_id))
   end
 
   def self.es_search(params, options = {})

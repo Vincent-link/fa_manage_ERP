@@ -23,8 +23,6 @@ class Funding < FundingPolymer
   has_many :evaluations
   has_many :questions
 
-  has_many :verifications, as: :verifyable
-
   has_many :users, through: :funding_users
 
   before_create :gen_serial_number

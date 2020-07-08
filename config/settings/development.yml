@@ -5,3 +5,8 @@ sso_client:
   client_secret: 992eafc7bbae18d7cb7fbdde9075201d114736618a940b1d892a33f18865d353
 
 es_host: '10.100.97.86:9200'
+
+zombie:
+  #host: "http://router.canary.huaxing.com:9787"
+  host: "http://localhost:8780"
+  app_name: 'magazine_dev_lee'

@@ -8,7 +8,7 @@ module Entities
     expose :tel, documentation: {type: 'string', desc: '电话'}
     expose :wechat, documentation: {type: 'string', desc: '微信'}
     expose :email, documentation: {type: 'string', desc: '邮箱'}
-    expose :team_ids, documentation: {type: 'integer', desc: '所属团队', is_array: true}
+    expose :organization_teams, using: Entities::OrganizationTeam, documentation: {type: Entities::OrganizationTeam, desc: '所属团队', is_array: true}
     expose :card_attachment, as: :card, using: Entities::File, documentation: {type: Entities::File, desc: '名片', required: true}
     expose :avatar_attachment, as: :avatar, using: Entities::File, documentation: {type: Entities::File, desc: '用户头像', required: true}
     expose :position, documentation: {type: 'string', desc: '实际职位'}
@@ -22,15 +22,16 @@ module Entities
     expose :hot_tags, documentation: {type: 'integer', desc: '标签', is_array: true}
     expose :followed_location_ids, documentation: {type: 'integer', desc: '关注地区', is_array: true}
 
-    expose :users, as: :covered_by, using: Entities::UserForShow, documentation: {type: 'Entities::UserLite', desc: '对接成员'}
+    expose :users, as: :covered_by, using: Entities::UserForLogin, documentation: {type: 'Entities::UserLite', desc: '对接成员'}
 
     expose :sponsor, using: Entities::UserLite, documentation: {type: 'Entities::UserLite', desc: '来源'}
     expose :is_head, documentation: {type: 'boolean', desc: '是否高层'}
     expose :is_ic, documentation: {type: 'boolean', desc: '是否投委会'}
     expose :is_president, documentation: {type: 'boolean', desc: '是否最高决策人'}
-    expose :report_relations, as: :report_lines, using: Entities::DmMemberReportRelation, documentation: {type: Entities::DmMemberReportRelation, desc: '汇报关系'}
-    expose :solid_report_lower, using: Entities::MemberLite, documentation: {type: 'integer', desc: '实线下级', is_array: true}
-    expose :virtual_report_lower, using: Entities::MemberLite, documentation: {type: 'integer', desc: '虚线下级', is_array: true}
+    expose :solid_report_superior, using: Entities::MemberLite, documentation: {type: Entities::MemberLite, desc: '实线上级', is_array: true}
+    expose :virtual_report_superior, using: Entities::MemberLite, documentation: {type: Entities::MemberLite, desc: '虚线上级', is_array: true}
+    expose :solid_report_lower, using: Entities::MemberLite, documentation: {type: Entities::MemberLite, desc: '实线下级', is_array: true}
+    expose :virtual_report_lower, using: Entities::MemberLite, documentation: {type: Entities::MemberLite, desc: '虚线下级', is_array: true}
 
     expose :ir_review, documentation: {type: 'string', desc: 'IrReview'}
     expose :intro, documentation: {type: 'string', desc: '简介'}
