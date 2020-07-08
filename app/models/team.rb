@@ -33,7 +33,7 @@ class Team < DefaultTeam
       user.kpi_group.kpis.map {|kpi|
         kpi_types(year).pluck(:kpi_type).uniq.map{|type|
           # 如果kpi配置存有条件
-          conditions = kpi.conditions.map{|e| " #{e.relation} 2/#{e.value}"}.join(" ") unless kpi.conditions.empty?
+          conditions = kpi.conditions.map{|e| " #{e.relation} #{Kpi.kpi_type_op_for_value(type).call(user.id, kpi.coverage)}/#{e.value}"}.join(" ") unless kpi.conditions.empty?
           new_row["#{type}"] = "2/#{kpi.value}#{conditions}" if kpi.kpi_type == type
         }
       }
