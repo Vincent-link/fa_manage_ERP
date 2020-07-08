@@ -32,7 +32,7 @@ class Kpi < ApplicationRecord
           teams = team.sub_teams
           teams.append(team).map(&:users).flatten.uniq.map {|user| Funding.includes(:funding_users).where(funding_users: {user_id: user.id, kind: 2}).select{|e| e if !e.file_el_attachment.nil? && e.pipelines.where(status: 10).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= 400000 || e.pipelines.where(status: 10).map {|e| transform_to_usd(e.est_amount, e.est_amount_currency)}.sum >= 10000000}.count}.sum
         end
-      }
+      },
 
       op: -> (user_id) {
         Funding.includes(:funding_users).where(funding_users: {user_id: 1988, kind: 2}, status: 7).select{|e| e.pipelines.where(status: 10).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= 40 || e.pipelines.where(status: 10).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= 10000000}
