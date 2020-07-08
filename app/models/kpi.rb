@@ -4,36 +4,22 @@ class Kpi < ApplicationRecord
 
   include StateConfig
 
-  @@total_fee = 400000
-
   state_config :kpi_type, config: {
-    # kind:2 bd负责人，上传el为新签，status:7为完成，新签和完成的项目需要满足融资额和收入条件
+    # kind:2 bd负责人，上传el为新签，status:7为完成，新签和完成的项目需要满足融资额和收入条件, coverage：nil为个人，否则团队
     # 用户为BD负责人：2，收入大于40万或者融资额大于1000万，且上传el
     new_sign_bd_goal: {               value: 1, desc: "BD总体目标（新签）", unit: "个", is_system: true,
       op: -> (user_id, coverage){
-        # coverage：nil为个人，否则团队
         if coverage.nil?
-          Funding.includes(:funding_users).where(funding_users: {user_id: 1988, kind: FundingUser.kind_config[:bd_leader][:value]}).select{|e| e if !e.file_el_attachment.nil? && e.pipelines.where(status: 10).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= 400000 || e.pipelines.where(status: 10).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= 10000000}.count
+          Funding.includes(:funding_users).where(funding_users: {user_id: user_id, kind: FundingUser.kind_config[:bd_leader][:value]}).select{|e| e if !e.file_el_attachment.nil? && e.pipelines.where(status: Pipeline.status_config[:fee_ed][:value]).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= Settings.kpi.total_fee || e.pipelines.where(status: Pipeline.status_config[:fee_ed][:value]).map {|e| transform_to_usd(e.est_amount, e.est_amount_currency)}.sum >= Settings.kpi.est_amount}.count
         else
           team = Team.find(coverage)
           teams = team.sub_teams
-          teams.append(team).map(&:users).flatten.uniq.map {|user| Funding.includes(:funding_users).where(funding_users: {user_id: user.id, kind: 2}).select{|e| e if !e.file_el_attachment.nil? && e.pipelines.where(status: 10).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= 400000 || e.pipelines.where(status: 10).map {|e| transform_to_usd(e.est_amount, e.est_amount_currency)}.sum >= 10000000}.count}.sum
+          teams.append(team).map(&:users).flatten.uniq.map {|user| Funding.includes(:funding_users).where(funding_users: {user_id: user.id, kind: FundingUser.kind_config[:bd_leader][:value]}).select{|e| e if !e.file_el_attachment.nil? && e.pipelines.where(status: Pipeline.status_config[:fee_ed][:value]).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= Settings.kpi.total_fee || e.pipelines.where(status: Pipeline.status_config[:fee_ed][:value]).map {|e| transform_to_usd(e.est_amount, e.est_amount_currency)}.sum >= Settings.kpi.est_amount}.count}.sum
         end
       }
     },
     # 用户为BD负责人：2，收入大于40万或者融资额大于1000万，项目状态为paid：7，pipeline状态为已收款：10
     complete_bd_goal: {               value: 2, desc: "BD总体目标（完成）", unit: "个", is_system: true,
-      op: -> (user_id, coverage){
-        # coverage：nil为个人，否则团队
-        if coverage.nil?
-          Funding.includes(:funding_users).where(funding_users: {user_id: 1988, kind: FundingUser.kind_config[:bd_leader][:value]}).select{|e| e if !e.file_el_attachment.nil? && e.pipelines.where(status: 10).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= 400000 || e.pipelines.where(status: 10).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= 10000000}.count
-        else
-          team = Team.find(coverage)
-          teams = team.sub_teams
-          teams.append(team).map(&:users).flatten.uniq.map {|user| Funding.includes(:funding_users).where(funding_users: {user_id: user.id, kind: 2}).select{|e| e if !e.file_el_attachment.nil? && e.pipelines.where(status: 10).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= 400000 || e.pipelines.where(status: 10).map {|e| transform_to_usd(e.est_amount, e.est_amount_currency)}.sum >= 10000000}.count}.sum
-        end
-      }
-
       op: -> (user_id) {
         Funding.includes(:funding_users).where(funding_users: {user_id: 1988, kind: 2}, status: 7).select{|e| e.pipelines.where(status: 10).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= 40 || e.pipelines.where(status: 10).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= 10000000}
       }
