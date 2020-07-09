@@ -102,7 +102,19 @@ module StateConfig
             _val.map {|ins| config.values.select {|_option| _option[:value] == ins}.first[:op].to_s rescue nil}.compact.join(', ')
           else
             if config.values.select {|_option| _option[:value] == _val}.first
-              config.values.select {|_option| _option[:value] == _val}.first[:op].to_s
+              config.values.select {|_option| _option[:value] == _val}.first[:op]
+            else
+              ''
+            end
+          end
+        end
+
+        define_singleton_method "#{_arg}_config_for_value" do |_val|
+          if _val.is_a?(Array)
+            _val.map {|ins| config.values.select {|_option| _option[:value] == ins}.first[:op].to_s rescue nil}.compact.join(', ')
+          else
+            if config.values.select {|_option| _option[:value] == _val}.first
+              config.values.select {|_option| _option[:value] == _val}.first
             else
               ''
             end

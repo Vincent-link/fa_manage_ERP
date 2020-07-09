@@ -26,16 +26,16 @@ class Team < DefaultTeam
 
   def statis_kpi_data(year)
     arr = []
-    self.users.joins(:kpi_group).where("extract(year from kpi_groups.created_at)  = ?", year).map {|user|
+    self.users.joins(:kpi_group).map {|user|
       row = {}
 
       new_row = {"member_name": user.name}.merge(row)
-      user.kpi_group.kpis.map {|kpi|
+      user.kpi_group.kpis.where("extract(year from kpis.created_at)  = ?", year).map {|kpi|
         kpi_types(year).pluck(:kpi_type).uniq.map{|type|
           # 如果kpi配置存有条件
           if kpi.kpi_type == type
             conditions = kpi.conditions.map{|e| " #{e.relation} #{Kpi.kpi_type_op_for_value(e.kpi_type).call(user.id, e.coverage)}/#{e.value}"}.join(" ") unless kpi.conditions.empty?
-            new_row["#{type}"] = "2/#{kpi.value}#{conditions}"
+            new_row["#{type}"] = "#{Kpi.kpi_type_op_for_value(type).call(user.id, kpi.coverage)}/#{kpi.value}#{conditions}"
           end
         }
       }
@@ -47,6 +47,6 @@ class Team < DefaultTeam
   end
 
   def kpi_types(year)
-    self.users.map{|e| e.kpi_group if !e.kpi_group.nil? && e.kpi_group.created_at.year == year}.compact.map(&:kpis).flatten
+    self.users.map(&:kpi_group).compact.map{|e| e.kpis if e.kpis.where("extract(year from kpis.created_at)  = ?", year)}.flatten
   end
 end

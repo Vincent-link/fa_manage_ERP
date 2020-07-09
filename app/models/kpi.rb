@@ -1,5 +1,5 @@
 class Kpi < ApplicationRecord
-  belongs_to :kpi_group
+  belongs_to :kpi_group, optional: true
   has_many :conditions, class_name: "Kpi", foreign_key: :parent_id
 
   include StateConfig
@@ -20,8 +20,14 @@ class Kpi < ApplicationRecord
     },
     # 用户为BD负责人：2，收入大于40万或者融资额大于1000万，项目状态为paid：7，pipeline状态为已收款：10
     complete_bd_goal: {               value: 2, desc: "BD总体目标（完成）", unit: "个", is_system: true,
-      op: -> (user_id) {
-        Funding.includes(:funding_users).where(funding_users: {user_id: 1988, kind: 2}, status: 7).select{|e| e.pipelines.where(status: 10).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= 40 || e.pipelines.where(status: 10).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= 10000000}
+      op: -> (user_id, coverage){
+        if coverage.nil?
+          Funding.includes(:funding_users).where(funding_users: {user_id: user_id, kind: FundingUser.kind_config[:bd_leader][:value]}, status: 7).select{|e| e.pipelines.where(status: 10).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= 40 || e.pipelines.where(status: 10).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= 10000000}.count
+        else
+          # team = Team.find(coverage)
+          # teams = team.sub_teams
+          # teams.append(team).map(&:users).flatten.uniq.map {|user| Funding.includes(:funding_users).where(funding_users: {user_id: user.id, kind: FundingUser.kind_config[:bd_leader][:value]}).select{|e| e if !e.file_el_attachment.nil? && e.pipelines.where(status: Pipeline.status_config[:fee_ed][:value]).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= Settings.kpi.total_fee || e.pipelines.where(status: Pipeline.status_config[:fee_ed][:value]).map {|e| transform_to_usd(e.est_amount, e.est_amount_currency)}.sum >= Settings.kpi.est_amount}.count}.sum
+        end
       }
     },
     # 用户为BD负责人：2，融资额大于1.5亿美金，上传el
@@ -168,7 +174,7 @@ class Kpi < ApplicationRecord
   }
 
   # 换算美元
-  def transform_to_usd(total_fee, total_fee_currency)
+  def self.transform_to_usd(total_fee, total_fee_currency)
     if !total_fee.nil?
       case total_fee_currency
       when 1
@@ -177,5 +183,15 @@ class Kpi < ApplicationRecord
         total_fee
       end
     end
+  end
+
+  # 我的kpi
+  def statis_my_kpi(user_id)
+    Kpi.kpi_type_op_for_value(self.kpi_type).call(user_id, self.coverage)
+  end
+
+  # 我的kpi
+  def is_in_system
+    Kpi.kpi_type_config_for_value(self.kpi_type)[:is_system]
   end
 end

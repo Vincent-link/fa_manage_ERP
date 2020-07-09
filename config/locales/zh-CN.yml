@@ -33,6 +33,9 @@ zh-CN:
       bsc: bsc管理
       knowledge_base: 知识库
       knowledge_base_file: 知识库文件
+      kpi: KPI
+      kpi_group: KPI组
+      statistic: 统计
 
   activerecord:
     models:
