@@ -9,6 +9,7 @@ class Pipeline < ApplicationRecord
   belongs_to :user, optional: true
 
   after_commit :reindex_funding
+  before_create :generate_pipeline_name
 
   state_config :status, config: {
       n_ts_n_el: {value: 1, desc: '无TS（未签EL）'},
@@ -40,5 +41,15 @@ class Pipeline < ApplicationRecord
         d.rate = divide[:rate]
       end
     end if divide_arr.present?
+  end
+
+  def generate_pipeline_name
+    pipelines = self.funding.pipelines.order :created_at
+    if self.funding.pipelines.size == 1
+      self.name = self.funding.round
+    else
+      self.name = "#{self.funding.round}#{self.funding.pipelines.size + 1}"
+      pipelines.each_with_index {|p, index| p.update name: "#{self.funding.round}#{index + 1}"}
+    end
   end
 end

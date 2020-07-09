@@ -64,7 +64,13 @@ class Calendar < ApplicationRecord
   end
 
   def address
-    self.address_id && Zombie::DmAddress.find(self.address_id)
+    if self.address_id
+      if self.address_id >= 100001
+        Address.find(self.address_id)
+      else
+        Zombie::DmAddress.find(self.address_id)
+      end
+    end
   end
 
   def gen_track_log_detail
