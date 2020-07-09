@@ -18,6 +18,7 @@ module Entities
     expose :el_date, documentation: {type: 'date', desc: '签约日期'}
     expose :est_bill_date, documentation: {type: 'date', desc: '预计账单日期'}
     expose :user_name, documentation: {type: 'string', desc: '更新人'}
+    expose :name, documentation: {type: 'string', desc: '名称'}
 
     expose :pipeline_divides, using: Entities::PipelineDivide, documentation: {type: Entities::PipelineDivide, desc: '分成'}
     expose :payments, using: Entities::Payment, documentation: {type: Entities::Payment, desc: '账单'}
