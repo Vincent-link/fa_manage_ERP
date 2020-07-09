@@ -1,4 +1,5 @@
 class Team < DefaultTeam
+  acts_as_paranoid
   has_many :users
   has_many :kpi_groups
 

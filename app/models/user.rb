@@ -1,4 +1,5 @@
 class User < ApplicationRecord
+  acts_as_paranoid
   scope :user_title_id, -> {where(user_title_id: 2)}
 
   include RoleExtend
@@ -7,6 +8,8 @@ class User < ApplicationRecord
 
   has_one_attached :avatar
   has_blob_upload :avatar
+
+  after_validation :set_bu_id
 
   has_many :investor_groups
   has_many :follows
@@ -129,7 +132,7 @@ class User < ApplicationRecord
     titles = kpi_types(year)
 
     arr.unshift({"member_name": "成员名称"})
-    titles.map { |title|
+    titles.map {|title|
       row = {}
       row[title] = Kpi.kpi_type_desc_for_value(title)
       arr << row
@@ -144,9 +147,9 @@ class User < ApplicationRecord
 
       new_row = {"member_name": user.name}.merge(row)
       user.kpi_group.kpis.map {|kpi|
-        kpi_types(year).map{|type|
+        kpi_types(year).map {|type|
           # 如果kpi配置存有条件
-          conditions = kpi.conditions.map{|e| " #{e.relation} 2/#{e.value}"}.join(" ") unless kpi.conditions.empty?
+          conditions = kpi.conditions.map {|e| " #{e.relation} 2/#{e.value}"}.join(" ") unless kpi.conditions.empty?
           new_row["#{type}"] = "2/#{kpi.value}#{conditions}" if kpi.kpi_type == type
         }
       }
@@ -158,6 +161,20 @@ class User < ApplicationRecord
   end
 
   def kpi_types(year)
-    (self.sub_users.append(self)).map{|e| e.kpi_group if !e.kpi_group.nil? && e.kpi_group.created_at.year == year}.compact.map(&:kpis).flatten.pluck(:kpi_type).uniq
+    (self.sub_users.append(self)).map {|e| e.kpi_group if !e.kpi_group.nil? && e.kpi_group.created_at.year == year}.compact.map(&:kpis).flatten.pluck(:kpi_type).uniq
+  end
+
+  def set_bu_id
+    if self.team_id_changed?
+      current_team = self.team
+      while current_team
+        if current_team.level == 2
+          self.bu_id = current_team.id
+          break
+        else
+          current_team = current_team.parent_team
+        end
+      end
+    end
   end
 end

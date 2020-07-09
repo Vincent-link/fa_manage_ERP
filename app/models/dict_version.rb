@@ -1,20 +1,5 @@
 class DictVersion < ApplicationRecord
 
-  DICT_CLASS_ARR = ['DefaultTeam']
-
-  def self.update_dict(extra_hash)
-    if (dict_version = extra_hash['dict_version']) && (instance.dict_version.to_i < dict_version.to_i)
-      DICT_CLASS_ARR.each do |klass|
-        key_name = klass.underscore.pluralize
-        klass.constantize.destroy_all
-        extra_hash['dict_data'][key_name].each do |ins|
-          klass.constantize.create ins.to_h
-        end if extra_hash['dict_data'].present?
-      end
-      instance.update :dict_version => dict_version
-    end
-  end
-
   def self.update_user(extra_hash)
     if (user_version = extra_hash['user_version']) && (instance.user_version.to_i < user_version.to_i)
       user_rel = User.respond_to?(:with_deleted) ? User.with_deleted : User
@@ -38,11 +23,28 @@ class DictVersion < ApplicationRecord
   end
 
   def self.get_new
-    client = OAuth2::Client.new(SsoClient.client_id, SsoClient.client_secret, :site => SsoClient.sso_host)
-    version = instance
-    hash = client.client_credentials.get_token.get("/api/get_new?dict_version=#{version.dict_version}&user_version=#{version.user_version}").parsed
-    update_dict(hash)
-    update_user(hash)
+    syn_team_with_zombie
+    syn_user_with_zombie
+  end
+
+  def self.syn_team_with_zombie
+    sso_teams = Zombie::SsoTeam.with_deleted.inspect
+    Team.with_deleted.where.not(id: sso_teams.map(&:id)).destroy_all
+    sso_teams.each do |sso_team|
+      t = Team.with_deleted.find_or_initialize_by(id: sso_team.id)
+      t.assign_attributes(sso_team.as_json.slice(*Team.attribute_names))
+      t.save!
+    end
+  end
+
+  def self.syn_user_with_zombie
+    sso_users = Zombie::SsoUser.with_deleted.inspect
+    User.where.not(id: sso_users.map(&:id)).destroy_all
+    sso_users.each do |sso_user|
+      t = User.with_deleted.find_or_initialize_by(id: sso_user.id)
+      t.assign_attributes(sso_user.as_json.slice(*User.attribute_names))
+      t.save!
+    end
   end
 
   def self.get_sso_user(sso_id)
