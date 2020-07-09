@@ -1,7 +1,7 @@
 class PipelineApi < Grape::API
   resource :fundings do
     resource ':funding_id' do
-      resource :pipeline do
+      resource :pipelines do
         desc '获取pipeline', entity: Entities::Pipeline
         params do
           requires :funding_id, type: Integer, desc: '项目id'
