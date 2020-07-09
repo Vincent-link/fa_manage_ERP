@@ -23,15 +23,20 @@ class TrackLogApi < Grape::API
               optional :blob_id, type: Integer, desc: '重新上传的spa文件id'
               optional :id, type: Integer, desc: 'spa_id'
             end
-            requires :syn_pipeline, type: Boolean, desc: '是否同步到pipeline'
+            # requires :syn_pipeline, type: Boolean, desc: '是否同步到pipeline'
           end
           optional :pipeline_id, type: Integer, desc: '同步的pipeline_id'
+          optional :est_amount, type: Float, desc: '同步金额总数'
         end
 
         post 'spa' do
-          # todo 合并代码因为整体代码结构变了，所以pipeline还需要再重新弄一下
           @funding.change_spas(current_user.id, params)
           spas = @funding.spas
+          if params[:pipeline_id].present?
+            raise '同步pipeline需要勾选spa' unless params[:est_amount].present?
+            pipeline = Pipeline.find params[:pipeline_id]
+            pipeline.update!(est_amount: params[:est_amount])
+          end
           present spas, with: Entities::TrackLogBase
         end
 
