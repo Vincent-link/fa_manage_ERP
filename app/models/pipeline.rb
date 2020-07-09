@@ -1,4 +1,5 @@
 class Pipeline < ApplicationRecord
+  has_paper_trail
   include StateConfig
 
   belongs_to :funding, class_name: 'FundingPolymer'

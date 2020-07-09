@@ -38,7 +38,7 @@ class PipelineApi < Grape::API
     end
   end
 
-  resource :pipeline do
+  resource :pipelines do
     resource ':id' do
       desc '更新pipeline'
       params do
@@ -72,4 +72,5 @@ class PipelineApi < Grape::API
       end
     end
   end
+  mount HistoryApi, with: {owner: 'pipelines'}
 end
