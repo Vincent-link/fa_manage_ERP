@@ -34,7 +34,7 @@ class TrackLogApi < Grape::API
           spas = @funding.spas
           if params[:pipeline_id].present?
             raise '同步pipeline需要勾选spa' unless params[:est_amount].present?
-            pipeline = Pipeline.find params[:pipeline_id]
+            pipeline = @funding.pipelines.find params[:pipeline_id]
             pipeline.update!(est_amount: params[:est_amount])
           end
           present spas, with: Entities::TrackLogBase
