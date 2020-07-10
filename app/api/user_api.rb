@@ -138,7 +138,12 @@ class UserApi < Grape::API
         requires :year, type: Integer, desc: "年度", default: 2020
       end
       get :my_kpi do
-        present @user.kpi_group.kpis.where("extract(year from kpis.created_at)  = ?", params[:year]), with: Entities::StatisKpiForMe, user_id: @user.id
+        if !@user.kpi_group.nil?
+          kpis = @user.kpi_group.kpis.where("extract(year from kpis.created_at)  = ?", params[:year])
+        else
+          raise "没有配置kpi"
+        end
+        present kpis, with: Entities::StatisKpiForMe, user_id: @user.id
       end
     end
   end
