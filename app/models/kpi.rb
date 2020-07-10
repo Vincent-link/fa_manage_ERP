@@ -7,61 +7,64 @@ class Kpi < ApplicationRecord
   state_config :kpi_type, config: {
     # kind:2 bd负责人，上传el为新签，status:7为完成，新签和完成的项目需要满足融资额和收入条件, coverage：nil为个人，否则团队
     # 用户为BD负责人：2，收入大于40万或者融资额大于1000万，且上传el
-    new_sign_bd_goal: {               value: 1, desc: "BD总体目标（新签）", unit: "个", is_system: true,
+    new_sign_bd_goal: {               value: 1, desc: "BD总体目标（新签）", unit: "个", is_system: true, action: "新签", remarks: "新签或者完成一定数量的项目（重组前过会的项目，今年新签或者今年完成的项目，只有1000万美元融资额或40万美元收入以上的才会计入目标KR）",
       op: -> (user_id, coverage){
         if coverage.nil?
-          Funding.includes(:funding_users).where(funding_users: {user_id: user_id, kind: FundingUser.kind_config[:bd_leader][:value]}).select{|e| e if !e.file_el_attachment.nil? && e.pipelines.where(status: Pipeline.status_config[:fee_ed][:value]).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= Settings.kpi.total_fee || e.pipelines.where(status: Pipeline.status_config[:fee_ed][:value]).map {|e| transform_to_usd(e.est_amount, e.est_amount_currency)}.sum >= Settings.kpi.est_amount}.count
+          binding.pry
+          Funding.includes(:funding_users).where(funding_users: {user_id: user_id, kind: FundingUser.kind_config[:bd_leader][:value]}).where("extract(year from fundings.created_at)  = ?", Time.now.year).select{|e| !e.file_el_attachment.nil? && (e.pipelines.where(status: Pipeline.status_config[:fee_ed][:value]).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= Settings.kpi.total_fee || e.pipelines.where(status: Pipeline.status_config[:fee_ed][:value]).map {|e| transform_to_usd(e.est_amount, e.est_amount_currency)}.sum >= Settings.kpi.est_amount)}.count
         else
           team = Team.find(coverage)
           teams = team.sub_teams
-          teams.append(team).map(&:users).flatten.uniq.map {|user| Funding.includes(:funding_users).where(funding_users: {user_id: user.id, kind: FundingUser.kind_config[:bd_leader][:value]}).select{|e| e if !e.file_el_attachment.nil? && e.pipelines.where(status: Pipeline.status_config[:fee_ed][:value]).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= Settings.kpi.total_fee || e.pipelines.where(status: Pipeline.status_config[:fee_ed][:value]).map {|e| transform_to_usd(e.est_amount, e.est_amount_currency)}.sum >= Settings.kpi.est_amount}.count}.sum
+          teams.append(team).map(&:users).flatten.uniq.map {|user| Funding.includes(:funding_users).where(funding_users: {user_id: user.id, kind: FundingUser.kind_config[:bd_leader][:value]}).select{|e| !e.file_el_attachment.nil? && (e.pipelines.where(status: Pipeline.status_config[:fee_ed][:value]).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= Settings.kpi.total_fee || e.pipelines.where(status: Pipeline.status_config[:fee_ed][:value]).map {|e| transform_to_usd(e.est_amount, e.est_amount_currency)}.sum >= Settings.kpi.est_amount)}.count}.sum
         end
       }
     },
     # 用户为BD负责人：2，收入大于40万或者融资额大于1000万，项目状态为paid：7，pipeline状态为已收款：10
-    complete_bd_goal: {               value: 2, desc: "BD总体目标（完成）", unit: "个", is_system: true,
+    complete_bd_goal: {               value: 2, desc: "BD总体目标（完成）", unit: "个", is_system: true, action: "完成", remarks: "新签或者完成一定数量的项目（重组前过会的项目，今年新签或者今年完成的项目，只有1000万美元融资额或40万美元收入以上的才会计入目标KR）",
       op: -> (user_id, coverage){
         if coverage.nil?
-          Funding.includes(:funding_users).where(funding_users: {user_id: user_id, kind: FundingUser.kind_config[:bd_leader][:value]}, status: 7).select{|e| e.pipelines.where(status: 10).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= 40 || e.pipelines.where(status: 10).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= 10000000}.count
+          Funding.includes(:funding_users).where(funding_users: {user_id: user_id, kind: FundingUser.kind_config[:bd_leader][:value]}, status: Funding.status_config[:paid][:value]).select{|e| !e.file_el_attachment.nil? && (e.pipelines.where(status: Pipeline.status_config[:fee_ed][:value]).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= Settings.kpi.total_fee || e.pipelines.where(status: Pipeline.status_config[:fee_ed][:value]).map {|e| transform_to_usd(e.est_amount, e.est_amount_currency)}.sum >= Settings.kpi.est_amount)}.count
         else
-          # team = Team.find(coverage)
-          # teams = team.sub_teams
-          # teams.append(team).map(&:users).flatten.uniq.map {|user| Funding.includes(:funding_users).where(funding_users: {user_id: user.id, kind: FundingUser.kind_config[:bd_leader][:value]}).select{|e| e if !e.file_el_attachment.nil? && e.pipelines.where(status: Pipeline.status_config[:fee_ed][:value]).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= Settings.kpi.total_fee || e.pipelines.where(status: Pipeline.status_config[:fee_ed][:value]).map {|e| transform_to_usd(e.est_amount, e.est_amount_currency)}.sum >= Settings.kpi.est_amount}.count}.sum
+          team = Team.find(coverage)
+          teams = team.sub_teams
+          teams.append(team).map(&:users).flatten.uniq.map {|user| Funding.includes(:funding_users).where(funding_users: {user_id: user_id, kind: FundingUser.kind_config[:bd_leader][:value]}, status: Funding.status_config[:paid][:value]).select{|e| !e.file_el_attachment.nil? && (e.pipelines.where(status: Pipeline.status_config[:fee_ed][:value]).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= Settings.kpi.total_fee || e.pipelines.where(status: Pipeline.status_config[:fee_ed][:value]).map {|e| transform_to_usd(e.est_amount, e.est_amount_currency)}.sum >= Settings.kpi.est_amount)}.count}.sum
         end
       }
     },
+
+
     # 用户为BD负责人：2，融资额大于1.5亿美金，上传el
-    new_sign_growth_bd_goal_for_pe: { value: 3, desc: "asso/PE及以下成长期BD目标(新签)", unit: "个", is_system: true,
+    new_sign_growth_bd_goal_for_pe: { value: 3, desc: "asso/PE及以下成长期BD目标(新签)", unit: "个", is_system: true, remarks: "作为BD负责人，新签或者完成一定数量的项目",
       op: -> (user_id) {
         Funding.includes(:funding_users).where(funding_users: {user_id: 1988, kind: 2}).select{|e| e if !e.file_el_attachment.nil? && e.pipelines.where(status: 10).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= 150000000}.count
       }
     },
     # 用户为BD负责人：2，融资额大于3亿美金，上传el
-    new_sign_growth_bd_for_vp: {      value: 3, desc: "VP成长期BD目标(新签)", unit: "个", is_system: true,
+    new_sign_growth_bd_for_vp: {      value: 3, desc: "VP成长期BD目标(新签)", unit: "个", is_system: true, remarks: "作为BD负责人，新签或者完成一定数量的项目",
       op: -> (user_id) {
         Funding.includes(:funding_users).where(funding_users: {user_id: 1988, kind: 2}).select{|e| e if !e.file_el_attachment.nil? && e.pipelines.where(status: 10).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= 300000000}.count
       }
     },
     # 用户为BD负责人：2，融资额大于5亿美金，上传el
-    new_sign_growth_bd_for_director: {value: 3, desc: "Director成长期BD目标(新签)", unit: "个", is_system: true,
+    new_sign_growth_bd_for_director: {value: 3, desc: "Director成长期BD目标(新签)", unit: "个", is_system: true, remarks: "作为BD负责人，新签或者完成一定数量的项目",
       op: -> (user_id) {
         Funding.includes(:funding_users).where(funding_users: {user_id: 1988, kind: 2}).select{|e| e if !e.file_el_attachment.nil? && e.pipelines.where(status: 10).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= 500000000}.count
       }
     },
     # 用户为BD负责人：2，融资额大于1.5亿美金，项目状态为paid：7，pipeline状态为已收款：10
-    complete_growth_bd_for_pe: {      value: 3, desc: "asso/PE及以下成长期BD目标(完成)", unit: "个", is_system: true,
+    complete_growth_bd_for_pe: {      value: 3, desc: "asso/PE及以下成长期BD目标(完成)", unit: "个", is_system: true, remarks: "作为BD负责人，新签或者完成一定数量的项目",
       op: -> (user_id) {
         Funding.includes(:funding_users).where(funding_users: {user_id: 1988, kind: 2}, status: 7).select{|e| e if e.pipelines.where(status: 10).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= 150000000}.count
       }
     },
     # 用户为BD负责人：2，融资额大于3亿美金，项目状态为paid：7，pipeline状态为已收款：10
-    complete_growth_bd_for_vp: {      value: 3, desc: "VP成长期BD目标(完成)", unit: "个", is_system: true,
+    complete_growth_bd_for_vp: {      value: 3, desc: "VP成长期BD目标(完成)", unit: "个", is_system: true, remarks: "作为BD负责人，新签或者完成一定数量的项目",
       op: -> (user_id) {
         Funding.includes(:funding_users).where(funding_users: {user_id: user_id, kind: 2}, status: 7).select{|e| e if e.pipelines.where(status: 10).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= 300000000}.count
       }
     },
     # 用户为BD负责人：2，融资额大于5亿美金，项目状态为paid：7，pipeline状态为已收款：10
-    complete_growth_bd_for_director: { value: 3, desc: "Director成长期BD目标(完成)", unit: "个", is_system: true,
+    complete_growth_bd_for_director: { value: 3, desc: "Director成长期BD目标(完成)", unit: "个", is_system: true, remarks: "作为BD负责人，新签或者完成一定数量的项目",
       op: -> (user_id) {
         Funding.includes(:funding_users).where(funding_users: {user_id: user_id, kind: 2}, status: 7).select{|e| e if e.pipelines.where(status: 10).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= 500000000}.count
       }
@@ -92,10 +95,20 @@ class Kpi < ApplicationRecord
         Funding.includes(:funding_users).where(funding_users: {user_id: user_id, kind: 1}, status: 7).count
       }
     },
-    # 用户为项目成员：1，收入大于150万美元，状态为paid：7, pipeline状态为10
-    income_from_delivery_projects: {  value: 8, desc: "交割项目收入", unit: "万", is_system: true,
+
+    # 用户为项目成员：1，状态为paid：7, pipeline状态为10
+    new_sign_project_income: {  value: 8, desc: "项目收入(新签)", unit: "万", is_system: true,
       op: -> (user_id){
-        Funding.includes(:funding_users).where(funding_users: {user_id: user_id, kind: 1}, status: 7).select{|e| e.pipelines.where(status: 10).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= 1500000}.count
+        # 要改
+        Funding.includes(:funding_users).where(funding_users: {user_id: user_id, kind: 1}, status: 7).map{|e| e.pipelines.where(status: 10).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum}.sum
+      }
+    },
+
+    # 用户为项目成员：1，状态为paid：7, pipeline状态为10
+    complete_project_income: {  value: 8, desc: "项目收入(完成)", unit: "万", is_system: true,
+      op: -> (user_id){
+        # 要改
+        Funding.includes(:funding_users).where(funding_users: {user_id: user_id, kind: 1}, status: 7).map{|e| e.pipelines.where(status: 10).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum}.sum
       }
     },
     completion_of_medical_projects: { value: 9, desc: "完成医疗项目(不在系统统计)", unit: "个", is_system: false,

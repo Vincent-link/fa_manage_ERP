@@ -129,10 +129,14 @@ class User < ApplicationRecord
     titles = kpi_types(year)
 
     arr.unshift({"member_name": "成员名称"})
-    titles.pluck(:kpi_type, :desc).uniq.map { |title|
+    titles.pluck(:id, :kpi_type).uniq.map { |title|
       row = {}
-      row[title[0]] = Kpi.kpi_type_desc_for_value(title[0])
-      row["kpi描述"] = title[1]
+      # 如果kpi没有条件，显示自己的desc和描述，如果有条件，显示条件的statis_title和描述 
+      row[title[1]] = Kpi.kpi_type_desc_for_value(title[1])
+      row[title[1]] = Kpi.find(title[0]).conditions.last.statis_title if !Kpi.find(title[0]).conditions.empty?
+      row["kpi描述"] = Kpi.kpi_type_config_for_value(title[1])[:remarks]
+      row["kpi描述"] = Kpi.kpi_type_config_for_value(Kpi.find(title[0]).conditions.last.kpi_type)[:remarks] if !Kpi.find(title[0]).conditions.empty?
+
       arr << row
     }
     arr.append({"member_id": "成员id"})
@@ -148,8 +152,8 @@ class User < ApplicationRecord
         kpi_types(year).pluck(:kpi_type).uniq.map{|type|
           # 如果kpi配置存有条件
           if kpi.kpi_type == type
-            conditions = kpi.conditions.map{|e| " #{e.relation} #{Kpi.kpi_type_op_for_value(e.kpi_type).call(user.id, e.coverage)}/#{e.value}"}.join(" ") unless kpi.conditions.empty?
-            new_row["#{type}"] = "#{Kpi.kpi_type_op_for_value(type).call(user.id, kpi.coverage)}/#{kpi.value}#{conditions}"
+            conditions = kpi.conditions.map{|e| " #{e.relation} #{Kpi.kpi_type_config_for_value(e.kpi_type)[:action]}#{Kpi.kpi_type_op_for_value(e.kpi_type).call(user.id, e.coverage)}/#{e.value}"}.join(" ") unless kpi.conditions.empty?
+            new_row["#{type}"] = "#{Kpi.kpi_type_config_for_value(kpi.kpi_type)[:action]}#{Kpi.kpi_type_op_for_value(type).call(user.id, kpi.coverage)}/#{kpi.value}#{conditions}"
           end
         }
       }
@@ -161,6 +165,6 @@ class User < ApplicationRecord
   end
 
   def kpi_types(year)
-    (self.sub_users.append(self)).map(&:kpi_group).compact.uniq.map{|e| e.kpis if e.kpis.where("extract(year from kpis.created_at)  = ?", year)}.flatten
+    (self.sub_users.append(self)).map(&:kpi_group).compact.uniq.map{|e| e.kpis.where("extract(year from kpis.created_at)  = ?", year).where(parent_id: nil)}.flatten
   end
 end

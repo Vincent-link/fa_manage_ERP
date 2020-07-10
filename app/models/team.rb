@@ -47,6 +47,6 @@ class Team < DefaultTeam
   end
 
   def kpi_types(year)
-    self.users.map(&:kpi_group).compact.map{|e| e.kpis if e.kpis.where("extract(year from kpis.created_at)  = ?", year)}.flatten
+    self.users.map(&:kpi_group).compact.map{|e| e.kpis.where("extract(year from kpis.created_at)  = ?", year).where(parent_id: nil)}.flatten
   end
 end
