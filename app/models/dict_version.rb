@@ -33,6 +33,7 @@ class DictVersion < ApplicationRecord
     sso_teams.each do |sso_team|
       t = Team.with_deleted.find_or_initialize_by(id: sso_team.id)
       t.assign_attributes(sso_team.as_json.slice(*Team.attribute_names))
+      next if t.destroyed?
       t.save!
     end
   end
@@ -41,9 +42,10 @@ class DictVersion < ApplicationRecord
     sso_users = Zombie::SsoUser.with_deleted.inspect
     User.where.not(id: sso_users.map(&:id)).destroy_all
     sso_users.each do |sso_user|
-      t = User.with_deleted.find_or_initialize_by(id: sso_user.id)
-      t.assign_attributes(sso_user.as_json.slice(*User.attribute_names))
-      t.save!
+      u = User.with_deleted.find_or_initialize_by(id: sso_user.id)
+      u.assign_attributes(sso_user.as_json.slice(*User.attribute_names))
+      next if u.destroyed?
+      u.save!
     end
   end
 
