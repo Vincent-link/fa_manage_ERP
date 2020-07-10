@@ -19,6 +19,10 @@ class TrackLogApi < Grape::API
             requires :amount, type: Float, desc: '投资金额'
             requires :currency, type: Integer, desc: '币种'
             requires :ratio, type: Float, desc: '股份比例'
+            given action: ->(val) {val == 'create'} do
+              requires :organization_id, type: Integer, desc: '机构id'
+              optional :member_ids, type: Array[Integer], desc: '投资人id'
+            end
             requires :file_spa, type: Hash do
               optional :blob_id, type: Integer, desc: '重新上传的spa文件id'
               optional :id, type: Integer, desc: 'spa_id'
