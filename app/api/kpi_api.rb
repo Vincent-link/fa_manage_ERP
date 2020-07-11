@@ -11,7 +11,7 @@ class KpiApi < Grape::API
         desc '添加配置'
         params do
           requires :kpi_type, type: Integer, desc: "类型"
-          requires :coverage, type: Integer, desc: "范围"
+          optional :coverage, type: Integer, desc: "范围"
           requires :value, type: Integer, desc: "值"
           requires :desc, type: String, desc: "描述"
         end
@@ -37,7 +37,7 @@ class KpiApi < Grape::API
       desc "编辑配置"
       params do
         requires :kpi_type, type: Integer, desc: "类型"
-        requires :coverage, type: Integer, desc: "范围"
+        optional :coverage, type: Integer, desc: "范围"
         requires :value, type: Integer, desc: "值"
         requires :desc, type: String, desc: "描述"
       end
@@ -53,24 +53,26 @@ class KpiApi < Grape::API
       desc "编辑条件"
       params do
         requires :kpi_type, type: Integer, desc: "类型"
-        requires :coverage, type: Integer, desc: "范围"
+        optional :coverage, type: Integer, desc: "范围"
         requires :value, type: Integer, desc: "值"
         requires :desc, type: String, desc: "描述"
         requires :relation, type: String, desc: "关系", values: ["or", "and"]
+        requires :statis_title, type: String, desc: "表头"
       end
-      patch do
+      patch :condition do
         @kpi.update!(declared(params))
       end
 
       desc '添加条件'
       params do
         requires :kpi_type, type: Integer, desc: "类型"
-        requires :coverage, type: Integer, desc: "范围"
+        optional :coverage, type: Integer, desc: "范围"
         requires :value, type: Integer, desc: "值"
         requires :desc, type: String, desc: "描述"
         requires :relation, type: String, desc: "关系", values: ["or", "and"]
+        requires :statis_title, type: String, desc: "表头"
       end
-      post do
+      post :condition do
         Kpi.create!(declared(params).merge(kpi_group_id: @kpi.kpi_group_id, parent_id: params[:id]))
       end
     end

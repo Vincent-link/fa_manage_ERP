@@ -131,13 +131,15 @@ class User < ApplicationRecord
     arr.unshift({"member_name": "成员名称"})
     titles.pluck(:id, :kpi_type).uniq.map { |title|
       row = {}
-      # 如果kpi没有条件，显示自己的desc和描述，如果有条件，显示条件的statis_title和描述 
+      # 如果kpi没有条件，显示自己的desc和描述，如果有条件，显示条件的statis_title和描述
       row[title[1]] = Kpi.kpi_type_desc_for_value(title[1])
       row[title[1]] = Kpi.find(title[0]).conditions.last.statis_title if !Kpi.find(title[0]).conditions.empty?
       row["kpi描述"] = Kpi.kpi_type_config_for_value(title[1])[:remarks]
       row["kpi描述"] = Kpi.kpi_type_config_for_value(Kpi.find(title[0]).conditions.last.kpi_type)[:remarks] if !Kpi.find(title[0]).conditions.empty?
 
-      arr << row
+      if !arr.map(&:keys).include?([title[1], "kpi描述"])
+        arr << row
+      end
     }
     arr.append({"member_id": "成员id"})
   end
@@ -152,8 +154,8 @@ class User < ApplicationRecord
         kpi_types(year).pluck(:kpi_type).uniq.map{|type|
           # 如果kpi配置存有条件
           if kpi.kpi_type == type
-            conditions = kpi.conditions.map{|e| " #{e.relation} #{Kpi.kpi_type_config_for_value(e.kpi_type)[:action]}#{Kpi.kpi_type_op_for_value(e.kpi_type).call(user.id, e.coverage)}/#{e.value}"}.join(" ") unless kpi.conditions.empty?
-            new_row["#{type}"] = "#{Kpi.kpi_type_config_for_value(kpi.kpi_type)[:action]}#{Kpi.kpi_type_op_for_value(type).call(user.id, kpi.coverage)}/#{kpi.value}#{conditions}"
+            conditions = kpi.conditions.map{|e| " #{e.relation} #{Kpi.kpi_type_config_for_value(e.kpi_type)[:action]}#{Kpi.kpi_type_op_for_value(e.kpi_type).call(user.id, e.coverage, year)}/#{e.value}"}.join(" ") unless kpi.conditions.empty?
+            new_row["#{type}"] = "#{Kpi.kpi_type_config_for_value(kpi.kpi_type)[:action]}#{Kpi.kpi_type_op_for_value(type).call(user.id, kpi.coverage, year)}/#{kpi.value}#{conditions}"
           end
         }
       }
