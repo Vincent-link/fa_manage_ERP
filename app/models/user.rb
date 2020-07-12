@@ -160,7 +160,6 @@ class User < ApplicationRecord
 
               new_row["#{type}"] = "#{Kpi.kpi_type_config_for_value(kpi.kpi_type)[:action]}#{Kpi.kpi_type_op_for_value(type).call(user.id, kpi.coverage, year)}#{Kpi.kpi_type_config_for_value(kpi.kpi_type)[:unit]}/#{kpi.value}#{Kpi.kpi_type_config_for_value(kpi.kpi_type)[:unit]}#{conditions}" if Kpi.kpi_type_config_for_value(kpi.kpi_type)[:is_system]
             end
-
         }
       }
       new_row = new_row.merge({"member_id": user.id})
