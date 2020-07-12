@@ -4,7 +4,7 @@ module Entities
     expose :kpi_type, documentation: {type: 'integer', desc: 'kpi类型', required: true}
     expose :desc, documentation: {type: 'string', desc: '描述', required: true}
     expose :kpi_statis_value, documentation: {type: 'integer', desc: 'kpi统计值', required: true} do |ins, options|
-      ins.statis_my_kpi(options[:user_id])
+      ins.statis_my_kpi(options[:user_id], options[:year])
     end
     expose :value, documentation: {type: 'integer', desc: 'kpi配置值', required: true}
     expose :is_in_system, documentation: {type: 'integer', desc: '是否在系统中统计', required: true} do |ins, options|
