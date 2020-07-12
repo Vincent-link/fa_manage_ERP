@@ -175,4 +175,19 @@ class User < ApplicationRecord
   def kpi_types(year)
     (self.sub_users.append(self)).map(&:kpi_group).compact.uniq.map{|e| e.kpis.where("extract(year from kpis.created_at)  = ?", year).where(parent_id: nil)}.flatten
   end
+
+  def set_bu_id
+    if self.team_id_changed?
+      current_team = self.team
+      while current_team
+        if current_team.level == 2
+          self.bu_id = current_team.id
+          break
+        else
+          current_team = current_team.parent_team
+        end
+      end
+    end
+  end
+
 end
