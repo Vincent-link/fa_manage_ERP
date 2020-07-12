@@ -34,5 +34,12 @@ class CommonApi < Grape::API
     get :head_search do
 
     end
+
+    desc '实时汇率USD/RMB'
+    get :current_currency do
+      {
+          usd_rmb: ConfigBox.rmb_usd_rate
+      }
+    end
   end
 end

@@ -238,9 +238,10 @@ class Funding < FundingPolymer
           spa_track_log.file_spa_file=spa[:file_spa]
         end
       when 'create'
-        [:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency].each {|ins| raise '融资结算信息不全' unless spa[ins].present?}
+        [:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency, :organization_id].each {|ins| raise '融资结算信息不全' unless spa[ins].present?}
         raise 'SPA文件必传' unless spa[:file_spa][:blob_id].present?
-        spa_track_log = self.spas.create(spa.slice(:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency))
+        spa_track_log = self.spas.create(spa.slice(:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency, :organization_id))
+        spa_track_log.member_ids = Organization.find(spa[:organization_id]).members.where(id: spa[:member_ids]).map(&:id)
         spa_track_log.file_spa_file=spa[:file_spa]
       end
 

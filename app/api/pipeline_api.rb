@@ -1,7 +1,7 @@
 class PipelineApi < Grape::API
   resource :fundings do
     resource ':funding_id' do
-      resource :pipeline do
+      resource :pipelines do
         desc '获取pipeline', entity: Entities::Pipeline
         params do
           requires :funding_id, type: Integer, desc: '项目id'
@@ -15,15 +15,15 @@ class PipelineApi < Grape::API
         params do
           requires :funding_id, type: Integer, desc: '项目id'
           requires :status, type: Integer, desc: '项目所处阶段'
-          requires :est_amount, type: Integer, desc: '预计融资金额'
+          requires :est_amount, type: Float, desc: '预计融资金额'
           #requires :est_amount_unit, type: Integer, desc: '预计融资金额单位'
           requires :est_amount_currency, type: Integer, desc: '融资金额币种'
-          requires :fee_rate, type: Integer, desc: '费率'
-          requires :fee_discount, type: Integer, desc: '费率折扣'
-          requires :other_amount, type: Integer, desc: '其他费用'
+          requires :fee_rate, type: Float, desc: '费率'
+          requires :fee_discount, type: Float, desc: '费率折扣'
+          requires :other_amount, type: Float, desc: '其他费用'
           requires :other_amount_currency, type: Integer, desc: '其他费用币种'
-          optional :complete_rate, type: Integer, desc: '年内完成概率'
-          requires :total_fee, type: Integer, desc: '项目总收入预测'
+          optional :complete_rate, type: Float, desc: '年内完成概率'
+          requires :total_fee, type: Float, desc: '项目总收入预测'
           requires :total_fee_currency, type: Integer, desc: '总收入币种'
           requires :currency_rate, type: Float, desc: '汇率'
           requires :el_date, type: Date, desc: '签约日期'
@@ -38,21 +38,21 @@ class PipelineApi < Grape::API
     end
   end
 
-  resource :pipeline do
+  resource :pipelines do
     resource ':id' do
       desc '更新pipeline'
       params do
         requires :funding_id, type: Integer, desc: '项目id'
         requires :status, type: Integer, desc: '项目所处阶段'
-        requires :est_amount, type: Integer, desc: '预计融资金额'
+        requires :est_amount, type: Float, desc: '预计融资金额'
         #requires :est_amount_unit, type: Integer, desc: '预计融资金额单位'
         requires :est_amount_currency, type: Integer, desc: '融资金额币种'
-        requires :fee_rate, type: Integer, desc: '费率'
-        requires :fee_discount, type: Integer, desc: '费率折扣'
-        requires :other_amount, type: Integer, desc: '其他费用'
+        requires :fee_rate, type: Float, desc: '费率'
+        requires :fee_discount, type: Float, desc: '费率折扣'
+        requires :other_amount, type: Float, desc: '其他费用'
         requires :other_amount_currency, type: Integer, desc: '其他费用币种'
-        optional :complete_rate, type: Integer, desc: '年内完成概率'
-        requires :total_fee, type: Integer, desc: '项目总收入预测'
+        optional :complete_rate, type: Float, desc: '年内完成概率'
+        requires :total_fee, type: Float, desc: '项目总收入预测'
         requires :total_fee_currency, type: Integer, desc: '总收入币种'
         requires :currency_rate, type: Float, desc: '汇率'
         requires :el_date, type: Date, desc: '签约日期'
@@ -72,4 +72,5 @@ class PipelineApi < Grape::API
       end
     end
   end
+  mount HistoryApi, with: {owner: 'pipelines'}
 end

@@ -9,7 +9,7 @@ class CreatePipelines < ActiveRecord::Migration[6.0]
       t.integer :fee_discount, comment: '费率折扣'
       t.integer :other_amount, comment: '其他金额'
       t.integer :complete_rate, comment: '年内完成概率'
-      t.integer :total_fee, comment: '项目总收入鞠策'
+      t.integer :total_fee, comment: '项目总收入预测'
       t.integer :currency_rate, comment: '汇率'
       t.date :el_date, comment: '签约日期'
       t.date :est_bill_date, comment: '预计账单日期'

@@ -17,6 +17,7 @@ class CommentApi < Grape::API
           requires :commentable_id, type: Integer, desc: ''
           requires :content, type: String, desc: '内容'
           requires :type, type: String, desc: 'comments类型 comments/ir_reviews/newsfeeds', default: 'comments'
+          optional :relate_user_ids, type: Array[Integer], desc: '参与人员'
         end
         post :comments do
           params[:type] = params[:type].classify
@@ -37,6 +38,7 @@ class CommentApi < Grape::API
       desc '修改comment', entity: Entities::Comment
       params do
         requires :content, type: String, desc: '内容'
+        optional :relate_user_ids, type: Array[Integer], desc: '参与人员'
       end
       patch do
         comment = Comment.find(params[:id])

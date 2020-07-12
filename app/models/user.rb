@@ -1,4 +1,5 @@
 class User < ApplicationRecord
+  acts_as_paranoid
   scope :user_title_id, -> {where(user_title_id: 2)}
 
   include RoleExtend
@@ -7,6 +8,8 @@ class User < ApplicationRecord
 
   has_one_attached :avatar
   has_blob_upload :avatar
+
+  after_validation :set_bu_id
 
   has_many :investor_groups
   has_many :follows

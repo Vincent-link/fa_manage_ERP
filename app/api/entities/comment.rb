@@ -6,6 +6,7 @@ module Entities
     expose :content
 
     expose :user, using: Entities::User
+    expose :relate_user_ids
 
     with_options(format_with: :time_to_s_minute) do
       expose :created_at

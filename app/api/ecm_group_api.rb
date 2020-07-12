@@ -46,7 +46,9 @@ class EcmGroupApi < Grape::API
         optional :tier, type: Integer, desc: '等级'
       end
       patch :details do
-        org_relation = @ecm_group.investor_group_organizations.find_or_create_by(organization_id: params[:organization_id])
+        org_relation = @ecm_group.investor_group_organizations.find_or_initialize_by(organization_id: params[:organization_id])
+        org_relation.tier = params[:tier]
+        org_relation.save!
         org_relation.investor_group_members.where.not(member_id: params[:member_ids]).destroy_all
         params[:member_ids].each do |member_id|
           org_relation.investor_group_members.find_or_create_by member_id: member_id do |m|
