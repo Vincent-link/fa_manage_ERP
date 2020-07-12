@@ -152,11 +152,15 @@ class User < ApplicationRecord
       new_row = {"member_name": user.name}.merge(row)
       user.kpi_group.kpis.where("extract(year from kpis.created_at)  = ?", year).map {|kpi|
         kpi_types(year).pluck(:kpi_type).uniq.map{|type|
-          # 如果kpi配置存有条件
-          if kpi.kpi_type == type
-            conditions = kpi.conditions.map{|e| " #{e.relation} #{Kpi.kpi_type_config_for_value(e.kpi_type)[:action]}#{Kpi.kpi_type_op_for_value(e.kpi_type).call(user.id, e.coverage, year)}/#{e.value}"}.join(" ") unless kpi.conditions.empty?
-            new_row["#{type}"] = "#{Kpi.kpi_type_config_for_value(kpi.kpi_type)[:action]}#{Kpi.kpi_type_op_for_value(type).call(user.id, kpi.coverage, year)}/#{kpi.value}#{conditions}"
-          end
+            if kpi.kpi_type == type
+              # 如果kpi配置存有条件
+              conditions = kpi.conditions.map{|e| " #{e.relation} #{Kpi.kpi_type_config_for_value(e.kpi_type)[:action]}#{Kpi.kpi_type_op_for_value(e.kpi_type).call(user.id, e.coverage, year)}#{Kpi.kpi_type_config_for_value(e.kpi_type)[:unit]}/#{e.value}#{Kpi.kpi_type_config_for_value(e.kpi_type)[:unit]}"}.join(" ") unless kpi.conditions.empty?
+
+              new_row["#{type}"] = "不在系统中统计"
+
+              new_row["#{type}"] = "#{Kpi.kpi_type_config_for_value(kpi.kpi_type)[:action]}#{Kpi.kpi_type_op_for_value(type).call(user.id, kpi.coverage, year)}#{Kpi.kpi_type_config_for_value(kpi.kpi_type)[:unit]}/#{kpi.value}#{Kpi.kpi_type_config_for_value(kpi.kpi_type)[:unit]}#{conditions}" if Kpi.kpi_type_config_for_value(kpi.kpi_type)[:is_system]
+            end
+
         }
       }
       new_row = new_row.merge({"member_id": user.id})

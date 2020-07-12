@@ -1,4 +1,7 @@
 kpi:
   total_fee: 400000
   est_amount: 10000000
-  growth_bd_est_amount: 150000000
+  growth_pe_est_amount: 150000000
+  growth_vp_est_amount: 300000000
+  growth_director_est_amount: 500000000
+  post_investment_valuation: 300000000
