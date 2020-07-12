@@ -28,13 +28,6 @@ class Kpi < ApplicationRecord
           teams = team.sub_teams
           teams.append(team).map(&:users).flatten.uniq.map {|user| Funding.includes(:funding_users).where(funding_users: {user_id: user_id, kind: FundingUser.kind_config[:bd_leader][:value]}, status: Funding.status_config[:paid][:value]).where("extract(year from fundings.created_at)  = ?", year).select{|e| !e.file_el_attachment.nil? && (e.pipelines.where(status: Pipeline.status_config[:fee_ed][:value]).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= Settings.kpi.total_fee || e.pipelines.where(status: Pipeline.status_config[:fee_ed][:value]).map {|e| transform_to_usd(e.est_amount, e.est_amount_currency)}.sum >= Settings.kpi.est_amount)}.count}.sum
         end
-<<<<<<< HEAD
-=======
-      },
-
-      op: -> (user_id) {
-        Funding.includes(:funding_users).where(funding_users: {user_id: 1988, kind: 2}, status: 7).select{|e| e.pipelines.where(status: 10).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= 40 || e.pipelines.where(status: 10).map {|e| transform_to_usd(e.total_fee, e.total_fee_currency)}.sum >= 10000000}
->>>>>>> bf75084f7c29f0d787c23cf37f66a683e64a0b15
       }
     },
 
@@ -314,8 +307,8 @@ class Kpi < ApplicationRecord
   end
 
   # 我的kpi
-  def statis_my_kpi(user_id)
-    Kpi.kpi_type_op_for_value(self.kpi_type).call(user_id, self.coverage)
+  def statis_my_kpi(user_id, year)
+    Kpi.kpi_type_op_for_value(self.kpi_type).call(user_id, self.coverage, year)
   end
 
   # 我的kpi
