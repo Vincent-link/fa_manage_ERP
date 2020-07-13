@@ -42,6 +42,7 @@ module Entities
     expose :operational, documentation: {type: 'string', desc: '运营数据'}
     expose :market_competition, documentation: {type: 'string', desc: '市场竞争分析'}
     expose :financing_plan, documentation: {type: 'string', desc: '融资计划'}
+    expose :team_desc, documentation: {type: 'string', desc: '团队介绍'}
     expose :other_desc, documentation: {type: 'string', desc: '其他'}
     expose :source_type, documentation: {type: 'integer', desc: '融资来源类型'}
     expose :source_detail, if: lambda { |ins| 'Funding'.constantize.source_type_filter(:find_company, :company_find, :colleague_introduction).include? ins.source_type}, documentation: {type: 'string', desc: '融资来源明细'}

@@ -20,6 +20,7 @@ class FundingApi < Grape::API
       optional :operational, type: String, desc: '运营数据'
       optional :market_competition, type: String, desc: '市场竞争分析'
       optional :financing_plan, type: String, desc: '融资计划'
+      optional :team_desc, type: String, desc: '团队介绍'
       optional :other_desc, type: String, desc: '其他'
       optional :source_type, type: Integer, desc: '融资来源类型(字典funding_source_type)'
       optional :source_member, type: Integer, desc: '投资者'
@@ -78,8 +79,9 @@ class FundingApi < Grape::API
       Funding.transaction do
         @funding = Funding.create(params.slice(:category, :company_id, :round_id, :target_amount_currency, :target_amount,
                                                :share, :shiny_word, :com_desc, :products_and_business, :financial, :is_ka,
-                                               :operational, :market_competition, :financing_plan, :other_desc, :source_type,
-                                               :source_member, :source_detail, :funding_score, :name, :category_name).merge(operating_day: Date.today))
+                                               :operational, :market_competition, :financing_plan, :team_desc, :other_desc,
+                                               :source_type, :source_member, :source_detail, :funding_score, :name, :category_name)
+                                      .merge(operating_day: Date.today))
         @funding.add_project_follower(params)
         @funding.gen_funding_company_contacts(params)
         @funding.funding_various_file(params)
@@ -165,6 +167,7 @@ class FundingApi < Grape::API
         optional :operational, type: String, desc: '运营数据'
         optional :market_competition, type: String, desc: '市场竞争分析'
         optional :financing_plan, type: String, desc: '融资计划'
+        optional :team_desc, type: String, desc: '团队介绍'
         optional :other_desc, type: String, desc: '其他'
         optional :source_type, type: Integer, desc: '融资来源类型（字典funding_source_type）'
         optional :source_member, type: Integer, desc: '投资者'
@@ -193,7 +196,7 @@ class FundingApi < Grape::API
                                        :target_amount, :target_amount_currency, :share, :source_type, :source_member, :source_detail,
                                        :is_complicated, :funding_score, :confidentiality_level, :confidentiality_reason, :is_reportable,
                                        :com_desc, :products_and_business, :financial, :operational, :market_competition, :financing_plan,
-                                       :other_desc, :category_name))
+                                       :team_desc, :other_desc, :category_name))
           @funding.add_project_follower(params)
           @funding.funding_various_file(params)
         end
