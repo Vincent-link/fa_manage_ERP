@@ -24,16 +24,16 @@ class Company < ApplicationRecord
 
   def self.es_search(params)
     where_hash = {}
-    where_hash[:sector_ids] = params[:sector_ids] if params[:sector_ids].present?
+    where_hash[:sector_ids] = {all: params[:sector_ids]} if params[:sector_ids].present?
     where_hash[:is_ka] = params[:is_ka] if !params[:is_ka].nil?
-    where_hash[:recent_financing] = params[:recent_financing] if params[:recent_financing].present?
-
+    where_hash[:recent_financing] = {all: params[:recent_financing_ids]} if params[:recent_financing_ids].present?
+    binding.pry
     order_hash = {"updated_at" => "desc"}
     # if params[:order_by]
     #   order_hash = {params[:order_by] => params[:order_type]}
     # end
 
-    Company.search(params[:query], where: where_hash, order: order_hash, page: params[:page], per_page: params[:per_page], highlight: DEFAULT_HL_TAG)
+    Company.search(params[:query], match: :phrase, where: where_hash, order: order_hash, page: params[:page], per_page: params[:per_page], highlight: DEFAULT_HL_TAG)
   end
 
   def financing_events

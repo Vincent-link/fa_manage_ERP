@@ -5,7 +5,7 @@ class CompanyApi < Grape::API
       optional :query, type: String, desc: '检索文本', default: '*'
       optional :sector_ids, type: Array[Integer], desc: '行业'
       optional :is_ka, type: Boolean, desc: 'KA'
-      optional :recent_financing, type: String, desc: '最近融资'
+      optional :recent_financing_ids, type: Array[Integer], desc: '最近融资'
       requires :page, type: Integer, desc: '页数', default: 1
       optional :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 30
     end
