@@ -7,7 +7,7 @@ module Entities
     expose :location_province_id, documentation: {type: 'integer', desc: '省份'}
     expose :location_city_id, documentation: {type: 'integer', desc: '城市'}
     expose :detailed_address, documentation: {type: 'string', desc: '详细地址'}
-    expose :sectors, documentation: {type: 'string', desc: '所属行业'}
+    expose :sector_id, as: :sectors, documentation: {type: 'string', desc: '所属行业'}
     expose :is_ka, documentation: {type: 'boolean', desc: '是否ka'}
   end
 end
