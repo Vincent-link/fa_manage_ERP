@@ -15,12 +15,12 @@ class CalendarApi < Grape::API
             when 'person'
               user.calendars
             when 'group'
-              Calendar.includes(:calendar_members).where(calendar_members: {memberable_type: 'User', memberable_id: CacheBox.get_group_user_ids(user.id)})
+              Calendar.where(calendar_members: {memberable_type: 'User', memberable_id: CacheBox.get_group_user_ids(user.id)})
             end
       cal = cal.where(status: params[:status]) if params[:status]
       cal = cal.where(meeting_category: params[:meeting_category]) if params[:meeting_category]
       cal = cal.where(started_at: params[:start_date]..params[:end_date])
-      present cal, with: Entities::Calendar
+      present cal.includes(:user, :organization, :company, org_members: :memberable, com_members: :memberable, user_members: :memberable), with: Entities::Calendar
     end
 
     desc '创建日程', entity: Entities::Calendar
@@ -45,6 +45,7 @@ class CalendarApi < Grape::API
       requires :started_at, type: DateTime, desc: '开始时间'
       requires :ended_at, type: DateTime, desc: '结束时间'
       optional :address_id, type: Integer, desc: '会议地点id'
+      optional :tel_desc, type: String, desc: '电话会议描述'
     end
     post do
       @calendar = current_user.created_calendars.create!(declared(params, include_missing: false))
@@ -69,6 +70,7 @@ class CalendarApi < Grape::API
         requires :started_at, type: DateTime, desc: '开始时间'
         requires :ended_at, type: DateTime, desc: '结束时间'
         optional :address_id, type: Integer, desc: '会议地点id'
+        optional :tel_desc, type: String, desc: '电话会议描述'
       end
       patch do
         @calendar = Calendar.find params[:id]

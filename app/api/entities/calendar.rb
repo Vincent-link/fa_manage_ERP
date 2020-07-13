@@ -22,8 +22,11 @@ module Entities
     expose :organization_id, documentation: {type: Integer, desc: '机构id'}
     expose :company_id, documentation: {type: Integer, desc: '公司id'}
     expose :company_name, documentation: {type: String, desc: '公司名称'}
+    expose :funding_id, documentation: {type: Integer, desc: '项目id'}
+    expose :funding_status, documentation: {type: Integer, desc: '项目id'}
 
     expose :status, documentation: {type: Integer, desc: '会议状态'}
+    expose :tel_desc, documentation: {type: String, desc: '电话会议描述'}
 
     with_options(format_with: :time_to_s_minute) do
       expose :started_at, documentation: {type: String, desc: '开始时间'}
