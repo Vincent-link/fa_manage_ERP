@@ -30,10 +30,10 @@ class Organization < ApplicationRecord
   scope :search_import, -> {includes(:ir_reviews, :newsfeeds, :comments, :members, :organization_tags)}
 
   state_config :level, config: {
-      a: {value: 'a', desc: 'A'},
-      b: {value: 'b', desc: 'B'},
-      c: {value: 'c', desc: 'C'},
-      d: {value: 'd', desc: 'D'}
+      a: {value: 'A', desc: 'A'},
+      b: {value: 'B', desc: 'B'},
+      c: {value: 'C', desc: 'C'},
+      d: {value: 'D', desc: 'D'}
   }
 
   state_config :tier, config: {
