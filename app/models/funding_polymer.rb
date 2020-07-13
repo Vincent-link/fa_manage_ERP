@@ -36,7 +36,7 @@ class FundingPolymer < ApplicationRecord
                              company_sector_ids: self.company&.sector_ids,
                              company_sector_names: self.company&.sectors&.map(&:name)&.join("、"),
                              company_location_ids: [self.company&.location_province_id, self.company&.location_city_id].compact,
-                             company_name: self.company&.name,
+                             # company_name: self.company&.name,
                              funding_user_ids: self.funding_user_ids,
                              funding_team_ids: self.funding_all_users.map(&:team_id)})
     self.track_logs.each do |track_log|
