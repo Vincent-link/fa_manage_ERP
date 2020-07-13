@@ -27,6 +27,11 @@ class DictVersion < ApplicationRecord
     syn_user_with_zombie
   end
 
+  def update_dict(*_)
+    #syn_team_with_zombie
+    #@syn_user_with_zombie
+  end
+
   def self.syn_team_with_zombie
     sso_teams = Zombie::SsoTeam.with_deleted.inspect
     Team.with_deleted.where.not(id: sso_teams.map(&:id)).destroy_all
