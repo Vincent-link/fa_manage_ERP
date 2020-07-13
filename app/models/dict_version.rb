@@ -27,7 +27,7 @@ class DictVersion < ApplicationRecord
     syn_user_with_zombie
   end
 
-  def update_dict(*_)
+  def self.update_dict(*_)
     #syn_team_with_zombie
     #@syn_user_with_zombie
   end

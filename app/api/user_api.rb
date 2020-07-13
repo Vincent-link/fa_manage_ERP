@@ -8,6 +8,7 @@ class UserApi < Grape::API
     desc '登出'
     post :logout do
       logout
+      true
     end
 
     desc '退出代理'
