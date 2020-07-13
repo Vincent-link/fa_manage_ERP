@@ -3,6 +3,8 @@ module Entities
     expose :id, documentation: {type: 'integer', desc: '机构id', required: true}
     expose :name, documentation: {type: 'string', desc: '机构名称', required: true}
     expose :level, documentation: {type: 'string', desc: '机构级别'}
+    expose :intro, documentation: {type: 'string', desc: '机构简介'}
+    expose :aum, documentation: {type: 'string', desc: '资产管理规模'}
 
     expose :last_investevent, using: InvesteventLite, documentation: {type: 'InvestmentEvent', desc: '最后融资'}
 
@@ -11,7 +13,7 @@ module Entities
     expose :currency_ids, documentation: {type: 'integer', desc: '币种', is_array: true}
     expose :any_round, documentation: {type: 'boolean', desc: '是否不限轮次', is_array: true}
 
-    expose :last_ir_review, documentation: {type: Entities::Comment, desc: '最新ir'}
+    expose :last_ir_review, documentation: {type: Entities::Comment, desc: '最新ir review'}
     expose :last_newsfeed, documentation: {type: Entities::Comment, desc: '最新newsfeed'}
 
 
