@@ -5,6 +5,8 @@ module Entities
     expose :content, documentation: {type: 'string', desc: '内容', required: true}
     expose :is_read, documentation: {type: 'string', desc: '状态', required: true}
     expose :notice, documentation: {type: 'string', desc: '其他字段', required: true}
-    expose :created_at, documentation: {type: 'integer', desc: '用户评分时间', required: true}
+    with_options(format_with: :time_to_s_date) do
+      expose :created_at, documentation: {type: 'integer', desc: '用户评分时间', required: true}
+    end
   end
 end

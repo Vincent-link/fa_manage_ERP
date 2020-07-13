@@ -33,5 +33,17 @@ class NotificationApi < Grape::API
       notification.update(is_read: true)
       present notification, with: Entities::Notification
     end
+
+    desc '通知类型和未读通知数'
+    get :notification_types do
+      arr = []
+      [1,2,3].map do |type|
+        row = {}
+        row[:type] = Notification.notification_type_desc_for_value(type)
+        row[:unread_num] = User.current.notifications.where(notification_type: type, is_read: false).count
+        arr << row
+      end
+      present arr, with: Entities::NotificationType
+    end
   end
 end

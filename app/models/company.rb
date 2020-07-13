@@ -6,7 +6,6 @@ class Company < ApplicationRecord
   has_many :fundings, dependent: :destroy
 
   acts_as_taggable_on :company_tags
-  acts_as_taggable_on :sectors
 
   has_one_attached :logo
   has_blob_upload :logo
@@ -19,9 +18,9 @@ class Company < ApplicationRecord
   validates_presence_of :location_province_id
   validates_presence_of :location_city_id
 
-  def search_data
-    attributes.merge sector_ids: self.sectors.ids
-  end
+  # def search_data
+  #   # attributes.merge sector_ids: self.sector_ids
+  # end
 
   def self.es_search(params)
     where_hash = {}

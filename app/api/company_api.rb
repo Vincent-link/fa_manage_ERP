@@ -28,7 +28,7 @@ class CompanyApi < Grape::API
       requires :location_city_id, type: Integer, desc: '地址'
       optional :detailed_address, type: String, desc: '详细地址'
       optional :business_id, type: Integer, desc: '工商数据'
-      requires :sector_ids, type: Integer, desc: '所属行业'
+      requires :sector_id, type: Integer, desc: '所属行业'
       optional :company_tag_ids, type: Array[Integer], desc: '标签'
       requires :contacts, type: Array[JSON], desc: '联系人' do
         requires :name, type: String, desc: '姓名'
@@ -41,13 +41,11 @@ class CompanyApi < Grape::API
     post do
       Company.transaction do
         tags_params = params.delete(:tag_ids)
-        sectors_params = params.delete(:sector_ids)
         logo = params.delete(:logo)
         contacts_params = params.delete(:contacts)
 
         @company = Company.create!(params)
         @company.company_tag_ids = tags_params
-        @company.sector_ids = sectors_params
 
         if logo.present?
           ActiveStorage::Attachment.create!(name: 'logo', record_type: 'Company', record_id: @company.id, blob_id: logo[:blob_id])
@@ -67,7 +65,6 @@ class CompanyApi < Grape::API
           end
         end
         @company.save!
-
         present @company, with: Entities::CompanyForShow
       end
     end
@@ -108,7 +105,7 @@ class CompanyApi < Grape::API
           optional :blob_id, type: Integer, desc: 'blob_id 新文件id'
         end
         optional :website, type: String, desc: '网址'
-        optional :sector_ids, type: Integer, desc: '所属行业'
+        optional :sector_id, type: Integer, desc: '所属行业'
         optional :one_sentence_intro, type: String, desc: '一句话简介'
         optional :location_province_id, type: Integer, desc: '省份'
         optional :location_city_id, type: Integer, desc: '城市'
@@ -122,14 +119,13 @@ class CompanyApi < Grape::API
         case part
         when 'head'
           raise "名称不能为空" if params[:name].nil?
-          raise "行业不能为空" if params[:sector_ids].nil?
+          raise "行业不能为空" if params[:sector_id].nil?
           raise "一句话介绍不能为空" if params[:one_sentence_intro].nil?
           raise "地点不能为空" if params[:location_city_id].nil? || params[:location_province_id].nil?
         when 'basic'
         end
 
         @company.company_tag_ids = params.delete(:company_tag_ids)
-        @company.sector_ids = params.delete(:sector_ids)
 
         logo = params.delete(:logo)
         if logo.present?
