@@ -7,6 +7,7 @@ module Entities
     expose :operational, documentation: {type: 'string', desc: '运营数据'}
     expose :market_competition, documentation: {type: 'string', desc: '市场竞争分析'}
     expose :financing_plan, documentation: {type: 'string', desc: '融资计划'}
+    expose :team_desc, documentation: {type: 'string', desc: '团队介绍'}
     expose :other_desc, documentation: {type: 'string', desc: '其他'}
     expose :funding_bp, with: Entities::File,if: ->(ins) {ins.funding_bp.present?}, documentation: {type: Entities::File, desc: 'bp文件', required: true}
     expose :is_list, documentation: {type: 'boolean', desc: '是否为上市/新三板公司'}

@@ -21,6 +21,7 @@ class FundingStateMachineApi < Grape::API
         optional :operational, type: String, desc: '运营数据'
         optional :market_competition, type: String, desc: '市场竞争分析'
         optional :financing_plan, type: String, desc: '融资计划'
+        optional :team_desc, type: String, desc: '团队介绍'
         optional :other_desc, type: String, desc: '其他'
         optional :file_bp, type: Hash do
           optional :blob_id, type: Integer, desc: 'BP文件blob_id'
@@ -31,7 +32,7 @@ class FundingStateMachineApi < Grape::API
         @funding.funding_status_auth(Funding.status_reviewing_value, Funding.status_interesting_value, params)
         @funding.funding_various_file(params.slice(:file_bp))
         @funding.update(params.slice(:com_desc, :products_and_business, :financial, :operational, :market_competition,
-                                     :financing_plan, :other_desc).merge(status: Funding.status_interesting_value))
+                                     :financing_plan, :team_desc, :other_desc).merge(status: Funding.status_interesting_value))
         present @funding, with: Entities::FundingLite
       end
 
@@ -48,12 +49,13 @@ class FundingStateMachineApi < Grape::API
         requires :operational, type: String, desc: '运营数据'
         requires :market_competition, type: String, desc: '市场竞争分析'
         requires :financing_plan, type: String, desc: '融资计划'
+        optional :team_desc, type: String, desc: '团队介绍'
         optional :other_desc, type: String, desc: '其他'
       end
       post 'voting' do
         @funding.funding_status_auth(Funding.status_interesting_value, Funding.status_voting_value, params)
         @funding.update(params.slice(:com_desc, :products_and_business, :financial, :operational, :market_competition,
-                                     :financing_plan, :other_desc, :is_list, :ticker, :post_investment_valuation,
+                                     :financing_plan, :team_desc, :other_desc, :is_list, :ticker, :post_investment_valuation,
                                      :currency_id).merge(status: Funding.status_voting_value))
         present @funding, with: Entities::FundingLite
       end
@@ -128,6 +130,7 @@ class FundingStateMachineApi < Grape::API
         optional :operational, type: String, desc: '运营数据'
         optional :market_competition, type: String, desc: '市场竞争分析'
         optional :financing_plan, type: String, desc: '融资计划'
+        optional :team_desc, type: String, desc: '团队介绍'
         optional :other_desc, type: String, desc: '其他'
         optional :reason, type: String, desc: 'pass理由'
         optional :file_bp, type: Hash do
@@ -139,7 +142,7 @@ class FundingStateMachineApi < Grape::API
         @funding.funding_status_auth(@funding.status, Funding.status_pass_value, params)
         @funding.funding_various_file(params.slice(:file_bp))
         @funding.update(params.slice(:com_desc, :products_and_business, :financial, :operational, :market_competition,
-                                     :financing_plan, :other_desc, :reason).merge(status: Funding.status_pass_value))
+                                     :financing_plan, :team_desc, :other_desc, :reason).merge(status: Funding.status_pass_value))
         present @funding, with: Entities::FundingLite
       end
 

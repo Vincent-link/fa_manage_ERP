@@ -8,12 +8,13 @@ class UserApi < Grape::API
     desc '登出'
     post :logout do
       logout
+      present true
     end
 
     desc '退出代理'
     post :unproxy do
       unproxy
-      present 200
+      present true
     end
 
     desc '获取所有用户', entity: Entities::UserForIndex
