@@ -12,8 +12,7 @@ class TrackLogApi < Grape::API
           optional :spas, type: Array[JSON] do
             requires :action, type: String, desc: "动作，没有变化：keep, 删除：delete，新建：create， 修改：update"
             optional :id, type: Integer, desc: "track_log_id"
-            # requires :pay_date, type: Date, desc: '结算日期'
-            # todo 结算日期需要改成年月
+            requires :pay_date, type: String, desc: '结算日期', regexp: /^\d{4}-\d{2}$/
             requires :is_fee, type: Boolean, desc: '是否收费'
             requires :fee_rate, type: Float, desc: '费率'
             requires :fee_discount, type: Float, desc: '费率折扣'
@@ -63,7 +62,7 @@ class TrackLogApi < Grape::API
           end
 
           given status: ->(val) {val == TrackLog.status_spa_sha_value} do
-            requires :pay_date, type: Date, desc: '结算日期'
+            requires :pay_date, type: String, desc: '结算日期', regexp: /^\d{4}-\d{2}$/
             requires :is_fee, type: Boolean, desc: '是否收费'
             requires :fee_rate, type: Float, desc: '费率'
             requires :fee_discount, type: Float, desc: '费率折扣'
@@ -164,7 +163,7 @@ class TrackLogApi < Grape::API
           optional :blob_id, type: Integer, desc: 'ts文件id'
         end
 
-        optional :pay_date, type: Date, desc: '结算日期'
+        requires :pay_date, type: String, desc: '结算日期', regexp: /^\d{4}-\d{2}$/
         optional :is_fee, type: Boolean, desc: '是否收费'
         optional :fee_rate, type: Float, desc: '费率'
         optional :fee_discount, type: Float, desc: '费率折扣'
