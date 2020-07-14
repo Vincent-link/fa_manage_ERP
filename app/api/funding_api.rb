@@ -354,6 +354,15 @@ class FundingApi < Grape::API
         @funding.update!(is_ka: false)
         present @funding, with: Entities::FundingLite
       end
+
+      desc '项目对应公司的融资历史', entity: Entities::FundingHistoryLite
+      params do
+      end
+      get 'history_lite' do
+        fundings = @funding.company.fundings
+        present fundings, with: Entities::FundingHistoryLite
+      end
+
     end
   end
 
