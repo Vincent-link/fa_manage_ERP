@@ -24,7 +24,7 @@ class UserApi < Grape::API
       optional :layout, type: String, desc: '样式', values: ['lite', 'index'], default: 'index'
     end
     get do
-      users = User.includes(:roles).order(grade_id: :desc)
+      users = User.includes(:roles, :grade, :user_title, :team).order(grade_id: :desc)
       users = users.where(bu_id: params[:bu_id]) if params[:bu_id].present?
       users = users.where('name like ?', "%#{params[:query]}%") if params[:query].present?
 
