@@ -36,6 +36,18 @@ class UserApi < Grape::API
       end
     end
 
+    desc '邮箱是否已验证'
+    params do
+      optional :password, type: String, desc: '邮箱密码（选填，为空则验证当前邮箱密码）'
+    end
+    post 'check_email_valid' do
+      if params[:password].present?
+        current_user.valid_email_password? params[:password]
+      else
+        current_user.valid_email_password?
+      end
+    end
+
     resource ':id' do
       before do
         @user = User.find(params[:id])

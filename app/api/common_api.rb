@@ -26,6 +26,11 @@ class CommonApi < Grape::API
           pipeline_status: Pipeline.status_id_name,
           track_log_status: TrackLog.status_id_name,
           funding_all_funding_file_type: Funding.all_funding_file_type_id_name,
+          email_blob_file_kind: EmailBlob.file_kind_id_name,
+          email_signature_template: Email.signature_template_id_name,
+          email_email_template: Email.email_template_id_name,
+          email_emailable_type: Email.emailable_type_id_name,
+          email_status: Email.status_id_name,
           funding_type_range: Funding.type_range_id_name
       }
     end

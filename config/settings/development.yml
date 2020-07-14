@@ -6,6 +6,34 @@ sso_client:
 
 es_host: '10.100.97.86:9200'
 
+smtp:
+  server: "smtp.partner.outlook.cn"
+  port: 587
+  account: "work@huaxing.com"
+  bcc: ["jarvisli@huaxing.com"]
+  password: "CRit2017"
+  domain: "huaxing.com"
+  test_group_email:
+    - jarvisli@huaxing.com
+  ticket_switch: true
+
+smtp_intel:
+  server: "smtp.office365.com"
+
+casual_email: ['15611360995@163.com',
+               'taoyan@huaxing.com',
+               'mgdang@huaxing.com',
+               'shanhuiyi@huaxing.com',
+               'sallyshi@huaxing.com',
+               '278122751@qq.com',
+               'fanyilai@huaxing.com',
+               'whpang@huaxing.com',
+               'linanruan@huaxing.com',
+               'cefeng@huaxing.com',
+               'wenyagao@huaxing.com',
+               'jarvisli@huaxing.com',
+               'WenYaGao@huaxing.com']
+
 zombie:
   host: "http://router.canary.huaxing.com:9787"
   #host: "http://localhost:8780"

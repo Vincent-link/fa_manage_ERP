@@ -33,8 +33,8 @@ class FundingPolymer < ApplicationRecord
 
   def search_data
     data = attributes.merge({pipeline_status: self.pipelines.pluck(:status),
-                             company_sector_ids: [self.company&.sector_id].compact,
-                             company_sector_names: [CacheBox.dm_single_sector_tree[self.company&.sector_id]].compact.join("、"),
+                             company_sector_ids: [self.company&.sector_id, self.company&.parent_sector_id].compact,
+                             company_sector_names: [CacheBox.dm_single_sector_tree[self.company&.sector_id], CacheBox.dm_single_sector_tree[self.company&.parent_sector_id]].compact.join("、"),
                              company_location_ids: [self.company&.location_province_id, self.company&.location_city_id].compact,
                              # company_name: self.company&.name,
                              funding_user_ids: self.funding_all_user_ids,

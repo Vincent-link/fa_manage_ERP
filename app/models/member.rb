@@ -22,6 +22,9 @@ class Member < ApplicationRecord
   has_many :track_log_members
   has_many :track_logs, through: :track_log_members
 
+  has_many :email_receivers, as: :receiverable
+  has_many :email_tos, as: :toable
+
   delegate :name, to: :organization, prefix: true
 
   state_config :report_type, config: {

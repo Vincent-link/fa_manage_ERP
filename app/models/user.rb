@@ -30,6 +30,9 @@ class User < ApplicationRecord
   has_many :group_calendars, through: :group_users, source: :calendars
   has_many :group_users, -> {where(id: CacheBox.get_group_user_ids(self.id))}, class_name: 'User'
 
+  has_many :email_receivers, as: :receiverable
+  has_many :email_tos, as: :toable
+
   belongs_to :team, optional: true
   belongs_to :bu, optional: true, class_name: 'Team', foreign_key: :bu_id
   belongs_to :grade, optional: true
@@ -125,6 +128,42 @@ class User < ApplicationRecord
     roles = Role.includes(:role_resources).where(role_resources: {name: 'admin_one_vote_veto'})
     user_roles = UserRole.select {|e| roles.pluck(:id).include?(e.role_id)}
     true if user_roles.pluck(:user_id).include?(self.id)
+  end
+
+  def email_password
+    return nil unless encrypted_email_password
+    begin
+      len = ActiveSupport::MessageEncryptor.key_len
+      key = ActiveSupport::KeyGenerator.new('password').generate_key(Rails.application.secrets.secret_key_base, len)
+      crypt = ActiveSupport::MessageEncryptor.new(key)
+      crypt.decrypt_and_verify(encrypted_email_password)
+    rescue Exception => e
+      Rails.logger.error(e)
+      return nil
+    end
+  end
+
+  def update_email_password(new_password)
+    len = ActiveSupport::MessageEncryptor.key_len
+    key = ActiveSupport::KeyGenerator.new('password').generate_key(Rails.application.secrets.secret_key_base, len)
+    crypt = ActiveSupport::MessageEncryptor.new(key)
+    self.update(encrypted_email_password: crypt.encrypt_and_sign(new_password))
+  end
+
+  def valid_email_password?(email_password = self.email_password)
+    server = email.to_s.strip.downcase.match(/chinarenaissance.com$/) ? Settings.smtp_intel.server : Settings.smtp.server
+    port, domain = Settings.smtp.port, Settings.smtp.domain
+    smtp = Net::SMTP.new(server, port)
+    smtp.enable_starttls_auto
+    begin
+      smtp.start(domain, self.email, email_password, :login) do |_smtp|
+        self.update_email_password(email_password)
+        return true
+      end
+    rescue Exception => e
+      Rails.logger.error(e)
+      return false
+    end
   end
 
   def statis_kpi_titles(year)

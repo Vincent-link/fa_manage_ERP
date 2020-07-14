@@ -32,8 +32,10 @@ class Verification < ApplicationRecord
           Question.create!(params.merge(evaluation_id: evaluation.id, user_id: User.current.id)) unless evaluation.nil?
           # todo 给项目成员发通知，提醒项目成员去回答
       }},
-      email: {
-        value: 6
+      funding_email: {
+      value: 6,
+      desc: -> (funding_name) { "【#{funding_name}】项目推送" },
+      op: -> {}
       },
       project_advancement: {
         value: 7,
@@ -46,8 +48,17 @@ class Verification < ApplicationRecord
             # 把项目变成ka的
             verification.verifyable&.update!(is_ka: true)
           }
+      },
+      funding_claim: {
+          value: 9,
+          desc: -> (funding, time) { "认领项目【#{funding}】约见时间（#{time}）" },
+          op: -> (verification) {
+            funding = verification.verifyable
+            funding.duplicate_base_info([verification.sponsor])
+          }
       }
   }
+
 
   state_config :verifi_type, config: {
     resource: {value: 1, desc: "权限审核"},

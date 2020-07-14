@@ -12,7 +12,8 @@ class TrackLogApi < Grape::API
           optional :spas, type: Array[JSON] do
             requires :action, type: String, desc: "动作，没有变化：keep, 删除：delete，新建：create， 修改：update"
             optional :id, type: Integer, desc: "track_log_id"
-            requires :pay_date, type: Date, desc: '结算日期'
+            # requires :pay_date, type: Date, desc: '结算日期'
+            # todo 结算日期需要改成年月
             requires :is_fee, type: Boolean, desc: '是否收费'
             requires :fee_rate, type: Float, desc: '费率'
             requires :fee_discount, type: Float, desc: '费率折扣'
@@ -55,7 +56,6 @@ class TrackLogApi < Grape::API
           optional :has_model, type: Boolean, desc: '是否上传了model'
           optional :content, type: String, desc: '跟进信息'
           optional :track_log_id, type: Integer, desc: '合并到另一条项目进度的项目进度id'
-
           given status: ->(val) {val == TrackLog.status_issue_ts_value} do
             requires :file_ts, type: Hash do
               optional :blob_id, type: Integer, desc: 'ts文件id'

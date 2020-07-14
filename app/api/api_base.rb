@@ -79,6 +79,7 @@ class ApiBase < Grape::API
   mount TrackLogDetailApi
   mount CompanyApi
   mount TeamApi
+  mount EmailApi
   mount KnowledgeBaseApi
   mount StatisticsApi
 
