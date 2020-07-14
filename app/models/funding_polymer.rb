@@ -33,11 +33,11 @@ class FundingPolymer < ApplicationRecord
 
   def search_data
     data = attributes.merge({pipeline_status: self.pipelines.pluck(:status),
-                             company_sector_ids: self.company&.sector_ids,
-                             company_sector_names: self.company&.sectors&.map(&:name)&.join("、"),
+                             company_sector_ids: [self.company&.sector_id].compact,
+                             company_sector_names: [CacheBox.dm_single_sector_tree[self.company&.sector_id]].compact.join("、"),
                              company_location_ids: [self.company&.location_province_id, self.company&.location_city_id].compact,
                              # company_name: self.company&.name,
-                             funding_user_ids: self.funding_user_ids,
+                             funding_user_ids: self.funding_all_user_ids,
                              funding_team_ids: self.funding_all_users.map(&:team_id)})
     self.track_logs.each do |track_log|
       data.merge! "track_log_#{track_log.id}" => track_log.track_log_details.map(&:content).compact.join("/n")
