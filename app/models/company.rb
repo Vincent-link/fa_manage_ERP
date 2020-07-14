@@ -71,7 +71,7 @@ class Company < ApplicationRecord
     end
 
     arr = []
-    all_events.map do |event|
+    self_financing_events.map do |event|
       event_hash = {}
       if event.class.name == "Funding"
         event_hash[:id] = event.id
