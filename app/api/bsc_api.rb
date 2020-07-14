@@ -17,10 +17,17 @@ class BscApi < Grape::API
           @funding.update(conference_team_ids: params[:conference_team_ids], bsc_status: Funding.bsc_status_started_value)
           # 项目成员会收到通知
           content = Notification.project_type_bsc_started_desc.call(@funding.company.name)
+<<<<<<< HEAD
           @funding.funding_users.where(kind: FundingUser.kind_value(:normal_users)).map {|e| Notification.create(notification_type: Notification.notification_type_project_value, content: content, user_id: e.user_id, is_read: false, notice: {funding_id: self.id})}
           # 启动BSC后，投委会成员会收到对该项目的comments征集（提问）的邀请通知
           content = Notification.project_type_ask_to_review_desc.call(@funding.company.name)
           params[:investment_committee_ids].map {|e| Notification.create(notification_type: Notification.notification_type_project_value, content: content, user_id: e, is_read: false, notice: {funding_id: @funding.id})}
+=======
+          @funding.funding_users.map {|e| Notification.create(notification_type: Notification.notification_type_project_value, content: content, user_id: e.user_id, is_read: false, notice: {funding_id: self.id})}
+          # 启动BSC后，投委会成员会收到对该项目的comments征集（提问）的邀请通知
+          content = Notification.project_type_ask_to_review_desc.call(@funding.company.name)
+          params[:investment_committee_ids].map {|e| Notification.create(notification_type: Notification.notification_type_project_value, content: content, user_id: e, is_read: false, notice: {funding_id: self.id})}
+>>>>>>> add financing events
 
           # 给投委会发提问审核
           desc = Verification.verification_type_post_question_desc.call(@funding.company.name)
