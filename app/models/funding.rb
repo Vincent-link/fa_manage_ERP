@@ -187,7 +187,7 @@ class Funding < FundingPolymer
           content = Notification.project_type_passed_desc.call(self.company.name)
           funding_users = self.funding_users.map {|e| User.find(e.user_id)}
 
-          (managers + funding_users).uniq.map {|e| Notification.create!(notification_type: Notification.notification_type_project_value, content: content, user_id: e.id, is_read: false)}
+          (managers + funding_users).uniq.map {|e| Notification.create!(notification_type: Notification.notification_type_project_value, content: content, user_id: e.id, is_read: false, notice: {funding_id: self.id})}
         end
       else
         result = self.evaluations.where(is_agree: 'yes').count - self.evaluations.where(is_agree: 'no').count
@@ -196,7 +196,7 @@ class Funding < FundingPolymer
           self.update!(status: Funding.status_pass_value, bsc_status: Funding.bsc_status_finished_value)
           # 给项目成员发通知
           content = Notification.project_type_waitting_desc.call(self.company.name)
-          self.funding_users.map {|e| Notification.create!(notification_type: Notification.notification_type_project_value, content: content, user_id: e.user_id, is_read: false)}
+          self.funding_users.map {|e| Notification.create!(notification_type: Notification.notification_type_project_value, content: content, user_id: e.user_id, is_read: false, notice: {funding_id: self.id})}
           # 给管理员发审核
           desc = Verification.verification_type_project_advancement_desc.call(self.company.name)
           verification = Verification.find_by(verification_type: Verification.verification_type_project_advancement_value, verifi: {funding_id: self.id}, verifi_type: Verification.verifi_type_resource_value)
@@ -210,7 +210,7 @@ class Funding < FundingPolymer
             content = Notification.project_type_passed_desc.call(self.company.name)
             funding_users = self.funding_users.map {|e| User.find(e.user_id)}
 
-            (managers + funding_users).uniq.map {|e| Notification.create!(notification_type: Notification.notification_type_project_value, content: content, user_id: e.id, is_read: false)}
+            (managers + funding_users).uniq.map {|e| Notification.create!(notification_type: Notification.notification_type_project_value, content: content, user_id: e.id, is_read: false, notice: {funding_id: self.id})}
           end
         when 0..Float::INFINITY
           # 项目自动推进到Pursue，并给项目成员及管理员发送通知；
@@ -219,7 +219,7 @@ class Funding < FundingPolymer
             content = Notification.project_type_pursued_desc.call(self.company.name)
             funding_users = self.funding_users.map {|e| User.find(e.user_id)}
 
-            (managers + funding_users).uniq.map {|e| Notification.create!(notification_type: Notification.notification_type_project_value, content: content, user_id: e.id, is_read: false)}
+            (managers + funding_users).uniq.map {|e| Notification.create!(notification_type: Notification.notification_type_project_value, content: content, user_id: e.id, is_read: false, notice: {funding_id: self.id})}
           end
         end
       end
