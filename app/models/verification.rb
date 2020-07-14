@@ -19,7 +19,7 @@ class Verification < ApplicationRecord
         desc: -> (funding){"【#{funding}】已启动BSC评分"},
         op: -> (params){
           evaluation = Evaluation.find_by(user_id: User.current.id, funding_id: params[:funding_id])
-          raise "不能重复提交" unless evaluation.is_agree.nil?
+          raise "不能重复提交" unless evaluation.try(:is_agree).nil?
           evaluation.update(params.merge(number: evaluation.get_number)) unless evaluation.nil?
       }},
       ka_apply: {value: 3, desc: -> (company){"#{company}申请进入KA"}, op: -> {}},
