@@ -30,6 +30,16 @@ class OrganizationTeamApi < Grape::API
       delete do
         OrganizationTeam.find(params[:id]).destroy!
       end
+
+      desc '编辑机构团队'
+      params do
+        requires :name, type: String, desc: '名称'
+      end
+      patch do
+        team = OrganizationTeam.find(params[:id])
+        team.update!(declared(params))
+        present team, with: Entities::OrganizationTeam
+      end
     end
   end
 end
