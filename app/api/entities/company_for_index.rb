@@ -12,5 +12,6 @@ module Entities
     with_options(format_with: :time_to_s_second) do
       expose :updated_at, documentation: {type: 'datetime', desc: '最近更新时间'}
     end
+    expose :financing_events, documentation: {type: 'string', desc: '融资事件'}
   end
 end
