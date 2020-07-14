@@ -34,7 +34,7 @@ class Email < ApplicationRecord
       success:      { value: 2, desc: "推送成功"},
       fail:         { value: 3, desc: "推送失败"},
       pushing:      { value: 4, desc: "推送中"},
-      incomplete:   { value: 4, desc: "部分推送失败"},
+      incomplete:   { value: 5, desc: "部分推送失败"},
   }
 
   state_config :email_template, config: {
