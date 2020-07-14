@@ -17,8 +17,7 @@ class Funding < FundingPolymer
 
   has_many :calendars
 
-  has_many :track_logs
-  has_many :spas, -> {where(:status => TrackLog.status_spa_sha_value)}, class_name: 'TrackLog'
+  has_many :emails, as: :emailable
 
   has_many :evaluations
   has_many :questions
@@ -326,5 +325,33 @@ class Funding < FundingPolymer
     end
     Common::ExcelGenerator.gen(file_path, book_data)
     [file_path, file_name]
+  end
+
+  def gen_claim_verification(params)
+    raise '不能重复提交审核' if self.verifications.verification_type_funding_claim.where(status: nil).present?
+    params[:company_id] = self.company_id
+    calendar = current_user.created_calendars.create!(params)
+    desc = Verification.verification_type_config[:funding_claim][:desc].call(self.name, calendar.started_at.strftime("%Y年%m月%日 %H:%M"))
+    self.verifications.create(verification_type: Verification.verification_type_funding_claim_value, desc: desc, sponsor: User.current.id, verifi_type: Verification.verifi_type_resource_value)
+  end
+
+  def duplicate_base_info(normal_user_ids)
+    attributes = ['company_id', 'category', 'round_id', 'name',
+
+                  'com_desc', 'products_and_business', 'financial',
+                  'operational', 'market_competition', 'financing_plan',
+                  'other_desc',
+
+                  'shiny_word', 'source_type', 'source_member',
+                  'source_detail', 'funding_score', 'target_amount_currency',
+                  'is_complicated', 'target_amount', 'share',
+                  'post_investment_valuation', 'post_valuation_currency',
+                  'type', 'other_funding_id', 'other_funding_type', 'category_name']
+    funding_params = self.slice(attributes)
+    funding_params['is_ka'] = self.company.is_ka
+    funding_params['operating_day'] = Date.today
+    funding = Funding.create!(funding_params)
+    funding.add_project_follower(normal_user_ids: normal_user_ids)
+    funding
   end
 end

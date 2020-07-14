@@ -29,6 +29,13 @@ GIT
       grape (~> 1.3)
       rest-client
 
+GIT
+  remote: https://github.com/shibocuhk/hexapdf
+  revision: cdb7416e9269bc0290f86700829598f8c81e9e7a
+  specs:
+    hexapdf (0.4.1)
+      cmdparse (~> 3.0, >= 3.0.3)
+
 GEM
   remote: https://gems.ruby-china.com/
   specs:
@@ -1018,6 +1025,7 @@ GEM
       capistrano (~> 3.0)
       sshkit (~> 1.2)
     chronic (0.10.2)
+    cmdparse (3.0.6)
     coderay (1.1.2)
     concurrent-ruby (1.1.6)
     config (2.2.1)
@@ -1163,6 +1171,7 @@ GEM
     paper_trail (10.3.1)
       activerecord (>= 4.2)
       request_store (~> 1.1)
+    pdf_watermark (0.2.3)
     pg (1.2.3)
     pry (0.13.1)
       coderay (~> 1.1)
@@ -1292,10 +1301,12 @@ DEPENDENCIES
   grape-swagger
   grape-swagger-entity
   grape_logging
+  hexapdf!
   listen (>= 3.0.5, < 3.2)
   minitest-hooks
   minitest-rails
   paper_trail
+  pdf_watermark
   pg
   pry
   puma (~> 4.1)

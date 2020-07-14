@@ -1,0 +1,10 @@
+<p><%= @email_params&.greeting %> <%= @dear_to.html_safe %></p>
+<%= @email_params.description.html_safe %>
+<p> </p>
+<p> </p>
+<%= @email_params.signature.html_safe %>
+<% if @share_link.present? %>
+  <% @share_link.each do |ins| %>
+    <p><% ins %></p>
+  <% end %>
+<% end %>

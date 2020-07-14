@@ -55,7 +55,6 @@ class TrackLogApi < Grape::API
           optional :has_model, type: Boolean, desc: '是否上传了model'
           optional :content, type: String, desc: '跟进信息'
           optional :track_log_id, type: Integer, desc: '合并到另一条项目进度的项目进度id'
-
           given status: ->(val) {val == TrackLog.status_issue_ts_value} do
             requires :file_ts, type: Hash do
               optional :blob_id, type: Integer, desc: 'ts文件id'

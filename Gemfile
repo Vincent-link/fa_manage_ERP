@@ -99,3 +99,7 @@ group :test do
 end
 
 gem 'pry'
+gem 'acts-as-taggable-on', '~> 6.0'
+
+gem 'pdf_watermark'
+gem 'hexapdf', git: 'https://github.com/shibocuhk/hexapdf'

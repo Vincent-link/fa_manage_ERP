@@ -203,6 +203,21 @@ class FundingApi < Grape::API
         present @funding, with: Entities::FundingLite
       end
 
+      desc '认领项目', entity: Entities::FundingLite
+      params do
+        optional :desc, type: String, desc: '会议描述', default: '由项目进度生成'
+        optional :contact_ids, type: Array[Integer], desc: '公司联系人id'
+        requires :cr_user_ids, type: Array[Integer], desc: '华兴参与人id'
+        requires :started_at, type: DateTime, desc: '开始时间'
+        requires :ended_at, type: DateTime, desc: '结束时间'
+        optional :address_id, type: Integer, desc: '会议地点id'
+      end
+      patch 'claim' do
+        @funding.gen_claim_verification(declared(params, include_missing: false).merge(meeting_category: Calendar.meeting_category_com_meeting_value,
+                                                                                       meeting_type: Calendar.meeting_type_face_value))
+        present @funding, with: Entities::FundingLite
+      end
+
       desc '编辑项目跟进人', entity: Entities::FundingUser
       params do
         optional :normal_user_ids, type: Array[Integer], desc: '项目成员id'
