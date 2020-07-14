@@ -17,6 +17,9 @@ class Funding < FundingPolymer
 
   has_many :calendars
 
+  has_many :track_logs
+  has_many :spas, -> {where(:status => TrackLog.status_spa_sha_value)}, class_name: 'TrackLog'
+
   has_many :emails, as: :emailable
 
   has_many :evaluations
