@@ -8,7 +8,7 @@ module Entities
     expose :location_city_id, documentation: {type: 'integer', desc: '城市'}
     expose :detailed_address, documentation: {type: 'string', desc: '详细地址'}
     expose :sectors, documentation: {type: 'string', desc: '所属行业'} do |ins|
-      [ins.sector_id].compact
+      [ins.sector_id, ins.parent_sector_id].compact
     end
     expose :is_ka, documentation: {type: 'boolean', desc: '是否ka'}
   end
