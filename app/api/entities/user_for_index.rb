@@ -6,7 +6,7 @@ module Entities
     expose :team_name, documentation: {type: 'integer', desc: '团队', required: true}
     expose :bu_id, documentation: {type: 'integer', desc: '部门', required: true}
     expose :leader, using: Entities::UserLite
-    expose :user_title, using: Entities::UserTitle
+    expose :user_title, using: Entities::UserLite
     expose :grade_name, documentation: {type: 'integer', desc: '内部职务', required: true}
     expose :roles, using: Entities::Role
     expose :wechat, documentation: {type: 'string', desc: '微信', required: true}

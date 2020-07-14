@@ -39,7 +39,7 @@ class Company < ApplicationRecord
     self_financing_events = self.fundings
     financing_events = Zombie::DmInvestevent.includes(:company, :invest_type, :invest_round, :investors).order_by_date.public_data.not_deleted.where(company_id: self.id).paginate(:page => 1, :per_page => 4)._select(:id, :all_investors, :birth_date, :invest_type_and_batch_desc, :detail_money_des, :invest_round_id)
     all_events = (financing_events + self_financing_events).sort_by {|p| p.try(:round_id).to_i || p.try(:invest_round_id).to_i}
-    binding.pry
+
     arr = []
     all_events.map do |event|
       event_hash = {}
