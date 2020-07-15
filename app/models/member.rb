@@ -45,7 +45,6 @@ class Member < ApplicationRecord
   after_commit :save_report_relation
   after_commit :create_notification
 
-
   attr_accessor :solid_lower_ids, :virtual_lower_ids, :report_line
 
   # searchkick scope and config
