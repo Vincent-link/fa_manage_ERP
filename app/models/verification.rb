@@ -30,7 +30,10 @@ class Verification < ApplicationRecord
         op: -> (params){
           evaluation = Evaluation.find_by(user_id: User.current.id, funding_id: params[:funding_id])
           Question.create!(params.merge(evaluation_id: evaluation.id, user_id: User.current.id)) unless evaluation.nil?
-          # todo 给项目成员发通知，提醒项目成员去回答
+
+          funding = Funding.find(params[:funding_id])
+          content = Notification.notification_type_config[:after_question][:desc].call(funding.name)
+          funding.funding_users.where(kind: FundingUser.kind_value(:normal_users)).map {|e| Notification.create(notification_type: Notification.notification_type_project_value, content: content, user_id: e.user_id, is_read: false, notice: {kind: Notification.project_type_value(:after_question), funding_id: self.id})}
       }},
       funding_email: {
       value: 6,

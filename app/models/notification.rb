@@ -16,6 +16,7 @@ class Notification < ApplicationRecord
       answered: {value: 4, desc: -> (project){"您在【#{project}】项目发起的提问已被回答，去查看"}, op: -> {}},
       ask_to_review: {value: 5, desc: -> (project){"【#{project}】项目已启动BSC，去查看详情"}, op: -> {}},
       waitting: {value: 6, desc: -> (project){"【#{project}】已完成BSC投票，赞成票+中立票数之和=反对票，待管理员手动推进"}, op: -> {}},
+      after_question: {value: 7, desc: -> (project){"投委会在【#{project}】 项目发起了提问。"} }
   }
 
   state_config :investor_type, config: {
