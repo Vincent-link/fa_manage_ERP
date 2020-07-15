@@ -7,6 +7,7 @@ class CalendarApi < Grape::API
       optional :organization_id, type: Integer, desc: '获取机构的日程 机构id，项目id，数据范围三选一必填'
       optional :funding_id, type: Integer, desc: '获取项目的日程 机构id，项目id，数据范围三选一必填'
       optional :range, type: String, desc: '数据范围 person个人，group含下属', values: ['person', 'group']
+      at_least_one_of :organization_id, :funding_id, :range
       optional :user_id, type: Integer, desc: '获取某下属时下属id，为空返回自己'
       optional :status, type: Integer, desc: '状态'
       optional :meeting_category, type: Integer, desc: '会议类型'
@@ -80,11 +81,12 @@ class CalendarApi < Grape::API
               when 'person'
                 user.calendars
               when 'group'
-                Calendar.where(calendar_members: {memberable_type: 'User', memberable_id: CacheBox.get_group_user_ids(user.id)})
+                Calendar.includes(:calendar_members).where(calendar_members: {memberable_type: 'User', memberable_id: CacheBox.get_group_user_ids(user.id)})
               end
             end
       cal = cal.where(status: params[:status]) if params[:status]
       cal = cal.where(meeting_category: params[:meeting_category]) if params[:meeting_category]
+      cal.nearly.group("cast(date_trunc('month', started_at) as Date)").count.sort_by {|k, _v| k.to_s}.map {|k, v| {start_date: k, end_date: k + 1.month, count: v, desc: k.month}}
     end
 
     resource ':id' do

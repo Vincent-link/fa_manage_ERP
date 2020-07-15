@@ -26,6 +26,8 @@ class Calendar < ApplicationRecord
 
   attr_accessor :ir_review_syn, :newsfeed_syn, :track_result, :investor_summary
 
+  scope :nearly, -> {where(started_at: (Date.today.beginning_of_month - 3.month)..(Date.today.beginning_of_month + 2.month))}
+
   state_config :meeting_type, config: {
       face: {value: 1, desc: '线下约见'},
       tel: {value: 2, desc: '电话约见'},
