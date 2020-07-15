@@ -4,6 +4,7 @@ class CommonApi < Grape::API
     get :dict do
       {
           sector_tree: CacheBox.dm_sector_tree,
+          root_sector: CacheBox.dm_root_sector,
           rounds: CacheBox.dm_rounds,
           org_level: Organization.level_id_name,
           currencies: CacheBox.dm_currencies,

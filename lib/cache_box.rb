@@ -1,6 +1,12 @@
 class CacheBox
   def self.dm_sector_tree
     Rails.cache.fetch('dm_sector_tree') do
+      Zombie::DmSector.sector_tree.as_json
+    end
+  end
+
+  def self.dm_root_sector
+    Rails.cache.fetch('dm_root_sector') do
       Zombie::DmSector.root_sectors.as_json
     end
   end
