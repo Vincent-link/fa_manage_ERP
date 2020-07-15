@@ -307,7 +307,7 @@ class Funding < FundingPolymer
     currency = CacheBox.dm_currencies.map{|ins| [ins['id'], ins['name']]}.to_h
 
     res = {}
-    TrackLog.status_values.each{|ins| res[ins[:id]] = title}
+    TrackLog.status_values.each{|ins| res[ins] = title}
 
     track_logs.each do |track_log|
       track_log_detail_contents = track_log.track_log_details.map do |track_log_detail|
