@@ -52,4 +52,8 @@ class Pipeline < ApplicationRecord
       pipelines.each_with_index {|p, index| p.update name: "#{self.funding.round}#{index + 1}"}
     end
   end
+
+  def self.avg_days_to_close
+    Pipeline.status_values.map {|val| [val, 100 - 4 * val]}.to_h
+  end
 end

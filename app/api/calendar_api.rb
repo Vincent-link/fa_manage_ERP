@@ -60,6 +60,33 @@ class CalendarApi < Grape::API
       present @calendar, with: Entities::Calendar
     end
 
+    desc '近期会议'
+    params do
+      optional :organization_id, type: Integer, desc: '获取机构的日程 机构id，项目id，数据范围三选一必填'
+      optional :funding_id, type: Integer, desc: '获取项目的日程 机构id，项目id，数据范围三选一必填'
+      optional :range, type: String, desc: '数据范围 person个人，group含下属', values: ['person', 'group']
+      optional :user_id, type: Integer, desc: '获取某下属时下属id，为空返回自己'
+      optional :status, type: Integer, desc: '状态'
+      optional :meeting_category, type: Integer, desc: '会议类型'
+    end
+    get :monthly_count do
+      cal = if params[:organization_id].present?
+              Calendar.where(organization_id: params[:organization_id])
+            elsif params[:funding_id].present?
+              Calendar.where(funding_id: params[:funding_id])
+            elsif params[:range].present?
+              user = params[:user_id] ? current_user.sub_users.find(params[:user_id]) : current_user
+              case params[:range]
+              when 'person'
+                user.calendars
+              when 'group'
+                Calendar.where(calendar_members: {memberable_type: 'User', memberable_id: CacheBox.get_group_user_ids(user.id)})
+              end
+            end
+      cal = cal.where(status: params[:status]) if params[:status]
+      cal = cal.where(meeting_category: params[:meeting_category]) if params[:meeting_category]
+    end
+
     resource ':id' do
       desc '编辑日程', entity: Entities::Calendar
       params do
