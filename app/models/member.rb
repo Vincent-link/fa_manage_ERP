@@ -43,7 +43,11 @@ class Member < ApplicationRecord
 
   after_validation :save_to_dm
   after_commit :save_report_relation
+<<<<<<< HEAD
   after_commit :create_notification
+=======
+  after_commit :create_dimission_notification
+>>>>>>> 0a693f1... notification investor
 
   attr_accessor :solid_lower_ids, :virtual_lower_ids, :report_line
 
