@@ -231,7 +231,8 @@ class Funding < FundingPolymer
     params[:spas].each do |spa|
       case spa[:action]
       when 'delete'
-        spas.find(spa[:id]).destroy
+        spa_track_log = spas.find(spa[:id])
+        spa_track_log.destroy
       when 'update'
         spa_track_log = spas.find(spa[:id])
         [:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency].each {|ins| raise '融资结算信息不全' unless (spa[ins] || spa_track_log.try(ins.to_s)).present?}
@@ -248,7 +249,6 @@ class Funding < FundingPolymer
           if spa[:file_spa][:blob_id].present?
             spa_track_log.file_spa_file=spa[:file_spa]
           end
-
         else
           [:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency, :organization_id].each {|ins| raise '融资结算信息不全' unless spa[ins].present?}
           raise 'SPA文件必传' unless spa[:file_spa][:blob_id].present?
@@ -257,7 +257,6 @@ class Funding < FundingPolymer
           spa_track_log.file_spa_file=spa[:file_spa]
         end
       end
-
       spa_track_log.gen_spa_detail(user_id, spa[:action])
     end
   end

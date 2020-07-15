@@ -37,6 +37,10 @@ class TrackLog < ApplicationRecord
       track_logs = track_logs.where(status: params[:status])
     end
 
+    if params[:no_status].present?
+      track_logs = track_logs.where.not(status: params[:no_status])
+    end
+
     if params[:organization_id].present?
       track_logs = track_logs.where(organization_id: params[:organization_id])
     end

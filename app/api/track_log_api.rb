@@ -127,6 +127,7 @@ class TrackLogApi < Grape::API
         desc '项目进度列表', entity: Entities::TrackLogBase
         params do
           optional :status, type: Integer, desc: '项目进度状态（字典：track_log_status）'
+          optional :no_status, type: Integer, desc: '项目进度状态（字典：track_log_status）'
           optional :organization_id, type:  Integer, desc: '机构id'
           optional :keyword, type: String, desc: '关键字'
         end
