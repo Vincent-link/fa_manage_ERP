@@ -86,7 +86,7 @@ class CalendarApi < Grape::API
             end
       cal = cal.where(status: params[:status]) if params[:status]
       cal = cal.where(meeting_category: params[:meeting_category]) if params[:meeting_category]
-      cal.nearly.group("cast(date_trunc('month', started_at) as Date)").count.sort_by {|k, _v| k.to_s}.map {|k, v| {start_date: k, end_date: k + 1.month, count: v, desc: k.month}}
+      cal.nearly.group("cast(date_trunc('month', started_at) as Date)").count.sort_by {|k, _v| k.to_s}.map {|k, v| {start_date: k, end_date: k.end_of_month, count: v, desc: k.month}}
     end
 
     resource ':id' do
