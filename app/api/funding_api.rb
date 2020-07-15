@@ -319,22 +319,15 @@ class FundingApi < Grape::API
         end
       end
 
-      desc '获取文档列表', entity: Entities::FundingAttachment
+      desc '获取文档列表', entity: Entities::Attachment
       params do
       end
       get 'files' do
-        files = {
-            file_bp: @funding.file_bp_attachment,
-            file_teaser: @funding.file_teaser_attachment,
-            file_model: @funding.file_model_attachment,
-            file_el: @funding.file_el_attachment,
-            file_nda: @funding.file_nda_attachment,
-            file_materials: @funding.file_materials_attachments,
-            file_ts: ActiveStorage::Attachment.where(name: 'file_ts', record_type: "TrackLog", record_id: @funding.track_log_ids),
-            file_spa: ActiveStorage::Attachment.where(name: 'file_spa', record_type: "TrackLog", record_id: @funding.track_log_ids)
-        }
+        tr_file = ActiveStorage::Attachment.where(name: ['file_ts', 'file_spa'], record_type: "TrackLog", record_id: @funding.track_log_ids)
+        f_file = ActiveStorage::Attachment.where(name: ['file_bp', 'file_teaser', 'file_model', 'file_el', 'file_nda', 'file_materials'], record_type: "Funding", record_id: @funding.id)
         organizations = @funding.track_logs.map {|ins| [ins.id, ins.organization]}.to_h
-        present files, with: Entities::FundingAttachment, organizations: organizations
+        files = tr_file + f_file
+        present files, with: Entities::Attachment, organizations: organizations
       end
 
       desc '设置为ka', entity: Entities::FundingLite
