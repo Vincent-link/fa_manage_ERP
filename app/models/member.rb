@@ -43,6 +43,7 @@ class Member < ApplicationRecord
 
   after_validation :save_to_dm
   after_commit :save_report_relation
+  after_commit :create_dimission_notification
 
   attr_accessor :solid_lower_ids, :virtual_lower_ids, :report_line
 
@@ -201,6 +202,13 @@ class Member < ApplicationRecord
       if dm_member = Zombie::DmMember.where(id: id).includes(:person)._select(:id, :investor_id, :name, :en_name, :contact_email, :contact_tel, :weixin_url, :logo, :position_rank_id, :position, :address_id, :sectors, :currencies, :invest_stages, :is_dimission).first
         Member.syn_by_dm_member dm_member
       end
+    end
+  end
+
+  def create_dimission_notification
+    if self.is_dimission
+      content = Notification.investor_type_config[:resign][:desc].call(self.name, self.organization.name) if self.organization.present?
+      Notification.create(notification_type: Notification.notification_type_value("investor"), content: content, is_read: false, notice: {member_id: self.id}) if content.present?
     end
   end
 end

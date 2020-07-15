@@ -13,5 +13,6 @@ module Entities
       expose :updated_at, documentation: {type: 'datetime', desc: '最近更新时间'}
     end
     expose :financing_events, documentation: {type: 'string', desc: '融资事件'}
+    expose :one_sentence_intro, documentation: {type: 'string', desc: '一句话简介'}
   end
 end
