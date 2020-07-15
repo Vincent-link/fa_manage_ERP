@@ -320,7 +320,7 @@ class FundingApi < Grape::API
         end
       end
 
-      desc '获取文档列表', entity: Entities::Attachment
+      desc '获取文档列表', entity: Entities::FileResult
       params do
       end
       get 'files' do
@@ -330,7 +330,7 @@ class FundingApi < Grape::API
         files = tr_file + f_file
         file_results = []
         files.group_by{|ins| ins.name}.each{|k,v| file_results << {file_type: k, data: v}}
-        present file_results, with: Entities::Attachment, organizations: organizations
+        present file_results, with: Entities::FileResult, organizations: organizations
       end
 
       desc '设置为ka', entity: Entities::FundingLite
