@@ -37,6 +37,10 @@ class TrackLog < ApplicationRecord
       track_logs = track_logs.where(status: params[:status])
     end
 
+    if params[:organization_id].present?
+      track_logs = track_logs.where(organization_id: params[:organization_id])
+    end
+
     if params[:keyword].present?
       track_logs = track_logs.joins("left join track_log_members tlm on tlm.track_log_id = track_logs.id
                                      left join members m on m.deleted_at is null and m.id = tlm.member_id
