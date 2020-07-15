@@ -34,6 +34,21 @@ class Notification < ApplicationRecord
       },
   }
 
+  state_config :investor_type, config: {
+      position_change: {
+        value: 1,
+        desc: -> (user_name, before, after){"【#{user_name}】职位变更：#{before} -> #{after}"}
+      },
+      institutional_change: {
+        value: 2,
+        desc: -> (user_name, before, after){"【#{user_name}】机构变更：#{before} -> #{after}"}
+      },
+      resign: {
+        value: 3,
+        desc: -> (user_name, organization_name){"#{user_name}从【#{organization_name}】离职"}
+      },
+  }
+
   state_config :notification_type, config: {
       ir_review: {
         value: 1,
