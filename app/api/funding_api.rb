@@ -328,7 +328,9 @@ class FundingApi < Grape::API
         f_file = ActiveStorage::Attachment.where(name: ['file_bp', 'file_teaser', 'file_model', 'file_el', 'file_nda', 'file_materials'], record_type: "Funding", record_id: @funding.id)
         organizations = @funding.track_logs.map {|ins| [ins.id, ins.organization]}.to_h
         files = tr_file + f_file
-        present files, with: Entities::Attachment, organizations: organizations
+        file_results = []
+        files.group_by{|ins| ins.name}.each{|k,v| file_results << {file_type: k, data: v}}
+        present file_results, with: Entities::Attachment, organizations: organizations
       end
 
       desc '设置为ka', entity: Entities::FundingLite
