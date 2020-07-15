@@ -104,7 +104,7 @@ class TrackLog < ApplicationRecord
     self.reload.gen_ts_detail(user_id, action)
   end
 
-  def gen_meeting_detail(user_id, calendar_id, action)
+  def gen_meeting_detail(user_id, calendar_id, action, content = nil)
     calendar = Calendar.find calendar_id
     case action
     when 'create'
@@ -115,6 +115,8 @@ class TrackLog < ApplicationRecord
       content = '取消了会议'
     when 'finish'
       content = calendar.summary
+    when 'only_link'
+      content = content
     end
     history = {
         meeting_type_desc: calendar.meeting_type_desc,

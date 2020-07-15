@@ -15,10 +15,10 @@ class TrackLogDetailApi < Grape::API
         post do
           if params[:calendar_id].present?
             @track_log.calendars.find params[:calendar_id]
-            params[:linkable_id] = params[:calendar_id]
-            params[:linkable_type] = 'Calendar'
+            @track_log.gen_meeting_detail(current_user.id, params[:calendar_id], 'only_link', params[:content])
+          else
+            @track_log.track_log_details.create(params.slice(:content).merge(user_id: current_user.id, detail_type: TrackLogDetail.detail_type_base_value))
           end
-          @track_log.track_log_details.create(params.slice(:content).merge(user_id: current_user.id, detail_type: TrackLogDetail.detail_type_base_value))
           track_log_details = @track_log.track_log_details.includes(:linkable)
           present track_log_details, with: Entities::TrackLogDetail
         end
