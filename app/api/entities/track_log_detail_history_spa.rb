@@ -1,7 +1,7 @@
 module Entities
   class TrackLogDetailHistorySpa < Base
     expose :id, documentation: {type: 'integer', desc: 'SPA TrackLog id'}
-    expose :pay_date, documentation: {type: 'date', desc: '结算日期'}
+    expose :pay_date, documentation: {type: 'string', desc: '结算日期'}
     expose :is_fee, documentation: {type: 'boolean', desc: '是否收费'}
     expose :fee_rate, documentation: {type: 'float', desc: '费率'}
     expose :fee_discount, documentation: {type: 'float', desc: '费率折扣'}

@@ -18,7 +18,7 @@ module Entities
     expose :members, with: Entities::MemberLite, documentation: {type: Entities::MemberLite, desc: '投资人', is_array: true}
     expose :organization, with: Entities::OrganizationForSelect, documentation: {type: Entities::OrganizationForSelect, desc: '机构'}
 
-    expose :pay_date, if: lambda { |ins| ins.status_spa_sha?}, documentation: {type: 'date', desc: '结算日期'}
+    expose :pay_date, if: lambda { |ins| ins.status_spa_sha?}, documentation: {type: 'string', desc: '结算日期'}
     expose :is_fee, if: lambda { |ins| ins.status_spa_sha?}, documentation: {type: 'boolean', desc: '是否收费'}
     expose :fee_rate, if: lambda { |ins| ins.status_spa_sha?}, documentation: {type: 'float', desc: '费率'}
     expose :fee_discount, if: lambda { |ins| ins.status_spa_sha?}, documentation: {type: 'float', desc: '费率折扣'}

@@ -4,6 +4,7 @@ class CommonApi < Grape::API
     get :dict do
       {
           sector_tree: CacheBox.dm_sector_tree,
+          root_sector: CacheBox.dm_root_sector,
           rounds: CacheBox.dm_rounds,
           org_level: Organization.level_id_name,
           currencies: CacheBox.dm_currencies,
@@ -31,7 +32,8 @@ class CommonApi < Grape::API
           email_email_template: Email.email_template_id_name,
           email_emailable_type: Email.emailable_type_id_name,
           email_status: Email.status_id_name,
-          funding_type_range: Funding.type_range_id_name
+          funding_type_range: Funding.type_range_id_name,
+          config_box_upload_type: ConfigBox.upload_type_id_name
       }
     end
 
