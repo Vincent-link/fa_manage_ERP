@@ -347,9 +347,10 @@ class FundingApi < Grape::API
         tr_file = ActiveStorage::Attachment.where(name: ['file_ts', 'file_spa'], record_type: "TrackLog", record_id: @funding.track_log_ids)
         f_file = ActiveStorage::Attachment.where(name: ['file_bp', 'file_teaser', 'file_model', 'file_el', 'file_nda', 'file_materials'], record_type: "Funding", record_id: @funding.id)
         organizations = @funding.track_logs.map {|ins| [ins.id, ins.organization]}.to_h
-        files = tr_file + f_file
-        file_results = []
-        files.group_by{|ins| ins.name}.each{|k,v| file_results << {file_type: k, data: v}}
+        files = (tr_file + f_file).group_by{|ins| ins.name}
+        file_array = ['file_bp', 'file_teaser', 'file_model', 'file_nda', 'file_el', 'file_ts', 'file_spa', 'file_materials']
+        file_hash = FundingPolymer.all_funding_file_type_config.values.map{|ins| [ins[:file], ins[:desc]]}.to_h
+        file_results = file_array.map{|ins| {file_type: file_hash[ins], data: files[ins] || []}}
         present file_results, with: Entities::FileResult, organizations: organizations
       end
 
