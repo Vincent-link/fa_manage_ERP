@@ -119,8 +119,9 @@ class FundingApi < Grape::API
       fundings = FundingPolymer.es_search(params)
       case params[:layout]
       when 'status_group'
+        # 不要pass 和 hold的
         funding_results = []
-        fundings.group_by{|ins| ins.status}.each{|k,v| funding_results << {status: k, data: v}}
+        fundings.group_by{|ins| ins.status}.each{|k,v| funding_results << {status: k, data: v} unless Funding.status_filter(:pass, :hold).include?(k)}
         present funding_results, with: Entities::FundingGroupWithStatus
       else
         present fundings, with: Entities::FundingBaseInfo
