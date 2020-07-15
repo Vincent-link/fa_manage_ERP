@@ -16,12 +16,15 @@ class CommentApi < Grape::API
         params do
           requires :commentable_id, type: Integer, desc: ''
           requires :content, type: String, desc: '内容'
-          requires :type, type: String, desc: 'comments类型 comments/ir_reviews/newsfeeds', default: 'comments'
+          requires :type, type: String, desc: 'comments类型 comments/ir_reviews/newsfeeds', values: ["comments", "ir_reviews", "newsfeeds"]
           optional :relate_user_ids, type: Array[Integer], desc: '参与人员'
         end
         post :comments do
           params[:type] = params[:type].classify
           comment = Comment.create(declared(params).merge(commentable_type: configuration[:owner].classify))
+
+          comment.create_ir_review_notification(params[:commentable_id], params[:summary]) if params[:type] == "IrReview"
+
           present comment, with: Entities::Comment
         end
       end

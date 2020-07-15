@@ -2,6 +2,7 @@ class Calendar < ApplicationRecord
   acts_as_paranoid
 
   include StateConfig
+  include NotificationExtend
 
   has_many :calendar_members
   has_many :org_members, -> {where(memberable_type: 'Member')}, class_name: 'CalendarMember'
