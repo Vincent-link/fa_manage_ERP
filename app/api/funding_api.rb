@@ -108,6 +108,25 @@ class FundingApi < Grape::API
       present fundings, with: Entities::FundingBaseInfo
     end
 
+    desc '项目简略列表', entity: Entities::FundingGroupWithStatus
+    params do
+      optional :keyword, type: String, desc: '关键字'
+      optional :status, type: Integer, desc: '项目状态', values: Funding.status_values
+      optional :layout, type: String, desc: '按状态分数组: status_group'
+      optional :is_me, type: Boolean, desc: '是否查询我的项目'
+    end
+    get 'lite' do
+      fundings = FundingPolymer.es_search(params)
+      case params[:layout]
+      when 'status_group'
+        funding_results = []
+        fundings.group_by{|ins| ins.status}.each{|k,v| funding_results << {status: k, data: v}}
+        present funding_results, with: Entities::FundingGroupWithStatus
+      else
+        present fundings, with: Entities::FundingBaseInfo
+      end
+    end
+
     desc '项目列表导出'
     params do
       optional :keyword, type: String, desc: '关键字'
