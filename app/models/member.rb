@@ -43,6 +43,7 @@ class Member < ApplicationRecord
 
   after_validation :save_to_dm
   after_commit :save_report_relation
+  after_commit :create_notification
 
   attr_accessor :solid_lower_ids, :virtual_lower_ids, :report_line
 
@@ -201,6 +202,34 @@ class Member < ApplicationRecord
       if dm_member = Zombie::DmMember.where(id: id).includes(:person)._select(:id, :investor_id, :name, :en_name, :contact_email, :contact_tel, :weixin_url, :logo, :position_rank_id, :position, :address_id, :sectors, :currencies, :invest_stages, :is_dimission).first
         Member.syn_by_dm_member dm_member
       end
+    end
+  end
+
+  def create_notification
+    if self.previous_changes[:is_dimission].present? && self.previous_changes[:is_dimission][1]
+      if self.previous_changes[:organization_id].present?
+        before = Organization.find(self.previous_changes[:organization_id][0])
+        content = Notification.investor_type_config[:resign][:desc].call(self.name, before.name)
+      else
+        content = Notification.investor_type_config[:resign][:desc].call(self.name, self.organization.name) if self.organization.present?
+      end
+      self.member_user_relations.map {|e| Notification.create(notification_type: Notification.notification_type_value("investor"), content: content, user_id: e.user_id, is_read: false, notice: {member_id: self.id}) if content.present?}
+    end
+
+    if self.previous_changes[:organization_id].present?
+      before = Organization.find(self.previous_changes[:organization_id][0])
+      after = Organization.find(self.previous_changes[:organization_id][1])
+
+      content = Notification.investor_type_config[:institutional_change][:desc].call(self.name, before.name, after.name)
+      self.member_user_relations.map {|e| Notification.create(notification_type:  Notification.notification_type_value("investor"), content: content, user_id: e.user_id, is_read: false, notice: {member_id: self.id})}
+    end
+
+    if self.previous_changes[:position_rank_id].present?
+      before = Organization.find(self.previous_changes[:organization_id][0])
+      after = Organization.find(self.previous_changes[:organization_id][1])
+
+      content = Notification.investor_type_config[:position_change][:desc].call(self.name, self.previous_changes[:position_rank_id][0], self.previous_changes[:position_rank_id][1])
+      self.member_user_relations.map {|e| Notification.create(notification_type:  Notification.notification_type_value("investor"), content: content, user_id: e.user_id, is_read: false, notice: {member_id: self.id})}
     end
   end
 end

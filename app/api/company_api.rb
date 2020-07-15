@@ -40,7 +40,7 @@ class CompanyApi < Grape::API
     end
     post do
       Company.transaction do
-        tags_params = params.delete(:tag_ids)
+        tags_params = params.delete(:company_tag_ids)
         logo = params.delete(:logo)
         contacts_params = params.delete(:contacts)
 
@@ -61,7 +61,7 @@ class CompanyApi < Grape::API
           if !financing_events.last.try(:invest_round_id).nil?
             @company.recent_financing = financing_events.last.try(:invest_round_id)
           else
-            @company.recent_financing = invest_types.find {|e| e.id == financing_events.last.try(:invest_type_id)}.name
+            @company.recent_financing = invest_types.find {|e| e.id == financing_events.last.try(:invest_type_id)}.id
           end
         end
         @company.save!

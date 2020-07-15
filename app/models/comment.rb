@@ -1,5 +1,8 @@
 class Comment < ApplicationRecord
   acts_as_paranoid
+
+  include NotificationExtend
+  
   belongs_to :commentable, polymorphic: true
   belongs_to :user
 
