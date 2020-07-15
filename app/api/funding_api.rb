@@ -291,6 +291,7 @@ class FundingApi < Grape::API
             track_log.member_ids = params[:member_ids]
           end
           file = track_log.file_ts_attachment
+          track_log.update!(status: TrackLog.status_issue_ts_value) unless track_log.status_spa_sha?
         when params[:type] == Funding.all_funding_file_type_materials_value
           file = @funding.file_materials_file_add(blob_id: params[:file][:blob_id]).first
         when Funding.all_funding_file_type_filter(:bp, :el, :teaser, :nda, :model).include?(params[:type])
