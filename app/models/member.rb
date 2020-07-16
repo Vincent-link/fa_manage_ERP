@@ -205,7 +205,6 @@ class Member < ApplicationRecord
     end
   end
 
-<<<<<<< HEAD
   def create_notification
     if self.previous_changes[:is_dimission].present? && self.previous_changes[:is_dimission][1]
       if self.previous_changes[:organization_id].present?
@@ -231,12 +230,6 @@ class Member < ApplicationRecord
 
       content = Notification.investor_type_config[:position_change][:desc].call(self.name, self.previous_changes[:position_rank_id][0], self.previous_changes[:position_rank_id][1])
       self.member_user_relations.map {|e| Notification.create(notification_type:  Notification.notification_type_value("investor"), content: content, user_id: e.user_id, is_read: false, notice: {member_id: self.id})}
-=======
-  def create_dimission_notification
-    if self.is_dimission
-      content = Notification.investor_type_config[:resign][:desc].call(self.name, self.organization.name) if self.organization.present?
-      Notification.create(notification_type: Notification.notification_type_value("investor"), content: content, is_read: false, notice: {member_id: self.id}) if content.present?
->>>>>>> notification investor
     end
   end
 end
