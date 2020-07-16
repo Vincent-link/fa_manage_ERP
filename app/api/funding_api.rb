@@ -104,6 +104,7 @@ class FundingApi < Grape::API
       optional :per_page, type: Integer, desc: '数量', default: 10
     end
     get do
+      params[:keyword] = '*' if ['', nil].include? params[:keyword]
       fundings = FundingPolymer.es_search(params)
       present fundings, with: Entities::FundingBaseInfo
     end
@@ -116,6 +117,7 @@ class FundingApi < Grape::API
       optional :is_me, type: Boolean, desc: '是否查询我的项目'
     end
     get 'lite' do
+      params[:keyword] = '*' if ['', nil].include? params[:keyword]
       fundings = FundingPolymer.es_search(params)
       case params[:layout]
       when 'status_group'
@@ -139,6 +141,7 @@ class FundingApi < Grape::API
       optional :is_me, type: Boolean, desc: '是否查询我的项目'
     end
     get do
+      params[:keyword] = '*' if ['', nil].include? params[:keyword]
       file_path, file_name = FundingPolymer.export(params)
       header['Content-Disposition'] = "attachment; filename=\"#{File.basename(file_name)}.xls\""
       content_type("application/octet-stream")
