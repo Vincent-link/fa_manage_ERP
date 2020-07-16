@@ -67,6 +67,8 @@ class Funding < FundingPolymer
       else
         self.funding_bd_leader.create(kind: FundingUser.kind_bd_leader_value, user_id: params[:bd_leader_id])
       end
+    else
+      self.funding_bd_leader_ids = []
     end
 
     if params[:execution_leader_id].present?
@@ -75,6 +77,8 @@ class Funding < FundingPolymer
       else
         self.funding_execution_leader.create(kind: FundingUser.kind_execution_leader_value, user_id: params[:execution_leader_id])
       end
+    else
+      self.funding_execution_leader_ids = []
     end
   end
 
