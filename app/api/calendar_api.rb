@@ -51,8 +51,8 @@ class CalendarApi < Grape::API
       optional :contact_ids, type: Array[Integer], desc: '公司联系人id'
       optional :member_ids, type: Array[Integer], desc: '投资人id'
       requires :cr_user_ids, type: Array[Integer], desc: '华兴参与人id'
-      requires :started_at, type: DateTime, desc: '开始时间'
-      requires :ended_at, type: DateTime, desc: '结束时间'
+      requires :started_at, type: Time, desc: '开始时间'
+      requires :ended_at, type: Time, desc: '结束时间'
       optional :address_id, type: Integer, desc: '会议地点id'
       optional :tel_desc, type: String, desc: '电话会议描述'
     end
@@ -104,8 +104,8 @@ class CalendarApi < Grape::API
         optional :contact_ids, type: Array[Integer], desc: '公司联系人id', default: []
         optional :member_ids, type: Array[Integer], desc: '投资人id', default: []
         requires :cr_user_ids, type: Array[Integer], desc: '华兴参与人id'
-        requires :started_at, type: DateTime, desc: '开始时间'
-        requires :ended_at, type: DateTime, desc: '结束时间'
+        requires :started_at, type: Time, desc: '开始时间'
+        requires :ended_at, type: Time, desc: '结束时间'
         optional :address_id, type: Integer, desc: '会议地点id'
         optional :tel_desc, type: String, desc: '电话会议描述'
       end

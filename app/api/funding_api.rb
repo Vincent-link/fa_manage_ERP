@@ -68,8 +68,8 @@ class FundingApi < Grape::API
       requires :calendar, type: Hash do
         requires :contact_ids, type: Array[Integer], desc: '公司联系人id'
         requires :cr_user_ids, type: Array[Integer], desc: '华兴参与人id'
-        requires :started_at, type: DateTime, desc: '开始时间'
-        requires :ended_at, type: DateTime, desc: '结束时间'
+        requires :started_at, type: Time, desc: '开始时间'
+        requires :ended_at, type: Time, desc: '结束时间'
         optional :address_id, type: Integer, desc: '会议地点id'
       end
     end
@@ -231,8 +231,8 @@ class FundingApi < Grape::API
         optional :desc, type: String, desc: '会议描述', default: '由项目进度生成'
         optional :contact_ids, type: Array[Integer], desc: '公司联系人id'
         requires :cr_user_ids, type: Array[Integer], desc: '华兴参与人id'
-        requires :started_at, type: DateTime, desc: '开始时间'
-        requires :ended_at, type: DateTime, desc: '结束时间'
+        requires :started_at, type: Time, desc: '开始时间'
+        requires :ended_at, type: Time, desc: '结束时间'
         optional :address_id, type: Integer, desc: '会议地点id'
       end
       patch 'claim' do

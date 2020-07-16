@@ -69,7 +69,7 @@ class Calendar < ApplicationRecord
 
   def address
     if self.address_id
-      if self.address_id >= 100001
+      if self.address_id >= 100000
         Address.find(self.address_id)
       else
         Zombie::DmAddress.find(self.address_id)
@@ -79,12 +79,11 @@ class Calendar < ApplicationRecord
 
   def gen_track_log_detail
     if self.meeting_category_roadshow? && self.funding
-      self.funding.track_logs.find_or_create_by!(organization_id: self.organization_id) do |track_log|
+      track_log = self.funding.track_logs.find_or_create_by!(organization_id: self.organization_id) do |track_log|
         org_members.each do |cal_member|
           track_log.track_log_members.build(member_id: cal_member.memberable_id)
         end
         track_log.status = TrackLog.status_meeting_value
-        self.track_log = track_log
       end
       action = if self.previous_changes.has_key? :id
                  'create'
@@ -96,8 +95,8 @@ class Calendar < ApplicationRecord
                    'update'
                  end
                end
-      self.track_log.gen_meeting_detail(User.current.id, self.id, action)
-      self.track_log.change_status_by_calendar(self.track_result) if self.track_result
+      track_log.gen_meeting_detail(User.current.id, self.id, action)
+      track_log.change_status_by_calendar(self.track_result) if self.track_result
     end
   end
 

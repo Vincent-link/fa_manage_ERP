@@ -75,8 +75,8 @@ class TrackLogApi < Grape::API
           end
 
           optional :calendar, type: Hash do
-            requires :started_at, type: DateTime, desc: '开始时间'
-            requires :ended_at, type: DateTime, desc: '结束时间'
+            requires :started_at, type: Time, desc: '开始时间'
+            requires :ended_at, type: Time, desc: '结束时间'
             optional :address_id, type: Integer, desc: '会议地点id'
             requires :meeting_type, type: Integer, desc: '约见类型'
           end
@@ -177,8 +177,8 @@ class TrackLogApi < Grape::API
         end
 
         optional :calendar, type: Hash do
-          requires :started_at, type: DateTime, desc: '开始时间'
-          requires :ended_at, type: DateTime, desc: '结束时间'
+          requires :started_at, type: Time, desc: '开始时间'
+          requires :ended_at, type: Time, desc: '结束时间'
           optional :address_id, type: Integer, desc: '会议地点id'
           requires :meeting_type, type: Integer, desc: '约见类型'
         end
