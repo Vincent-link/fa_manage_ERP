@@ -129,6 +129,8 @@ class TrackLog < ApplicationRecord
         ended_at: calendar.ended_at,
         address_id: calendar.address_id,
         address_desc: calendar.address&.address_desc,
+        location_id: calendar.address&.location_id,
+        province_id: CacheBox.dm_locations[calendar.address&.location_id]&.parent_id,
         status: calendar.status,
         status_desc: calendar.status_desc,
         id: calendar.id,
