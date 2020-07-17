@@ -35,6 +35,22 @@ class CalendarApi < Grape::API
       present cal.includes(:calendar_members, :user, :organization, :company, :org_members, :com_members, :user_members), with: Entities::Calendar
     end
 
+    desc '获取call_report'
+    params do
+      optional :funding_id, type: Integer, desc: '项目id'
+      optional :company_id, type: Integer, desc: '公司id，项目id，数据范围二选一必填'
+      at_least_one_of :funding_id, :company_id
+    end
+    get :call_reports do
+      cal = if params[:funding_id].present?
+              Calendar.where(funding_id: params[:funding_id])
+            elsif params[:company_id].present?
+              Calendar.where(company_id: params[:company_id])
+            end
+      cal = cal.where(meeting_category: [Calendar.meeting_category_roadshow_value, Calendar.meeting_category_com_meeting_value])
+      present cal.includes(:calendar_members, :user, :company, :com_members, :user_members), with: Entities::Calendar
+    end
+
     desc '创建日程', entity: Entities::Calendar
     params do
       requires :meeting_category, type: Integer, desc: '会议类型'
