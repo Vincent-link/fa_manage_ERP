@@ -22,9 +22,6 @@ class CommentApi < Grape::API
         post :comments do
           params[:type] = params[:type].classify
           comment = Comment.create(declared(params).merge(commentable_type: configuration[:owner].classify))
-
-          comment.create_ir_review_notification(params[:commentable_id], params[:summary]) if params[:type] == "IrReview"
-
           present comment, with: Entities::Comment
         end
       end
