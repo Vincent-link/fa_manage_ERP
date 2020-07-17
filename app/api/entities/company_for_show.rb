@@ -9,7 +9,8 @@ module Entities
     expose :location_province_id, documentation: {type: 'integer', desc: '省份'}
     expose :location_city_id, documentation: {type: 'integer', desc: '城市'}
     expose :detailed_address, documentation: {type: 'string', desc: '详细地址'}
-    expose :sector_id, documentation: {type: 'string', desc: '所属行业'}
+    expose :sector_id, documentation: {type: 'string', desc: '所属二级行业'}
+    expose :parent_sector_id, documentation: {type: 'string', desc: '所属一级行业'}
     expose :company_tags, documentation: {type: 'string', desc: '标签'}
     expose :financing_events, using: Entities::FinancingEvents
     expose :is_ka, documentation: {type: 'boolean', desc: '是否ka'}
