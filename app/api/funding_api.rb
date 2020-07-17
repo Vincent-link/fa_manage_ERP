@@ -330,7 +330,7 @@ class FundingApi < Grape::API
       delete 'files' do
         file = ActiveStorage::Attachment.find(params[:file_id])
         case file.record_type
-        when 'Funding'
+        when 'FundingPolymer'
           file.delete
         when 'TrackLog'
           case file.name
