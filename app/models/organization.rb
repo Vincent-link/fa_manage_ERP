@@ -87,6 +87,7 @@ class Organization < ApplicationRecord
 
   def self.es_search(params)
     where_hash = {}
+    where_hash[:name] = {like: "%#{params[:name]}%"} if params[:name].present?
     where_hash[:sector_ids] = {all: params[:sector]} if params[:sector].present?
     where_hash[:round_ids] = {all: params[:round]} if !params[:any_round] && params[:round].present?
     where_hash[:currency_ids] = {all: params[:currency]} if params[:currency].present?
