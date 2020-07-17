@@ -40,7 +40,7 @@ class CompanyApi < Grape::API
     end
     post do
       Company.transaction do
-        tags_params = params.delete(:tag_ids)
+        tags_params = params.delete(:company_tag_ids)
         logo = params.delete(:logo)
         contacts_params = params.delete(:contacts)
 
@@ -54,17 +54,8 @@ class CompanyApi < Grape::API
         contacts_params.map { |e| Contact.create!(e.merge(company_id: @company.id)) }
 
         # 从金丝雀获取最近融资
-        financing_events = Zombie::DmInvestevent.includes(:company, :invest_type, :invest_round).public_data.not_deleted.where(company_id: @company.id)._select(:invest_round_id, :invest_type_id).sort_by(&:birth_date)
-        invest_types = Zombie::DmInvestType.all
-        if !financing_events.empty?
-          # 如果融资为私募或新三板的话，使用轮次；如果否的话，轮次是nil，使用融资类型表示
-          if !financing_events.last.try(:invest_round_id).nil?
-            @company.recent_financing = financing_events.last.try(:invest_round_id)
-          else
-            @company.recent_financing = invest_types.find {|e| e.id == financing_events.last.try(:invest_type_id)}.name
-          end
-        end
-        @company.save!
+        @company.syn_recent_financing
+
         present @company, with: Entities::CompanyForShow
       end
     end
@@ -155,6 +146,13 @@ class CompanyApi < Grape::API
       desc '新闻报道'
       get :news do
 
+      end
+
+      desc '上市公司股票信息'
+      get :ticker do
+        company_tickers = Zombie::DmCompany.includes(:company_tickers)._select(:ticker).where(id: params[:id])
+
+        present company_tickers&.first&.ticker
       end
     end
   end

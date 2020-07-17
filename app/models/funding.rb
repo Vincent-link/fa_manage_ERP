@@ -46,7 +46,7 @@ class Funding < FundingPolymer
   end
 
   def base_time_line
-    self.time_lines.create(status: self.status)
+    self.time_lines.create(status: self.status, user_id: User.current.id)
   end
 
   def user_names
@@ -205,7 +205,7 @@ class Funding < FundingPolymer
           desc = Verification.verification_type_project_advancement_desc.call(self.company.name)
           verification = Verification.find_by(verification_type: Verification.verification_type_project_advancement_value, verifi: {funding_id: self.id}, verifi_type: Verification.verifi_type_resource_value)
           if verification.nil?
-            Verification.create!(verification_type: Verification.verification_type_project_advancement_value, desc: desc, verifi: {funding_id: self.id}, verifi_type: Verification.verifi_type_resource_value)
+            Verification.create!(verification_type: Verification.verification_type_project_advancement_value, desc: desc, verifi: {funding_id: self.id, funding_name: self.name, round_id: self.round_id, user_id: User.current.id}, verifi_type: Verification.verifi_type_resource_value)
           end
         when -Float::INFINITY...0
           # 项目自动 pass，并给项目成员及管理员发送通知；

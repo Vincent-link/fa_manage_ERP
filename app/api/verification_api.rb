@@ -9,7 +9,7 @@ class VerificationApi < Grape::API
       optional :page_size, as: :per_page, type: Integer, desc: '页数', default: 10
     end
     get :sponsored do
-      verifications = Verification.where(status: params[:status], sponsor: User.current.id).paginate(page: params[:page], per_page: params[:per_page])
+      verifications = Verification.where(status: params[:status], sponsor: User.current.id).paginate(page: params[:page], per_page: params[:per_page]).order(created_at: :desc)
       present verifications, with: Entities::Verification
     end
 
@@ -25,12 +25,12 @@ class VerificationApi < Grape::API
       if can? :verify, Verification
         # 权限审核&&普通审核
         verifications = Verification.where(status: params[:status], verifi_type: Verification.verifi_type_resource_value)
-        .or(Verification.where(user_id: User.current.id, status: params[:status], verifi_type: Verification.verifi_type_user_value)).paginate(page: params[:page], per_page: params[:per_page])
+        .or(Verification.where(user_id: User.current.id, status: params[:status], verifi_type: Verification.verifi_type_user_value)).paginate(page: params[:page], per_page: params[:per_page]).order(created_at: :desc)
 
         present verifications, with: Entities::Verification
       else
         # 如果没有权限审核权限，查出普通审核（bsc、邮件）
-        verifications = Verification.where(user_id: User.current.id, status: params[:status], verifi_type: Verification.verifi_type_user_value).paginate(page: params[:page], per_page: params[:per_page])
+        verifications = Verification.where(user_id: User.current.id, status: params[:status], verifi_type: Verification.verifi_type_user_value).paginate(page: params[:page], per_page: params[:per_page]).order(created_at: :desc)
         present verifications, with: Entities::Verification
       end
 

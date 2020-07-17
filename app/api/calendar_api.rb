@@ -2,12 +2,13 @@ class CalendarApi < Grape::API
   resource :calendars do
     desc '获取日程', entity: Entities::Calendar
     params do
-      requires :start_date, type: Date, desc: '起始时间'
-      requires :end_date, type: Date, desc: '结束时间'
-      optional :organization_id, type: Integer, desc: '获取机构的日程 机构id，项目id，数据范围三选一必填'
-      optional :funding_id, type: Integer, desc: '获取项目的日程 机构id，项目id，数据范围三选一必填'
+      optional :start_date, type: Date, desc: '起始时间'
+      optional :end_date, type: Date, desc: '结束时间'
+      optional :company_id, type: Integer, desc: '获取公司的日程 公司id，机构id，项目id，数据范围四选一必填'
+      optional :organization_id, type: Integer, desc: '获取机构的日程 公司id，机构id，项目id，数据范围四选一必填'
+      optional :funding_id, type: Integer, desc: '获取项目的日程 公司id，机构id，项目id，数据范围四选一必填'
       optional :range, type: String, desc: '数据范围 person个人，group含下属', values: ['person', 'group']
-      at_least_one_of :organization_id, :funding_id, :range
+      at_least_one_of :organization_id, :funding_id, :range, :company_id
       optional :user_id, type: Integer, desc: '获取某下属时下属id，为空返回自己'
       optional :status, type: Integer, desc: '状态'
       optional :meeting_category, type: Integer, desc: '会议类型'
@@ -17,6 +18,8 @@ class CalendarApi < Grape::API
               Calendar.where(organization_id: params[:organization_id])
             elsif params[:funding_id].present?
               Calendar.where(funding_id: params[:funding_id])
+            elsif params[:company_id].present?
+              Calendar.where(company_id: params[:company_id])
             elsif params[:range].present?
               user = params[:user_id] ? current_user.sub_users.find(params[:user_id]) : current_user
               case params[:range]
@@ -28,8 +31,8 @@ class CalendarApi < Grape::API
             end
       cal = cal.where(status: params[:status]) if params[:status]
       cal = cal.where(meeting_category: params[:meeting_category]) if params[:meeting_category]
-      cal = cal.where(started_at: params[:start_date]..(params[:end_date] + 1))
-      present cal.includes(:user, :organization, :company, org_members: :memberable, com_members: :memberable, user_members: :memberable), with: Entities::Calendar
+      cal = cal.where(started_at: params[:start_date]..(params[:end_date] + 1)) if params[:start_date].present? && params[:end_date].present?
+      present cal.includes(:calendar_members, :user, :organization, :company, :org_members, :com_members, :user_members), with: Entities::Calendar
     end
 
     desc '创建日程', entity: Entities::Calendar
@@ -46,8 +49,8 @@ class CalendarApi < Grape::API
         requires :organization_id, type: Integer, desc: '约见机构id'
       end
       optional :track_log_id, type: Integer, desc: '融资进度id'
-      optional :desc, type: String, desc: '会议描述', default: '由项目进度生成'
-      at_least_one_of :track_log_id, :desc
+      #optional :desc, type: String, desc: '会议描述', default: '由项目进度生成'
+      #at_least_one_of :track_log_id, :desc
       optional :contact_ids, type: Array[Integer], desc: '公司联系人id'
       optional :member_ids, type: Array[Integer], desc: '投资人id'
       requires :cr_user_ids, type: Array[Integer], desc: '华兴参与人id'
@@ -99,8 +102,8 @@ class CalendarApi < Grape::API
         optional :funding_id, type: Integer, desc: '项目id'
         optional :organization_id, type: Integer, desc: '约见机构id'
         optional :track_log_id, type: Integer, desc: '融资进度id'
-        optional :desc, type: String, desc: '会议描述', default: '由项目进度生成'
-        at_least_one_of :track_log_id, :desc
+        #optional :desc, type: String, desc: '会议描述', default: '由项目进度生成'
+        #at_least_one_of :track_log_id, :desc
         optional :contact_ids, type: Array[Integer], desc: '公司联系人id', default: []
         optional :member_ids, type: Array[Integer], desc: '投资人id', default: []
         requires :cr_user_ids, type: Array[Integer], desc: '华兴参与人id'
@@ -138,6 +141,9 @@ class CalendarApi < Grape::API
       post :summary do
         calendar = Calendar.find params[:id]
         calendar.update! declared(params)
+
+        calendar.create_ir_review_notification(calendar.organization_id, params[:summary]) if params[:ir_review_syn]
+
         present calendar, with: Entities::Calendar
       end
 
