@@ -58,7 +58,8 @@ module BlobFileSupport
             if file_hash[:blob_id].present?
               raise '出现已保存的文件' if ActiveStorage::Attachment.where(blob_id: file_hash[:blob_id]).present?
               [file_hash[:blob_id]].flatten.each do |blob_id|
-                file << ActiveStorage::Attachment.create(name: attr, record_type: self.class.to_s, record_id: self.id, blob_id: blob_id)
+                # file << ActiveStorage::Attachment.create(name: attr, record_type: self.class.to_s, record_id: self.id, blob_id: blob_id)
+                file << self.try("#{attr}_attachments").create(blob_id: blob_id)
               end
             end
           end
