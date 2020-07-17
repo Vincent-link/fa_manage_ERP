@@ -348,7 +348,7 @@ class FundingApi < Grape::API
       end
       get 'files' do
         tr_file = ActiveStorage::Attachment.where(name: ['file_ts', 'file_spa'], record_type: "TrackLog", record_id: @funding.track_log_ids)
-        f_file = ActiveStorage::Attachment.where(name: ['file_bp', 'file_teaser', 'file_model', 'file_el', 'file_nda', 'file_materials'], record_type: "Funding", record_id: @funding.id)
+        f_file = ActiveStorage::Attachment.where(name: ['file_bp', 'file_teaser', 'file_model', 'file_el', 'file_nda', 'file_materials'], record_type: "FundingPolymer", record_id: @funding.id)
         organizations = @funding.track_logs.map {|ins| [ins.id, ins.organization]}.to_h
         files = (tr_file + f_file).group_by{|ins| ins.name}
         file_array = ['file_bp', 'file_teaser', 'file_model', 'file_nda', 'file_el', 'file_ts', 'file_spa', 'file_materials']
