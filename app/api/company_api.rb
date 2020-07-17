@@ -54,6 +54,7 @@ class CompanyApi < Grape::API
         contacts_params.map { |e| Contact.create!(e.merge(company_id: @company.id)) }
 
         # 从金丝雀获取最近融资
+<<<<<<< HEAD
         financing_events = Zombie::DmInvestevent.includes(:company, :invest_type, :invest_round).public_data.not_deleted.where(company_id: @company.id)._select(:invest_round_id, :invest_type_id).sort_by(&:birth_date)
         invest_types = Zombie::DmInvestType.all
         if !financing_events.empty?
@@ -65,6 +66,10 @@ class CompanyApi < Grape::API
           end
         end
         @company.save!
+=======
+        @company.syn_recent_financing
+
+>>>>>>> 69fab76... 上市公司
         present @company, with: Entities::CompanyForShow
       end
     end
@@ -155,6 +160,13 @@ class CompanyApi < Grape::API
       desc '新闻报道'
       get :news do
 
+      end
+
+      desc '上市公司股票信息'
+      get :ticker do
+        company_tickers = Zombie::DmCompany.includes(:company_tickers)._select(:ticker).where(id: params[:id])
+
+        present company_tickers&.first&.ticker
       end
     end
   end

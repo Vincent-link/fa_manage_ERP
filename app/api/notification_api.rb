@@ -16,7 +16,11 @@ class NotificationApi < Grape::API
         params[:is_read] = [true, false] if params[:is_read].nil?
 
         notifications = Notification.where(notification_type: params[:notification_type], is_read: params[:is_read])
+<<<<<<< HEAD
         .or(User.current.notifications.where(notification_type: params[:notification_type], is_read: params[:is_read])).paginate(page: params[:page], per_page: params[:per_page])
+=======
+        .or(User.current.notifications.where(notification_type: params[:notification_type], is_read: params[:is_read])).paginate(page: params[:page], per_page: params[:per_page]).order(created_at: :desc)
+>>>>>>> 69fab76... 上市公司
 
         present notifications, with: Entities::Notification
       end
