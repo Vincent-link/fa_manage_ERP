@@ -30,6 +30,7 @@ class Funding < FundingPolymer
   before_create :gen_serial_number
   after_create :base_time_line
   after_create :reviewing_status
+  after_save :gen_time_line
 
   delegate :sector_list, to: :company
 
@@ -46,7 +47,13 @@ class Funding < FundingPolymer
   end
 
   def base_time_line
-    self.time_lines.create(status: self.status)
+    self.time_lines.create(status: self.status, user_id: User.current.id)
+  end
+
+  def gen_time_line
+    if saved_change_to_attribute?(:status)
+      self.time_lines.create(status: self.status, user_id: User.current.id)
+    end
   end
 
   def user_names
