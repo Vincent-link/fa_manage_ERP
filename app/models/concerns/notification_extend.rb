@@ -2,7 +2,7 @@ module NotificationExtend
   extend ActiveSupport::Concern
 
   included do
-    
+
     def create_ir_review_notification(organization_id, summary)
       if organization_id.present?
         organization = Organization.find(organization_id)
