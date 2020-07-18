@@ -54,22 +54,8 @@ class CompanyApi < Grape::API
         contacts_params.map { |e| Contact.create!(e.merge(company_id: @company.id)) }
 
         # 从金丝雀获取最近融资
-<<<<<<< HEAD
-        financing_events = Zombie::DmInvestevent.includes(:company, :invest_type, :invest_round).public_data.not_deleted.where(company_id: @company.id)._select(:invest_round_id, :invest_type_id).sort_by(&:birth_date)
-        invest_types = Zombie::DmInvestType.all
-        if !financing_events.empty?
-          # 如果融资为私募或新三板的话，使用轮次；如果否的话，轮次是nil，使用融资类型表示
-          if !financing_events.last.try(:invest_round_id).nil?
-            @company.recent_financing = financing_events.last.try(:invest_round_id)
-          else
-            @company.recent_financing = invest_types.find {|e| e.id == financing_events.last.try(:invest_type_id)}.id
-          end
-        end
-        @company.save!
-=======
         @company.syn_recent_financing
 
->>>>>>> 69fab76... 上市公司
         present @company, with: Entities::CompanyForShow
       end
     end
