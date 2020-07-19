@@ -18,6 +18,31 @@ class Company < ApplicationRecord
   validates_presence_of :location_province_id
   validates_presence_of :location_city_id
 
+  after_validation :save_to_dm
+
+  def save_to_dm
+    if self.new_record?
+      company = Zombie::DmCompany.create_company self.attributes_for_dm
+      self.id = company.id
+    end
+  end
+
+  def attributes_for_dm
+    dm_key_map = {
+        'name' => 'name',
+        'en_name' => 'en_name',
+        'sector_id' => 'sub_category_id',
+        'parent_sector_id' => 'category_id',
+        'location_city_id' => 'location_city_id',
+        'location_province_id' => 'location_province_id',
+        'detailed_intro' => 'com_des',
+        'website' => 'url',
+        'detailed_intro' => 'com_des',
+        'registered_name' => 'registered_name',
+    }
+    self.attributes.transform_keys {|k| dm_key_map[k]}.compact
+  end
+
   # def search_data
   #   # attributes.merge sector_ids: self.sector_ids
   # end
@@ -35,10 +60,22 @@ class Company < ApplicationRecord
     Company.search(params[:query], match: :phrase, where: where_hash, order: order_hash, page: params[:page], per_page: params[:per_page], highlight: DEFAULT_HL_TAG)
   end
 
+<<<<<<< HEAD
   def financing_events
     self_financing_events = self.fundings.order(round_id: :desc)
     # financing_events = Zombie::DmInvestevent.includes(:company, :invest_type, :invest_round, :investors).order_by_date.public_data.not_deleted.where(company_id: self.id).paginate(:page => 1, :per_page => 4)._select(:id, :all_investors, :birth_date, :invest_type_and_batch_desc, :detail_money_des, :invest_round_id)
     # all_events = self_financing_events.sort_by {|p| p.try(:round_id).to_i || p.try(:invest_round_id).to_i}
+=======
+  def financing_events(is_with_kun=nil)
+    all_events = []
+    if is_with_kun.nil?
+      self_financing_events = self.fundings
+      financing_events = Zombie::DmInvestevent.includes(:company, :invest_type, :invest_round, :investors).order_by_date.public_data.not_deleted.where(company_id: self.id)._select(:id, :all_investors, :birth_date, :invest_type_and_batch_desc, :detail_money_des, :invest_round_id)
+      all_events = (financing_events + self_financing_events).sort_by {|p| (p.try(:round_id) || p.try(:invest_round_id)).to_i}.reverse
+    else
+      all_events = self.fundings.order(round_id: :desc)
+    end
+>>>>>>> 5a4761a2b143e53533baf9e73c6e25ecbabacd98
 
     arr = []
     self_financing_events.map do |event|
@@ -80,5 +117,27 @@ class Company < ApplicationRecord
     else
       "#{financing_events.last.invest_type_and_batch_desc}-#{financing_events.last.detail_money_des}"
     end
+  end
+
+  def syn_recent_financing
+    financing_events = Zombie::DmInvestevent.includes(:company, :invest_type, :invest_round).public_data.not_deleted.where(company_id: self.id)._select(:invest_round_id, :invest_type_id).sort_by(&:birth_date)
+    invest_types = Zombie::DmInvestType.all
+    if !financing_events.empty?
+      # 如果融资为私募或新三板的话，使用轮次；如果否的话，轮次是nil，使用融资类型表示
+      if !financing_events.last.try(:invest_round_id).nil?
+        self.recent_financing = financing_events.last.try(:invest_round_id)
+      else
+        self.recent_financing = invest_types.find {|e| e.id == financing_events.last.try(:invest_type_id)}.id
+      end
+    end
+
+    self.save!
+  end
+
+  def syn_root_sector(sector_id)
+    parent_sector_id = CacheBox::dm_sector_tree.select{|e| e["children"].select{|e| e["id"] == sector_id}.present?}&.first["id"] if CacheBox::dm_sector_tree.select{|e| e["children"].select{|e| e["id"] == sector_id}.present?}&.first.present?
+    Zombie::DmCompany.filter(id: self.id).last.update(category_id: parent_sector_id)
+    self.parent_sector_id = parent_sector_id
+    self.save!
   end
 end

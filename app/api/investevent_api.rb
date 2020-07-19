@@ -16,7 +16,7 @@ class InvesteventApi < Grape::API
     def stat_time(events)
       hash = events.group_by {|ins| ins.birth_date && ins.birth_date[0..3]}
       hash.transform_values! {|v| v.size}
-      hash.map {|k, v| {name: k, value: v}}
+      hash.sort_by {|k, _v| k}.map {|k, v| {name: k, value: v}}
     end
 
     def stat_location(events)

@@ -37,6 +37,10 @@ class TrackLog < ApplicationRecord
       track_logs = track_logs.where(status: params[:status])
     end
 
+    if params[:no_status].present?
+      track_logs = track_logs.where.not(status: params[:no_status])
+    end
+
     if params[:organization_id].present?
       track_logs = track_logs.where(organization_id: params[:organization_id])
     end
@@ -74,6 +78,10 @@ class TrackLog < ApplicationRecord
         params[:need_content] = false
       end
       # raise '未创建会议不能进行状态变更' unless self.calendars.present?
+    when TrackLog.status_pass_value, TrackLog.status_drop_value
+      content = "#{params[:content_key] || '状态变更'}：#{self.status_desc} → #{TrackLog.status_desc_for_value(params[:status])}\n#{params[:content]}"
+      self.track_log_details.create(content: content, user_id: params[:user_id] || User.current.id, detail_type: TrackLogDetail.detail_type_base_value)
+      params[:need_content] = false
     end
     before_status = self.status_desc
     self.update(status: params[:status])
@@ -100,7 +108,7 @@ class TrackLog < ApplicationRecord
     self.reload.gen_ts_detail(user_id, action)
   end
 
-  def gen_meeting_detail(user_id, calendar_id, action)
+  def gen_meeting_detail(user_id, calendar_id, action, content = nil)
     calendar = Calendar.find calendar_id
     case action
     when 'create'
@@ -111,6 +119,8 @@ class TrackLog < ApplicationRecord
       content = '取消了会议'
     when 'finish'
       content = calendar.summary
+    when 'only_link'
+      content = content
     end
     history = {
         meeting_type_desc: calendar.meeting_type_desc,
@@ -119,6 +129,8 @@ class TrackLog < ApplicationRecord
         ended_at: calendar.ended_at,
         address_id: calendar.address_id,
         address_desc: calendar.address&.address_desc,
+        location_id: calendar.address&.location_id,
+        province_id: CacheBox.dm_locations[calendar.address&.location_id]&.parent_id,
         status: calendar.status,
         status_desc: calendar.status_desc,
         id: calendar.id,

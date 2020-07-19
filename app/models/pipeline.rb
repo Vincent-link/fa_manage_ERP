@@ -52,4 +52,15 @@ class Pipeline < ApplicationRecord
       pipelines.each_with_index {|p, index| p.update name: "#{self.funding.round}#{index + 1}"}
     end
   end
+
+  def self.avg_days_to_close
+    Rails.cache.fetch('avg_days_to_close', expires_in: 1.days) do
+      Pipeline.status_values.map {|val| [val, 100 - 4 * val]}.to_h
+    end
+  end
+
+  def self.reset_avg_days_to_close
+    Rails.cache.delete('avg_days_to_close')
+    self.avg_days_to_close
+  end
 end

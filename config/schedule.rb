@@ -13,8 +13,8 @@
 #   rake "some:great:rake:task"
 # end
 #
-# every 4.days do
-#   runner "AnotherModel.prune_old_records"
-# end
+every 1.days do
+  runner "Pipeline.reset_avg_days_to_close"
+end
 
 # Learn more: http://github.com/javan/whenever

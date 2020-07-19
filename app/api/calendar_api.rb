@@ -2,11 +2,13 @@ class CalendarApi < Grape::API
   resource :calendars do
     desc '获取日程', entity: Entities::Calendar
     params do
-      requires :start_date, type: Date, desc: '起始时间'
-      requires :end_date, type: Date, desc: '结束时间'
-      optional :organization_id, type: Integer, desc: '获取机构的日程 机构id，项目id，数据范围三选一必填'
-      optional :funding_id, type: Integer, desc: '获取项目的日程 机构id，项目id，数据范围三选一必填'
+      optional :start_date, type: Date, desc: '起始时间'
+      optional :end_date, type: Date, desc: '结束时间'
+      optional :company_id, type: Integer, desc: '获取公司的日程 公司id，机构id，项目id，数据范围四选一必填'
+      optional :organization_id, type: Integer, desc: '获取机构的日程 公司id，机构id，项目id，数据范围四选一必填'
+      optional :funding_id, type: Integer, desc: '获取项目的日程 公司id，机构id，项目id，数据范围四选一必填'
       optional :range, type: String, desc: '数据范围 person个人，group含下属', values: ['person', 'group']
+      at_least_one_of :organization_id, :funding_id, :range, :company_id
       optional :user_id, type: Integer, desc: '获取某下属时下属id，为空返回自己'
       optional :status, type: Integer, desc: '状态'
       optional :meeting_category, type: Integer, desc: '会议类型'
@@ -16,6 +18,8 @@ class CalendarApi < Grape::API
               Calendar.where(organization_id: params[:organization_id])
             elsif params[:funding_id].present?
               Calendar.where(funding_id: params[:funding_id])
+            elsif params[:company_id].present?
+              Calendar.where(company_id: params[:company_id])
             elsif params[:range].present?
               user = params[:user_id] ? current_user.sub_users.find(params[:user_id]) : current_user
               case params[:range]
@@ -27,8 +31,24 @@ class CalendarApi < Grape::API
             end
       cal = cal.where(status: params[:status]) if params[:status]
       cal = cal.where(meeting_category: params[:meeting_category]) if params[:meeting_category]
-      cal = cal.where(started_at: params[:start_date]..(params[:end_date] + 1))
-      present cal.includes(:user, :organization, :company, org_members: :memberable, com_members: :memberable, user_members: :memberable), with: Entities::Calendar
+      cal = cal.where(started_at: params[:start_date]..(params[:end_date] + 1)) if params[:start_date].present? && params[:end_date].present?
+      present cal.includes(:calendar_members, :user, :organization, :company, :org_members, :com_members, :user_members), with: Entities::Calendar
+    end
+
+    desc '获取call_report'
+    params do
+      optional :funding_id, type: Integer, desc: '项目id'
+      optional :company_id, type: Integer, desc: '公司id，项目id，数据范围二选一必填'
+      at_least_one_of :funding_id, :company_id
+    end
+    get :call_reports do
+      cal = if params[:funding_id].present?
+              Calendar.where(funding_id: params[:funding_id])
+            elsif params[:company_id].present?
+              Calendar.where(company_id: params[:company_id])
+            end
+      cal = cal.where(meeting_category: [Calendar.meeting_category_roadshow_value, Calendar.meeting_category_com_meeting_value])
+      present cal.includes(:calendar_members, :user, :company, :com_members, :user_members), with: Entities::Calendar
     end
 
     desc '创建日程', entity: Entities::Calendar
@@ -45,19 +65,47 @@ class CalendarApi < Grape::API
         requires :organization_id, type: Integer, desc: '约见机构id'
       end
       optional :track_log_id, type: Integer, desc: '融资进度id'
-      optional :desc, type: String, desc: '会议描述', default: '由项目进度生成'
-      at_least_one_of :track_log_id, :desc
+      #optional :desc, type: String, desc: '会议描述', default: '由项目进度生成'
+      #at_least_one_of :track_log_id, :desc
       optional :contact_ids, type: Array[Integer], desc: '公司联系人id'
       optional :member_ids, type: Array[Integer], desc: '投资人id'
       requires :cr_user_ids, type: Array[Integer], desc: '华兴参与人id'
-      requires :started_at, type: DateTime, desc: '开始时间'
-      requires :ended_at, type: DateTime, desc: '结束时间'
+      requires :started_at, type: Time, desc: '开始时间'
+      requires :ended_at, type: Time, desc: '结束时间'
       optional :address_id, type: Integer, desc: '会议地点id'
       optional :tel_desc, type: String, desc: '电话会议描述'
     end
     post do
       @calendar = current_user.created_calendars.create!(declared(params, include_missing: false))
       present @calendar, with: Entities::Calendar
+    end
+
+    desc '近期会议'
+    params do
+      optional :organization_id, type: Integer, desc: '获取机构的日程 机构id，项目id，数据范围三选一必填'
+      optional :funding_id, type: Integer, desc: '获取项目的日程 机构id，项目id，数据范围三选一必填'
+      optional :range, type: String, desc: '数据范围 person个人，group含下属', values: ['person', 'group']
+      optional :user_id, type: Integer, desc: '获取某下属时下属id，为空返回自己'
+      optional :status, type: Integer, desc: '状态'
+      optional :meeting_category, type: Integer, desc: '会议类型'
+    end
+    get :monthly_count do
+      cal = if params[:organization_id].present?
+              Calendar.where(organization_id: params[:organization_id])
+            elsif params[:funding_id].present?
+              Calendar.where(funding_id: params[:funding_id])
+            elsif params[:range].present?
+              user = params[:user_id] ? current_user.sub_users.find(params[:user_id]) : current_user
+              case params[:range]
+              when 'person'
+                user.calendars
+              when 'group'
+                Calendar.includes(:calendar_members).where(calendar_members: {memberable_type: 'User', memberable_id: CacheBox.get_group_user_ids(user.id)})
+              end
+            end
+      cal = cal.where(status: params[:status]) if params[:status]
+      cal = cal.where(meeting_category: params[:meeting_category]) if params[:meeting_category]
+      cal.nearly.group("cast(date_trunc('month', started_at) as Date)").count.sort_by {|k, _v| k.to_s}.map {|k, v| {start_date: k - 1.month + 21.days, end_date: k + 1.month + 6.days, count: v, desc: k.month}}
     end
 
     resource ':id' do
@@ -70,13 +118,13 @@ class CalendarApi < Grape::API
         optional :funding_id, type: Integer, desc: '项目id'
         optional :organization_id, type: Integer, desc: '约见机构id'
         optional :track_log_id, type: Integer, desc: '融资进度id'
-        optional :desc, type: String, desc: '会议描述', default: '由项目进度生成'
-        at_least_one_of :track_log_id, :desc
+        #optional :desc, type: String, desc: '会议描述', default: '由项目进度生成'
+        #at_least_one_of :track_log_id, :desc
         optional :contact_ids, type: Array[Integer], desc: '公司联系人id', default: []
         optional :member_ids, type: Array[Integer], desc: '投资人id', default: []
         requires :cr_user_ids, type: Array[Integer], desc: '华兴参与人id'
-        requires :started_at, type: DateTime, desc: '开始时间'
-        requires :ended_at, type: DateTime, desc: '结束时间'
+        requires :started_at, type: Time, desc: '开始时间'
+        requires :ended_at, type: Time, desc: '结束时间'
         optional :address_id, type: Integer, desc: '会议地点id'
         optional :tel_desc, type: String, desc: '电话会议描述'
       end
@@ -110,13 +158,7 @@ class CalendarApi < Grape::API
         calendar = Calendar.find params[:id]
         calendar.update! declared(params)
 
-        if params[:ir_review_syn] && calendar.organization_id.present?
-          organization = Organization.find(calendar.organization_id)
-          organization.ir_reviews.create(user_id: User.current.id, content: params[:summary]) if organization.present?
-
-          content = Notification.notification_type_config[:ir_review][:content].call(User.current.name, organization.name) if organization.name.present?
-          Notification.create(notification_type: Notification.notification_type_value("ir_review"), content: content, is_read: false, notice: {organization_id: organization.id}) if content.present?
-        end
+        calendar.create_ir_review_notification(calendar.organization_id, params[:summary]) if params[:ir_review_syn]
 
         present calendar, with: Entities::Calendar
       end

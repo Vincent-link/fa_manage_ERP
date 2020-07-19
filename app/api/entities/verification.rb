@@ -6,7 +6,7 @@ module Entities
     expose :desc, documentation: {type: 'integer', desc: '描述', required: true}
 
     expose :rejection_reason, documentation: {type: 'string', desc: '拒绝理由', required: true}
-    expose :sponsor, documentation: {type: 'string', desc: '发起人', required: true}
+    expose :sponsor, using: Entities::UserLite, documentation: {type: 'string', desc: '发起人', required: true}
     expose :verifi, documentation: {type: 'string', desc: '其他字段', required: true}
     expose :created_at, documentation: {type: 'string', desc: '创建时间', required: true}
   end

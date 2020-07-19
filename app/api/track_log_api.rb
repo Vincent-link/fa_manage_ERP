@@ -75,8 +75,8 @@ class TrackLogApi < Grape::API
           end
 
           optional :calendar, type: Hash do
-            requires :started_at, type: DateTime, desc: '开始时间'
-            requires :ended_at, type: DateTime, desc: '结束时间'
+            requires :started_at, type: Time, desc: '开始时间'
+            requires :ended_at, type: Time, desc: '结束时间'
             optional :address_id, type: Integer, desc: '会议地点id'
             requires :meeting_type, type: Integer, desc: '约见类型'
           end
@@ -104,7 +104,7 @@ class TrackLogApi < Grape::API
           end
           tracklog.member_ids = params[:member_ids]
           current_user.created_calendars.create!(params[:calendar].slice(:started_at, :ended_at, :address_id, :meeting_type).merge(meeting_category: Calendar.meeting_category_roadshow_value, track_log_id: tracklog.id, funding_id: tracklog.funding_id, organization_id: tracklog.organization_id)) if params[:calendar].present?
-          tracklog.track_log_details.create(params.slice(:content).merge(user_id: current_user.id))
+          tracklog.track_log_details.create(params.slice(:content).merge(user_id: current_user.id)) if params[:content].present?
           present tracklog, with: Entities::TrackLogBase
         end
 
@@ -127,6 +127,7 @@ class TrackLogApi < Grape::API
         desc '项目进度列表', entity: Entities::TrackLogBase
         params do
           optional :status, type: Integer, desc: '项目进度状态（字典：track_log_status）'
+          optional :no_status, type: Integer, desc: '项目进度状态（字典：track_log_status）'
           optional :organization_id, type:  Integer, desc: '机构id'
           optional :keyword, type: String, desc: '关键字'
         end
@@ -176,8 +177,8 @@ class TrackLogApi < Grape::API
         end
 
         optional :calendar, type: Hash do
-          requires :started_at, type: DateTime, desc: '开始时间'
-          requires :ended_at, type: DateTime, desc: '结束时间'
+          requires :started_at, type: Time, desc: '开始时间'
+          requires :ended_at, type: Time, desc: '结束时间'
           optional :address_id, type: Integer, desc: '会议地点id'
           requires :meeting_type, type: Integer, desc: '约见类型'
         end

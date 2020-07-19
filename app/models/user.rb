@@ -32,6 +32,7 @@ class User < ApplicationRecord
 
   has_many :email_receivers, as: :receiverable
   has_many :email_tos, as: :toable
+  has_many :member_user_relations
 
   belongs_to :team, optional: true
   belongs_to :bu, optional: true, class_name: 'Team', foreign_key: :bu_id

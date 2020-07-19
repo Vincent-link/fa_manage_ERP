@@ -6,12 +6,10 @@ module ModelState
     included do
       state_config :category, config: {
           pp:       {value: 1, desc: 'PP', code: [:category, :company_id, :round_id, :target_amount_currency, :target_amount,
-                                                  :share, :shiny_word, :com_desc, :products_and_business, :financial,
-                                                  :operational, :market_competition, :financing_plan, :team_desc, :source_type,
+                                                  :share, :shiny_word, :com_desc, :products_and_business, :source_type,
                                                   :funding_score, :normal_user_ids]},
           ma:       {value: 2, desc: 'M&A', code: [:category, :company_id, :round_id, :target_amount_currency, :target_amount,
-                                                   :share, :shiny_word, :com_desc, :products_and_business, :financial,
-                                                   :operational, :market_competition, :financing_plan, :team_desc, :source_type,
+                                                   :share, :shiny_word, :com_desc, :products_and_business, :source_type,
                                                    :funding_score, :normal_user_ids]},
           advisory: {value: 3, desc: '其他', code: [:category, :normal_user_ids]}
       }

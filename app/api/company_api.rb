@@ -27,7 +27,7 @@ class CompanyApi < Grape::API
       requires :location_province_id, type: Integer, desc: '地址'
       requires :location_city_id, type: Integer, desc: '地址'
       optional :detailed_address, type: String, desc: '详细地址'
-      optional :business_id, type: Integer, desc: '工商数据'
+      optional :registered_name, type: Integer, desc: '工商数据'
       requires :sector_id, type: Integer, desc: '所属行业'
       optional :company_tag_ids, type: Array[Integer], desc: '标签'
       requires :contacts, type: Array[JSON], desc: '联系人' do
@@ -43,6 +43,7 @@ class CompanyApi < Grape::API
         tags_params = params.delete(:company_tag_ids)
         logo = params.delete(:logo)
         contacts_params = params.delete(:contacts)
+        params[:registered_name] ||= ""
 
         @company = Company.create!(params)
         @company.company_tag_ids = tags_params
@@ -54,17 +55,10 @@ class CompanyApi < Grape::API
         contacts_params.map { |e| Contact.create!(e.merge(company_id: @company.id)) }
 
         # 从金丝雀获取最近融资
-        financing_events = Zombie::DmInvestevent.includes(:company, :invest_type, :invest_round).public_data.not_deleted.where(company_id: @company.id)._select(:invest_round_id, :invest_type_id).sort_by(&:birth_date)
-        invest_types = Zombie::DmInvestType.all
-        if !financing_events.empty?
-          # 如果融资为私募或新三板的话，使用轮次；如果否的话，轮次是nil，使用融资类型表示
-          if !financing_events.last.try(:invest_round_id).nil?
-            @company.recent_financing = financing_events.last.try(:invest_round_id)
-          else
-            @company.recent_financing = invest_types.find {|e| e.id == financing_events.last.try(:invest_type_id)}.id
-          end
-        end
-        @company.save!
+        @company.syn_recent_financing
+        # 更新一级行业
+        @company.syn_root_sector(params[:sector_id])
+
         present @company, with: Entities::CompanyForShow
       end
     end
@@ -81,10 +75,20 @@ class CompanyApi < Grape::API
     desc '关联企业添加'
     params do
       requires :name, type: String, desc: '工商名称'
-      requires :info_url, type: String, desc: '天眼查网址'
+      requires :info_url, type: String, desc: '天眼查网址', regexp: /^(http|https):\/\/[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/ix
     end
     post :registered_company_add do
       @relation_company = Zombie::DmRegisteredCompany.create_registered_company(declared(params))
+    end
+
+    desc '上市公司股票信息'
+    params do
+      optional :name, type: String, desc: "公司名称"
+    end
+    get :ticker do
+      company_tickers = Zombie::DmCompany.includes(:company_tickers)._select(:name, :ticker).search_by_keyword(params["name"], true)
+
+      present company_tickers
     end
 
     resource ':id' do

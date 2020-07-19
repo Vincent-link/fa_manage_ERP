@@ -2,6 +2,7 @@ class Calendar < ApplicationRecord
   acts_as_paranoid
 
   include StateConfig
+  include NotificationExtend
 
   has_many :calendar_members
   has_many :org_members, -> {where(memberable_type: 'Member')}, class_name: 'CalendarMember'
@@ -25,6 +26,8 @@ class Calendar < ApplicationRecord
   delegate :status, to: :track_log, allow_nil: true, prefix: true
 
   attr_accessor :ir_review_syn, :newsfeed_syn, :track_result, :investor_summary
+
+  scope :nearly, -> {where(started_at: (Date.today.beginning_of_month - 3.month)..(Date.today.beginning_of_month + 2.month))}
 
   state_config :meeting_type, config: {
       face: {value: 1, desc: '线下约见'},
@@ -67,7 +70,7 @@ class Calendar < ApplicationRecord
 
   def address
     if self.address_id
-      if self.address_id >= 100001
+      if self.address_id >= 100000
         Address.find(self.address_id)
       else
         Zombie::DmAddress.find(self.address_id)
@@ -77,12 +80,11 @@ class Calendar < ApplicationRecord
 
   def gen_track_log_detail
     if self.meeting_category_roadshow? && self.funding
-      self.funding.track_logs.find_or_create_by!(organization_id: self.organization_id) do |track_log|
+      track_log = self.funding.track_logs.find_or_create_by!(organization_id: self.organization_id) do |track_log|
         org_members.each do |cal_member|
           track_log.track_log_members.build(member_id: cal_member.memberable_id)
         end
         track_log.status = TrackLog.status_meeting_value
-        self.track_log = track_log
       end
       action = if self.previous_changes.has_key? :id
                  'create'
@@ -94,8 +96,8 @@ class Calendar < ApplicationRecord
                    'update'
                  end
                end
-      self.track_log.gen_meeting_detail(User.current.id, self.id, action)
-      self.track_log.change_status_by_calendar(self.track_result) if self.track_result
+      track_log.gen_meeting_detail(User.current.id, self.id, action)
+      track_log.change_status_by_calendar(self.track_result) if self.track_result
     end
   end
 

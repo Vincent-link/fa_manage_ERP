@@ -38,7 +38,7 @@ gem 'cancancan'
 
 # zombie
 gem 'zombie_service', :git => "git@10.101.7.1:imt/zombie_service.git", tag: '1.3.2'
-gem 'zombie', :git => "git@10.101.7.1:imt/zombie_client.git", tag: '1.3.2'
+gem 'zombie', :git => "git@10.101.7.1:imt/zombie_client.git", tag: '1.3.3'
 
 gem "config"
 gem "whenever"

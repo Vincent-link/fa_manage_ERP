@@ -23,13 +23,7 @@ class CommentApi < Grape::API
           params[:type] = params[:type].classify
           comment = Comment.create(declared(params).merge(commentable_type: configuration[:owner].classify))
 
-          if params[:type] == "IrReview" && params[:commentable_id].present?
-            organization = Organization.find(params[:commentable_id])
-            organization.ir_reviews.create(user_id: User.current.id, content: params[:summary]) if organization.present?
-
-            content = Notification.notification_type_config[:ir_review][:content].call(User.current.name, organization.name) if organization.name.present?
-            Notification.create(notification_type: Notification.notification_type_value("ir_review"), content: content, is_read: false, notice: {organization_id: organization.id}) if content.present?
-          end
+          comment.create_ir_review_notification(params[:commentable_id], params[:summary]) if params[:type] == "IrReview"
 
           present comment, with: Entities::Comment
         end

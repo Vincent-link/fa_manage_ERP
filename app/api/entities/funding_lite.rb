@@ -8,5 +8,6 @@ module Entities
           name: ins.category_desc
       }
     end
+    expose :round_id, documentation: {type: 'integer', desc: '轮次'}
   end
 end

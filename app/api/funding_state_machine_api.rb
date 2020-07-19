@@ -142,7 +142,7 @@ class FundingStateMachineApi < Grape::API
         @funding.funding_status_auth(@funding.status, Funding.status_pass_value, params)
         @funding.funding_various_file(params.slice(:file_bp))
         @funding.update(params.slice(:com_desc, :products_and_business, :financial, :operational, :market_competition,
-                                     :financing_plan, :team_desc, :other_desc, :reason).merge(status: Funding.status_pass_value))
+                                     :financing_plan, :team_desc, :other_desc).merge(status: Funding.status_pass_value))
         present @funding, with: Entities::FundingLite
       end
 

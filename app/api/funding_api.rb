@@ -68,8 +68,8 @@ class FundingApi < Grape::API
       requires :calendar, type: Hash do
         requires :contact_ids, type: Array[Integer], desc: '公司联系人id'
         requires :cr_user_ids, type: Array[Integer], desc: '华兴参与人id'
-        requires :started_at, type: DateTime, desc: '开始时间'
-        requires :ended_at, type: DateTime, desc: '结束时间'
+        requires :started_at, type: Time, desc: '开始时间'
+        requires :ended_at, type: Time, desc: '结束时间'
         optional :address_id, type: Integer, desc: '会议地点id'
       end
     end
@@ -104,8 +104,30 @@ class FundingApi < Grape::API
       optional :per_page, type: Integer, desc: '数量', default: 10
     end
     get do
+      params[:keyword] = '*' if ['', nil].include? params[:keyword]
       fundings = FundingPolymer.es_search(params)
       present fundings, with: Entities::FundingBaseInfo
+    end
+
+    desc '项目简略列表', entity: Entities::FundingGroupWithStatus
+    params do
+      optional :keyword, type: String, desc: '关键字'
+      optional :status, type: Integer, desc: '项目状态', values: Funding.status_values
+      optional :layout, type: String, desc: '按状态分数组: status_group'
+      optional :is_me, type: Boolean, desc: '是否查询我的项目'
+    end
+    get 'lite' do
+      params[:keyword] = '*' if ['', nil].include? params[:keyword]
+      fundings = FundingPolymer.es_search(params)
+      case params[:layout]
+      when 'status_group'
+        # 不要pass 和 hold的
+        funding_results = []
+        fundings.group_by{|ins| ins.status}.each{|k,v| funding_results << {status: k, data: v} unless Funding.status_filter(:pass, :hold).include?(k)}
+        present funding_results, with: Entities::FundingGroupWithStatus
+      else
+        present fundings, with: Entities::FundingBaseInfo
+      end
     end
 
     desc '项目列表导出'
@@ -119,6 +141,7 @@ class FundingApi < Grape::API
       optional :is_me, type: Boolean, desc: '是否查询我的项目'
     end
     get do
+      params[:keyword] = '*' if ['', nil].include? params[:keyword]
       file_path, file_name = FundingPolymer.export(params)
       header['Content-Disposition'] = "attachment; filename=\"#{File.basename(file_name)}.xls\""
       content_type("application/octet-stream")
@@ -208,8 +231,8 @@ class FundingApi < Grape::API
         optional :desc, type: String, desc: '会议描述', default: '由项目进度生成'
         optional :contact_ids, type: Array[Integer], desc: '公司联系人id'
         requires :cr_user_ids, type: Array[Integer], desc: '华兴参与人id'
-        requires :started_at, type: DateTime, desc: '开始时间'
-        requires :ended_at, type: DateTime, desc: '结束时间'
+        requires :started_at, type: Time, desc: '开始时间'
+        requires :ended_at, type: Time, desc: '结束时间'
         optional :address_id, type: Integer, desc: '会议地点id'
       end
       patch 'claim' do
@@ -291,6 +314,7 @@ class FundingApi < Grape::API
             track_log.member_ids = params[:member_ids]
           end
           file = track_log.file_ts_attachment
+          track_log.update!(status: TrackLog.status_issue_ts_value) unless track_log.status_spa_sha?
         when params[:type] == Funding.all_funding_file_type_materials_value
           file = @funding.file_materials_file_add(blob_id: params[:file][:blob_id]).first
         when Funding.all_funding_file_type_filter(:bp, :el, :teaser, :nda, :model).include?(params[:type])
@@ -306,7 +330,7 @@ class FundingApi < Grape::API
       delete 'files' do
         file = ActiveStorage::Attachment.find(params[:file_id])
         case file.record_type
-        when 'Funding'
+        when 'FundingPolymer'
           file.delete
         when 'TrackLog'
           case file.name
@@ -319,15 +343,18 @@ class FundingApi < Grape::API
         end
       end
 
-      desc '获取文档列表', entity: Entities::Attachment
+      desc '获取文档列表', entity: Entities::FileResult
       params do
       end
       get 'files' do
         tr_file = ActiveStorage::Attachment.where(name: ['file_ts', 'file_spa'], record_type: "TrackLog", record_id: @funding.track_log_ids)
-        f_file = ActiveStorage::Attachment.where(name: ['file_bp', 'file_teaser', 'file_model', 'file_el', 'file_nda', 'file_materials'], record_type: "Funding", record_id: @funding.id)
+        f_file = ActiveStorage::Attachment.where(name: ['file_bp', 'file_teaser', 'file_model', 'file_el', 'file_nda', 'file_materials'], record_type: "FundingPolymer", record_id: @funding.id)
         organizations = @funding.track_logs.map {|ins| [ins.id, ins.organization]}.to_h
-        files = tr_file + f_file
-        present files, with: Entities::Attachment, organizations: organizations
+        files = (tr_file + f_file).group_by{|ins| ins.name}
+        file_array = ['file_bp', 'file_teaser', 'file_model', 'file_nda', 'file_el', 'file_ts', 'file_spa', 'file_materials']
+        file_hash = FundingPolymer.all_funding_file_type_config.values.map{|ins| [ins[:file], ins[:desc]]}.to_h
+        file_results = file_array.map{|ins| {file_type: file_hash[ins], data: files[ins] || []}}
+        present file_results, with: Entities::FileResult, organizations: organizations
       end
 
       desc '设置为ka', entity: Entities::FundingLite
