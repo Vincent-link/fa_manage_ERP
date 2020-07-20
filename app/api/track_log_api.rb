@@ -61,16 +61,18 @@ class TrackLogApi < Grape::API
             end
           end
 
-          given status: ->(val) {val == TrackLog.status_spa_sha_value}, track_log_id: ->(val) {val.nil?} do
-            requires :pay_date, type: String, desc: '结算日期', regexp: /^\d{4}-\d{2}$/
-            requires :is_fee, type: Boolean, desc: '是否收费'
-            requires :fee_rate, type: Float, desc: '费率'
-            requires :fee_discount, type: Float, desc: '费率折扣'
-            requires :amount, type: Float, desc: '投资金额'
-            requires :currency, type: Integer, desc: '币种'
-            requires :ratio, type: Float, desc: '股份比例'
-            requires :file_spa, type: Hash do
-              optional :blob_id, type: Integer, desc: 'spa文件id'
+          given status: ->(val) {val == TrackLog.status_spa_sha_value} do
+            given track_log_id: ->(val) {val.nil?} do
+              requires :pay_date, type: String, desc: '结算日期', regexp: /^\d{4}-\d{2}$/
+              requires :is_fee, type: Boolean, desc: '是否收费'
+              requires :fee_rate, type: Float, desc: '费率'
+              requires :fee_discount, type: Float, desc: '费率折扣'
+              requires :amount, type: Float, desc: '投资金额'
+              requires :currency, type: Integer, desc: '币种'
+              requires :ratio, type: Float, desc: '股份比例'
+              requires :file_spa, type: Hash do
+                optional :blob_id, type: Integer, desc: 'spa文件id'
+              end
             end
           end
 
