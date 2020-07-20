@@ -7,7 +7,7 @@ module Entities
     expose :team_id, documentation: {type: 'integer', desc: '分成团队id'}
     expose :rate, documentation: {type: 'integer', desc: '分成比例'}
 
-    with_options(format_with: :dm_time_to_s_second) do
+    with_options(format_with: :time_to_s_second) do
       expose :updated_at, documentation: {type: 'time', desc: '更新时间'}
     end
   end
