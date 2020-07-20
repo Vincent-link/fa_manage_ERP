@@ -121,6 +121,12 @@ class TrackLog < ApplicationRecord
       content = calendar.summary
     when 'only_link'
       content = content
+    when 'calendar_pass'
+      self.update status: self.status_pass_value
+    when 'calendar_drop'
+      self.update status: self.status_drop_value
+    when 'calendar_continue'
+      self.update status: self.status_interested_value if self.status_meeting?
     end
     history = {
         meeting_type_desc: calendar.meeting_type_desc,

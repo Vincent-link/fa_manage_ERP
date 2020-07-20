@@ -152,13 +152,13 @@ class CalendarApi < Grape::API
         optional :investor_summary, type: JSON, desc: '投资人信息更新 investor_summary[member_id] = xxxxx'
         optional :ir_review_syn, type: Boolean, desc: '是否同步到IR Review'
         optional :newsfeed_syn, type: Boolean, desc: '是否同步到Newsfeed'
-        optional :track_result, type: String, desc: 'track_log跟进', values: %w(continue pass)
+        optional :track_result, type: String, desc: 'track_log跟进', values: %w(continue pass drop)
         optional :reason, type: String, desc: 'pass理由'
       end
       post :summary do
         calendar = Calendar.find params[:id]
         calendar.update! declared(params)
-
+        calendar.track_log.gen_meeting_detail(current_user.id, calendar.id, "calendar_#{params[:track_result]}", params[:reason])
         calendar.create_ir_review_notification(calendar.organization_id, params[:summary]) if params[:ir_review_syn]
 
         present calendar, with: Entities::Calendar
