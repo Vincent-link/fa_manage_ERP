@@ -30,6 +30,8 @@ module Entities
 
     expose :status, documentation: {type: Integer, desc: '会议状态'}
     expose :tel_desc, documentation: {type: String, desc: '电话会议描述'}
+    expose :track_result, documentation: {type: String, desc: 'track_log意见'}
+    expose :reason, documentation: {type: String, desc: 'track_log意见理由'}
 
     with_options(format_with: :time_to_s_minute) do
       expose :started_at, documentation: {type: String, desc: '开始时间'}

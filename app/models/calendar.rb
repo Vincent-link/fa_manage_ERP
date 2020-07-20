@@ -26,7 +26,7 @@ class Calendar < ApplicationRecord
   delegate :status, to: :funding, allow_nil: true, prefix: true
   delegate :status, :members, to: :track_log, allow_nil: true, prefix: true
 
-  attr_accessor :ir_review_syn, :newsfeed_syn, :track_result, :investor_summary, :reason
+  attr_accessor :ir_review_syn, :newsfeed_syn, :investor_summary
 
   scope :nearly, -> {where(started_at: (Date.today.beginning_of_month - 3.month)..(Date.today.beginning_of_month + 2.month))}
 
