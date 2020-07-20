@@ -154,7 +154,7 @@ class Email < ApplicationRecord
   def official_push_email
     raise '邮件推送中不要重复推送' if self.status_pushing?
     raise '邮件推送成功不要重复推送' if self.status_success?
-    self.email_to_groups.where(status: EmailToGroup.status_filter(:no_push, :fail)).update_all(status: EmailToGroup.status_pushing_value)
+    self.email_to_groups.where(status: EmailToGroup.status_filter(:not_push, :fail)).update_all(status: EmailToGroup.status_pushing_value)
     self.update(:status => Email.status_pushing_value, :send_at => Time.now)
     self.email_to_groups.status_pushing.each do |email_to_group|
       dear_to = email_to_group.dear_to
