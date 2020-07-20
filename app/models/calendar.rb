@@ -91,7 +91,7 @@ class Calendar < ApplicationRecord
         end
         track_log.status = TrackLog.status_meeting_value
       end
-      if self.track_result
+      if self.previous_changes.has_key? :track_result
         track_log.change_status_by_calendar(self.id, self.track_result, reason) if self.track_result
       else
         action = if self.previous_changes.has_key? :id
