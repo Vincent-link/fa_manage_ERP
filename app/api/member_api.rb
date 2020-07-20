@@ -223,4 +223,5 @@ class MemberApi < Grape::API
   end
 
   mount CommentApi, with: {owner: 'members'}
+  mount HistoryApi, with: {owner: 'members'}
 end
