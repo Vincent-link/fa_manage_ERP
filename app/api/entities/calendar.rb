@@ -21,9 +21,12 @@ module Entities
     expose :organization_id, documentation: {type: Integer, desc: '机构id'}
     expose :company_id, documentation: {type: Integer, desc: '公司id'}
     expose :company_name, documentation: {type: String, desc: '公司名称'}
+    expose :company_location_city_id, documentation: {type: Integer, desc: '公司city_id'}
+    expose :company_location_province_id, documentation: {type: Integer, desc: '公司province_id'}
     expose :funding_id, documentation: {type: Integer, desc: '项目id'}
     expose :track_log_id, documentation: {type: Integer, desc: '关联的track_log id'}
     expose :track_log_status, documentation: {type: Integer, desc: 'track_log状态'}
+    expose :track_log_members, documentation: {type: MemberLite, desc: 'track_log投资人'}
 
     expose :status, documentation: {type: Integer, desc: '会议状态'}
     expose :tel_desc, documentation: {type: String, desc: '电话会议描述'}

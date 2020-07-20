@@ -153,6 +153,7 @@ class CalendarApi < Grape::API
         optional :ir_review_syn, type: Boolean, desc: '是否同步到IR Review'
         optional :newsfeed_syn, type: Boolean, desc: '是否同步到Newsfeed'
         optional :track_result, type: String, desc: 'track_log跟进', values: %w(continue pass)
+        optional :reason, type: String, desc: 'pass理由'
       end
       post :summary do
         calendar = Calendar.find params[:id]

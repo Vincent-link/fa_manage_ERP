@@ -72,13 +72,19 @@ class OrganizationApi < Grape::API
       optional :decision_flow, type: String, desc: '投资决策流程'
       optional :ic_rule, type: String, desc: '投委会机制'
       optional :alias, type: Array[String], desc: '机构别名'
+      optional :addresses, type: Array[JSON], desc: '机构地址'
     end
     post do
       Organization.transaction do
         organization_tag_ids = params.delete(:organization_tag_ids)
         sector_ids = params.delete(:sector_ids)
+        addresses = params.delete(:addresses)
 
         @organization = Organization.create!(declared(params, include_missing: false))
+
+        addresses.each do |address|
+          Zombie::DmAddress.create_address('Investor', @organization.id, nil, address[:location_id], address[:address_desc])
+        end
 
         @organization.organization_tag_ids = organization_tag_ids
         @organization.sector_ids = sector_ids

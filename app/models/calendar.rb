@@ -17,13 +17,14 @@ class Calendar < ApplicationRecord
 
   before_validation :set_current_user
   before_save :set_meeting_status
+  before_validation :delete_when_cancel
   after_save :gen_track_log_detail
   after_save :gen_org_meeting_info
 
   delegate :name, to: :organization, allow_nil: true, prefix: true
-  delegate :name, to: :company, allow_nil: true, prefix: true
+  delegate :name, :location_city_id, :location_province_id, to: :company, allow_nil: true, prefix: true
   delegate :status, to: :funding, allow_nil: true, prefix: true
-  delegate :status, to: :track_log, allow_nil: true, prefix: true
+  delegate :status, :members, to: :track_log, allow_nil: true, prefix: true
 
   attr_accessor :ir_review_syn, :newsfeed_syn, :track_result, :investor_summary
 
@@ -41,8 +42,8 @@ class Calendar < ApplicationRecord
   }
 
   state_config :status, config: {
-      new: {value: 1, desc: '未约见'},
-      meet: {value: 2, desc: '已约见'},
+      new: {value: 1, desc: '待约见'},
+      meet: {value: 2, desc: '待填写纪要'},
       done: {value: 3, desc: '已完成'},
       cancel: {value: 4, desc: '已取消'}
   }
@@ -124,5 +125,9 @@ class Calendar < ApplicationRecord
 
   def set_meeting_status
     self.status = Calendar.status_done_value if self.summary.present? && !self.status_cancel?
+  end
+
+  def delete_when_cancel
+    self.destroy if self.status_cancel?
   end
 end
