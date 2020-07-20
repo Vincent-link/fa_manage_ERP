@@ -91,18 +91,21 @@ class Calendar < ApplicationRecord
         end
         track_log.status = TrackLog.status_meeting_value
       end
-      action = if self.previous_changes.has_key? :id
-                 'create'
-               else
-                 case self.status
-                 when Calendar.status_cancel_value
-                   'delete'
+      if self.track_result
+        track_log.change_status_by_calendar(self.id, self.track_result, reason) if self.track_result
+      else
+        action = if self.previous_changes.has_key? :id
+                   'create'
                  else
-                   'update'
+                   case self.status
+                   when Calendar.status_cancel_value
+                     'delete'
+                   else
+                     'update'
+                   end
                  end
-               end
-      track_log.gen_meeting_detail(User.current.id, self.id, action, reason)
-      track_log.change_status_by_calendar(self.id, self.track_result, reason) if self.track_result
+        track_log.gen_meeting_detail(User.current.id, self.id, action, reason)
+      end
     end
   end
 
