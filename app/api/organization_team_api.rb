@@ -13,32 +13,15 @@ class OrganizationTeamApi < Grape::API
 
         desc '创建机构团队', entity: Entities::OrganizationTeam
         params do
-          requires :name, type: String, desc: '名称'
+          requires :name, type: Array[String], desc: '名称'
         end
         post :teams do
-          team = @organization.organization_teams.find_or_create_by declared(params)
-
-          present team, with: Entities::OrganizationTeam
+          @organization.organization_teams.where.not(name: params[:name]).destroy_all
+          params[:name].each do |name|
+            @organization.organization_teams.find_or_create_by name
+          end
+          present @organization.organization_teams, with: Entities::OrganizationTeam
         end
-      end
-    end
-  end
-
-  resource :organization_teams do
-    resource ':id' do
-      desc '删除机构团队'
-      delete do
-        OrganizationTeam.find(params[:id]).destroy!
-      end
-
-      desc '编辑机构团队'
-      params do
-        requires :name, type: String, desc: '名称'
-      end
-      patch do
-        team = OrganizationTeam.find(params[:id])
-        team.update!(declared(params))
-        present team, with: Entities::OrganizationTeam
       end
     end
   end
