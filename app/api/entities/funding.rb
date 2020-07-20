@@ -80,5 +80,7 @@ module Entities
       end
       has_ka_verification
     end
+
+    expose :file_bp_attachment, as: :file_bp, using: Entities::Attachment, documentation: {type: Entities::Attachment, desc: '项目BP'}
   end
 end

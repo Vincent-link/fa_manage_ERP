@@ -26,8 +26,8 @@ module Entities
     expose :currency, if: lambda { |ins| ins.status_spa_sha?}, documentation: {type: 'integer', desc: '投资金额币种'}
     expose :ratio, if: lambda { |ins| ins.status_spa_sha?}, documentation: {type: 'float', desc: '股权比例'}
 
-    expose :file_spa_attachment, as: :file_spa, using: Entities::File, if: lambda { |ins| ins.status_spa_sha?}, documentation: {type: Entities::File, desc: 'SPA文件'}
-    expose :file_ts_attachment, as: :file_ts, using: Entities::File, if: lambda { |ins| ins.status_issue_ts?}, documentation: {type: Entities::File, desc: 'TS文件'}
+    expose :file_spa_attachment, as: :file_spa, using: Entities::Attachment, if: lambda { |ins| ins.status_spa_sha?}, documentation: {type: Entities::Attachment, desc: 'SPA文件'}
+    expose :file_ts_attachment, as: :file_ts, using: Entities::Attachment, if: lambda { |ins| ins.status_issue_ts?}, documentation: {type: Entities::Attachment, desc: 'TS文件'}
 
     expose :has_spa, documentation: {type: 'boolean', desc: '是否有spa'} do |ins|
       ins.file_spa.present?
