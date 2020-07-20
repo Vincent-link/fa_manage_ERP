@@ -29,6 +29,15 @@ class EcmGroupApi < Grape::API
         present @ecm_group, with: Entities::EcmGroupForShow
       end
 
+      desc 'ecm_group明细', entity: Entities::EcmGroupOrganization
+      params do
+        optional :page, type: Integer, desc: '页数', default: 1
+        optional :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 30
+      end
+      get :details do
+        present @ecm_group.investor_group_organizations.paginate(page: params[:page], per_page: params[:page_size]), with: Entities::EcmGroupOrganization
+      end
+
       desc '更新ecm_group', entity: Entities::EcmGroupForSelect
       params do
         requires :name, type: String, desc: '组名称'
