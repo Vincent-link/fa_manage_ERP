@@ -48,6 +48,10 @@ class Calendar < ApplicationRecord
       cancel: {value: 4, desc: '已取消'}
   }
 
+  def result_track_log_detail
+    self.track_log_details.find {|ins| ins.detail_type_calendar_result?}
+  end
+
   def contact_ids=(contact_ids)
     self.calendar_members.where(memberable_type: 'Contact').where.not(memberable_id: contact_ids).destroy_all
     contact_ids.each do |user_id|
@@ -98,7 +102,7 @@ class Calendar < ApplicationRecord
                  end
                end
       track_log.gen_meeting_detail(User.current.id, self.id, action, reason)
-      track_log.change_status_by_calendar(self.track_result, reason) if self.track_result
+      track_log.change_status_by_calendar(self.id, self.track_result, reason) if self.track_result
     end
   end
 

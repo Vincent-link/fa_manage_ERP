@@ -79,9 +79,10 @@ class TrackLog < ApplicationRecord
         params[:need_content] = false
       end
       # raise '未创建会议不能进行状态变更' unless self.calendars.present?
-    when TrackLog.status_pass_value, TrackLog.status_drop_value
+    when TrackLog.status_pass_value, TrackLog.status_drop_value, TrackLog.status_interested_value
       content = "#{params[:content_key] || '状态变更'}：#{self.status_desc} → #{TrackLog.status_desc_for_value(params[:status])}\n#{params[:content]}"
-      self.track_log_details.create(content: content, user_id: params[:user_id] || User.current.id, detail_type: TrackLogDetail.detail_type_base_value)
+      detail_type = params[:calendar_id].present? ? TrackLogDetail.detail_type_calendar_result_value : TrackLogDetail.detail_type_base_value
+      self.track_log_details.create(content: content, user_id: params[:user_id] || User.current.id, detail_type: detail_type)
       params[:need_content] = false
     end
     before_status = self.status_desc
@@ -122,12 +123,6 @@ class TrackLog < ApplicationRecord
       content = calendar.summary
     when 'only_link'
       content = content
-    when 'calendar_pass'
-      self.update status: TrackLog.status_pass_value
-    when 'calendar_drop'
-      self.update status: TrackLog.status_drop_value
-    when 'calendar_continue'
-      self.update status: TrackLog.status_interested_value if self.status_meeting?
     end
     history = {
         meeting_type_desc: calendar.meeting_type_desc,
@@ -252,14 +247,14 @@ class TrackLog < ApplicationRecord
     self.track_log_details.create!(user_id: user_id, content: content, linkable_id: self.id, linkable_type: 'TrackLog', history: history, detail_type: TrackLogDetail.detail_type_spa_value)
   end
 
-  def change_status_by_calendar(status, content)
+  def change_status_by_calendar(calendar_id, status, content)
     case status
     when 'pass'
-      self.change_status_and_gen_detail(status: TrackLog.status_pass_value, need_content: true, content_key: "由约见结论变更：#{content}")
+      self.change_status_and_gen_detail(status: TrackLog.status_pass_value, need_content: true, content_key: "由约见结论变更：#{content}", calendar_id: calendar_id)
     when 'drop'
-      self.change_status_and_gen_detail(status: TrackLog.status_drop_value, need_content: true, content_key: "由约见结论变更：#{content}")
+      self.change_status_and_gen_detail(status: TrackLog.status_drop_value, need_content: true, content_key: "由约见结论变更：#{content}", calendar_id: calendar_id)
     when 'continue'
-      self.change_status_and_gen_detail(status: TrackLog.status_interested_value, need_content: true, content_key: '由约见结论变更')
+      self.change_status_and_gen_detail(status: TrackLog.status_interested_value, need_content: true, content_key: '由约见结论变更', calendar_id: calendar_id)
     end
   end
 
