@@ -166,7 +166,7 @@ class CalendarApi < Grape::API
       desc '清空会议纪要'
       delete :summary do
         calendar = Calendar.find params[:id]
-        calendar.update! summary: nil
+        calendar.update! summary: nil, status: Calendar.status_meet_value
         present calendar, with: Entities::Calendar
       end
 
