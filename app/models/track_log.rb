@@ -122,11 +122,11 @@ class TrackLog < ApplicationRecord
     when 'only_link'
       content = content
     when 'calendar_pass'
-      self.update status: self.status_pass_value
+      self.update status: TrackLog.status_pass_value
     when 'calendar_drop'
-      self.update status: self.status_drop_value
+      self.update status: TrackLog.status_drop_value
     when 'calendar_continue'
-      self.update status: self.status_interested_value if self.status_meeting?
+      self.update status: TrackLog.status_interested_value if self.status_meeting?
     end
     history = {
         meeting_type_desc: calendar.meeting_type_desc,
@@ -251,10 +251,12 @@ class TrackLog < ApplicationRecord
     self.track_log_details.create!(user_id: user_id, content: content, linkable_id: self.id, linkable_type: 'TrackLog', history: history, detail_type: TrackLogDetail.detail_type_spa_value)
   end
 
-  def change_status_by_calendar(status)
+  def change_status_by_calendar(status, content)
     case status
     when 'pass'
-      self.change_status_and_gen_detail(status: TrackLog.status_pass_value, need_content: true, content_key: '由约见结论变更')
+      self.change_status_and_gen_detail(status: TrackLog.status_pass_value, need_content: true, content_key: "由约见结论变更：#{content}")
+    when 'drop'
+      self.change_status_and_gen_detail(status: TrackLog.status_drop_value, need_content: true, content_key: "由约见结论变更：#{content}")
     when 'continue'
       self.change_status_and_gen_detail(status: TrackLog.status_interested_value, need_content: true, content_key: '由约见结论变更')
     end

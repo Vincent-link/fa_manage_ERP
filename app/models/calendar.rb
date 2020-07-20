@@ -94,15 +94,11 @@ class Calendar < ApplicationRecord
                  when Calendar.status_cancel_value
                    'delete'
                  else
-                   if track_result
-                     "calendar_#{track_result}"
-                   else
-                     'update'
-                   end
+                   'update'
                  end
                end
       track_log.gen_meeting_detail(User.current.id, self.id, action, reason)
-      track_log.change_status_by_calendar(self.track_result) if self.track_result
+      track_log.change_status_by_calendar(self.track_result, reason) if self.track_result
     end
   end
 
