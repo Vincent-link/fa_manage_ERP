@@ -38,6 +38,15 @@ module Entities
       end
       has_ka_verification
     end
+
+    expose :track_log_count, documentation: {type: 'integer', desc: '项目进度数量'} do |ins|
+      ins.track_logs.size
+    end
+
+    expose :calendar_count, documentation: {type: 'integer', desc: '会议数量'} do |ins|
+      ins.calendars.size
+    end
+
     expose :tf_search_highlights, as: :search_highlights, documentation: {type: 'hash', desc: 'es结果高亮'}
   end
 end

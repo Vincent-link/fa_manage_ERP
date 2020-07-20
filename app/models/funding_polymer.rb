@@ -29,7 +29,10 @@ class FundingPolymer < ApplicationRecord
 
   has_many :verifications, as: :verifyable
 
-  scope :search_import, -> { includes(:company, :verifications) }
+  has_many :calendars, foreign_key: :funding_id
+  has_many :track_logs, foreign_key: :funding_id
+
+  scope :search_import, -> { includes(:company, :verifications, :calendars, :track_logs) }
 
   def search_data
     data = attributes.merge({pipeline_status: self.pipelines.pluck(:status),

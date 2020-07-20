@@ -15,9 +15,6 @@ class Funding < FundingPolymer
 
   has_many :funding_company_contacts, class_name: 'FundingCompanyContact'
 
-  has_many :calendars
-
-  has_many :track_logs
   has_many :spas, -> {where(:status => TrackLog.status_spa_sha_value)}, class_name: 'TrackLog'
 
   has_many :emails, as: :emailable
@@ -117,10 +114,10 @@ class Funding < FundingPolymer
       end
       raise '公司简介不少于400字' if params[:com_desc].size < 400
     when Funding.status_execution_value
-      raise '未传el' unless self.file_el_atttachment.present?
-      raise '未填收入预测' unless self.pipelines.present?
+      raise '项目移动到Execution需要再Hera签订EL' unless self.file_el_atttachment.present?
+      error!({code: 520, msg: '请填写收入预测信息'}, 200) unless self.pipelines.present?
     when Funding.status_closing_value
-      raise '未传spa' unless ActiveStorage::Attachment.where(name: 'file_ts', record_type: 'TrackLog', record_id: self.track_log_ids).present?
+      raise '未传ts' unless ActiveStorage::Attachment.where(name: 'file_ts', record_type: 'TrackLog', record_id: self.track_log_ids).present?
     when Funding.status_closed_value
       raise '未传spa' unless ActiveStorage::Attachment.where(name: 'file_spa', record_type: 'TrackLog', record_id: self.track_log_ids).present?
     when Funding.status_paid_value
