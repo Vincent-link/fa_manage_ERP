@@ -68,7 +68,7 @@ class OrganizationApi < Grape::API
         optional :id, type: Integer, desc: 'file_id 已有文件id'
         optional :blob_id, type: Integer, desc: 'blob_id 新文件id'
       end
-      optional :invest_period_id, type: Integer, desc: '投资周期'
+      optional :invest_period, type: Integer, desc: '投资周期'
       optional :decision_flow, type: String, desc: '投资决策流程'
       optional :ic_rule, type: String, desc: '投委会机制'
       optional :alias, type: Array[String], desc: '机构别名'
