@@ -26,7 +26,7 @@ class Calendar < ApplicationRecord
   delegate :status, to: :funding, allow_nil: true, prefix: true
   delegate :status, :members, to: :track_log, allow_nil: true, prefix: true
 
-  attr_accessor :ir_review_syn, :newsfeed_syn, :track_result, :investor_summary
+  attr_accessor :ir_review_syn, :newsfeed_syn, :track_result, :investor_summary, :reason
 
   scope :nearly, -> {where(started_at: (Date.today.beginning_of_month - 3.month)..(Date.today.beginning_of_month + 2.month))}
 
@@ -94,10 +94,14 @@ class Calendar < ApplicationRecord
                  when Calendar.status_cancel_value
                    'delete'
                  else
-                   'update'
+                   if track_result
+                     "calendar_#{track_result}"
+                   else
+                     'update'
+                   end
                  end
                end
-      track_log.gen_meeting_detail(User.current.id, self.id, action)
+      track_log.gen_meeting_detail(User.current.id, self.id, action, reason)
       track_log.change_status_by_calendar(self.track_result) if self.track_result
     end
   end

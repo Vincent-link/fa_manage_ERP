@@ -158,7 +158,6 @@ class CalendarApi < Grape::API
       post :summary do
         calendar = Calendar.find params[:id]
         calendar.update! declared(params)
-        calendar.track_log.gen_meeting_detail(current_user.id, calendar.id, "calendar_#{params[:track_result]}", params[:reason])
         calendar.create_ir_review_notification(calendar.organization_id, params[:summary]) if params[:ir_review_syn]
 
         present calendar, with: Entities::Calendar
