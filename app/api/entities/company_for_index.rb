@@ -16,5 +16,13 @@ module Entities
       ins.financing_events("not_kun")
     end
     expose :one_sentence_intro, documentation: {type: 'string', desc: '一句话简介'}
+    expose :fundings, documentation: {type: 'string', desc: '一句话简介'} do |ins, options|
+      ins.fundings.map do |e|
+        {
+          id: e.id,
+          status: e.status
+        }
+      end
+    end
   end
 end
