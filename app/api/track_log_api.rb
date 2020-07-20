@@ -61,7 +61,7 @@ class TrackLogApi < Grape::API
             end
           end
 
-          given status: ->(val) {val == TrackLog.status_spa_sha_value} do
+          given status: ->(val) {val == TrackLog.status_spa_sha_value}, track_log_id: ->(val) {val.nil?} do
             requires :pay_date, type: String, desc: '结算日期', regexp: /^\d{4}-\d{2}$/
             requires :is_fee, type: Boolean, desc: '是否收费'
             requires :fee_rate, type: Float, desc: '费率'
