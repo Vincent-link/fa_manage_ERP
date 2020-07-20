@@ -88,6 +88,9 @@ class TrackLog < ApplicationRecord
         detail[:detail_type] = TrackLogDetail.detail_type_calendar_result_value
         detail[:linkable_type] = 'Calendar'
         detail[:linkable_id] = params[:calendar_id]
+        detail[:history] = {
+            status: self.status
+        }
       else
         detail[:detail_type] = TrackLogDetail.detail_type_base_value
       end
