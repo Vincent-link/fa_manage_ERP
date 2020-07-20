@@ -81,8 +81,17 @@ class TrackLog < ApplicationRecord
       # raise '未创建会议不能进行状态变更' unless self.calendars.present?
     when TrackLog.status_pass_value, TrackLog.status_drop_value, TrackLog.status_interested_value
       content = "#{params[:content_key] || '状态变更'}：#{self.status_desc} → #{TrackLog.status_desc_for_value(params[:status])}\n#{params[:content]}"
-      detail_type = params[:calendar_id].present? ? TrackLogDetail.detail_type_calendar_result_value : TrackLogDetail.detail_type_base_value
-      self.track_log_details.create(content: content, user_id: params[:user_id] || User.current.id, detail_type: detail_type)
+      detail = {}
+      detail[:content] = content
+      detail[:user_id] = params[:user_id] || User.current.id
+      if params[:calendar_id].present?
+        detail[:detail_type] = TrackLogDetail.detail_type_calendar_result_value
+        detail[:linkable_type] = 'Calendar'
+        detail[:linkable_id] = params[:calendar_id]
+      else
+        detail[:detail_type] = TrackLogDetail.detail_type_base_value
+      end
+      self.track_log_details.create(detail)
       params[:need_content] = false
     end
     before_status = self.status_desc
