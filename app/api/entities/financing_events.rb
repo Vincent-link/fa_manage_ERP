@@ -7,6 +7,7 @@ module Entities
     expose :round_id, documentation: {type: 'string', desc: '投资轮次id', required: true}
     expose :target_amount, documentation: {type: 'string', desc: '融资额', required: true}
     expose :funding_members, documentation: {type: 'string', desc: '项目成员', required: true}
+    expose :organizations, using: Entities::InvestorForCompany, documentation: {type: 'string', desc: '投资机构', required: true}
     expose :status, documentation: {type: 'string', desc: '状态', required: true}
   end
 end

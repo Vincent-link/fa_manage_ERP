@@ -60,49 +60,42 @@ class Company < ApplicationRecord
     Company.search(params[:query], match: :phrase, where: where_hash, order: order_hash, page: params[:page], per_page: params[:per_page], highlight: DEFAULT_HL_TAG)
   end
 
-<<<<<<< HEAD
-  def financing_events
-    self_financing_events = self.fundings.order(round_id: :desc)
-    # financing_events = Zombie::DmInvestevent.includes(:company, :invest_type, :invest_round, :investors).order_by_date.public_data.not_deleted.where(company_id: self.id).paginate(:page => 1, :per_page => 4)._select(:id, :all_investors, :birth_date, :invest_type_and_batch_desc, :detail_money_des, :invest_round_id)
-    # all_events = self_financing_events.sort_by {|p| p.try(:round_id).to_i || p.try(:invest_round_id).to_i}
-=======
-  def financing_events(is_with_kun=nil)
+  def financing_events(kun=nil)
     all_events = []
-    if is_with_kun.nil?
+    # 公司详情融资历史是需要加上kun数据
+    if kun.nil?
       self_financing_events = self.fundings
-      financing_events = Zombie::DmInvestevent.includes(:company, :invest_type, :invest_round, :investors).order_by_date.public_data.not_deleted.where(company_id: self.id)._select(:id, :all_investors, :birth_date, :invest_type_and_batch_desc, :detail_money_des, :invest_round_id)
+      financing_events = Zombie::DmInvestevent.includes(:company, :invest_type, :invest_round, :investors, :investevent_investor_relations).order_by_date.public_data.not_deleted.where(company_id: self.id)
+      ._select(:id, :all_investors, :birth_date, :invest_type_and_batch_desc, :detail_money_des, :invest_round_id, :investment_money, :investment_money_unit, :investment_ratio)
       all_events = (financing_events + self_financing_events).sort_by {|p| (p.try(:round_id) || p.try(:invest_round_id)).to_i}.reverse
+    # 首页创建项目搜索公司时，不需要kun融资数据
     else
       all_events = self.fundings.order(round_id: :desc)
     end
->>>>>>> 5a4761a2b143e53533baf9e73c6e25ecbabacd98
 
     arr = []
-    self_financing_events.map do |event|
+    all_events.map do |event|
       event_hash = {}
       if event.class.name == "Funding"
         event_hash[:id] = event.id
         event_hash[:date] = event.updated_at
         event_hash[:round_id] = event.round_id
-
-        target_amount_currency_arr = CacheBox::dm_currencies.select { |e| e["id"] == event.target_amount_currency }
-        target_amount_currency = ""
-        target_amount_currency = target_amount_currency_arr.first["name"] unless target_amount_currency_arr.empty?
-        target_amount = event.target_amount/10000 unless event.target_amount.nil?
-        event_hash[:target_amount] = "#{target_amount}万#{target_amount_currency}"
+        # 融资额
+        event_hash[:target_amount] = get_fa_target_amount(event)
 
         if event.status == Funding.status_pass_value
           event_hash[:funding_members] = "pass理由：#{event.time_lines.pluck(:reason).join("。")}"
         else
           event_hash[:funding_members] = event.funding_members.pluck(:name).join("、")
         end
+        event_hash[:organizations] = fa_member_details(event)
         event_hash[:status] = Funding.status_desc_for_value(event.status)
       else
         event_hash[:id] = event.id
         event_hash[:date] = Time.parse(event.birth_date)
-        event_hash[:round_id] = event.invest_type_and_batch_desc
+        event_hash[:round_id] = event.invest_round_id
         event_hash[:target_amount] = event.detail_money_des
-        event_hash[:funding_members] = event.all_investors.pluck(:fromable_name).join("、")
+        event_hash[:organizations] = data_server_member_details(event)
         event_hash[:status] = "融资事件"
       end
       arr << event_hash
@@ -111,11 +104,14 @@ class Company < ApplicationRecord
   end
 
   def recent_financing
-    financing_events = Zombie::DmInvestevent.includes(:company, :invest_type, :invest_round).public_data.not_deleted.where(company_id: self.id)._select(:invest_type_and_batch_desc, :detail_money_des, :birth_date).sort_by(&:birth_date)
-    if financing_events.empty?
+    self_financing_events = self.fundings
+    financing_events = Zombie::DmInvestevent.includes(:company, :invest_type, :invest_round, :investors).order_by_date.public_data.not_deleted.where(company_id: self.id)._select(:id, :all_investors, :birth_date, :invest_type_and_batch_desc, :detail_money_des, :invest_round_id)
+    all_events = (financing_events + self_financing_events).sort_by {|p| (p.try(:round_id) || p.try(:invest_round_id)).to_i}.reverse
+
+    if all_events.empty?
       "-"
     else
-      "#{financing_events.last.invest_type_and_batch_desc}-#{financing_events.last.detail_money_des}"
+      "#{all_events&.first.try(:invest_type_and_batch_desc) || get_fa_round_name(all_events.first&.try(:round_id))}-#{all_events&.first.try(:detail_money_des) || get_fa_target_amount(all_events.first)}"
     end
   end
 
@@ -139,5 +135,45 @@ class Company < ApplicationRecord
     Zombie::DmCompany.filter(id: self.id).last.update(category_id: parent_sector_id)
     self.parent_sector_id = parent_sector_id
     self.save!
+  end
+
+  # 获取fa项目融资轮次名称
+  def get_fa_round_name(round_id)
+    CacheBox::dm_rounds.select { |e| e["id"] == round_id }&.first["name"] if CacheBox::dm_rounds.select { |e| e["id"] == round_id }&.first.present?
+  end
+
+  # 获取fa项目融资轮次融资额
+  def get_fa_target_amount(event)
+    target_amount_currency_arr = CacheBox::dm_currencies.select { |e| e["id"] == event.target_amount_currency }
+    target_amount_currency = ""
+    target_amount_currency = target_amount_currency_arr.first["name"] unless target_amount_currency_arr.empty?
+    target_amount = event.target_amount/10000 unless event.target_amount.nil?
+    "#{target_amount}万#{target_amount_currency}"
+  end
+
+  def data_server_member_details(event)
+    arr = []
+    event.all_investors.map do |investor|
+      row = {}
+      row[:investor_name] = investor.name
+      row[:investment_money] = investor&.investevent_investor_relation&.investment_money * investor&.investevent_investor_relation&.investment_money_unit
+      row[:investment_ratio] = investor&.investevent_investor_relation&.investment_ratio
+      row[:currency_id] = event.currency_id
+      arr << row
+    end
+    arr
+  end
+
+  def fa_member_details(event)
+    arr = []
+    event.spas.map do |spa|
+      row = {}
+      row[:investor_name] = spa.organization&.name if spa.present?
+      row[:nvestment_money] = spa.amount
+      row[:investment_ratio] = spa.ratio
+      row[:currency_id] = spa.currency
+      arr << row
+    end
+    arr
   end
 end

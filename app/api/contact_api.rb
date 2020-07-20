@@ -3,8 +3,12 @@ class ContactApi < Grape::API
     resource configuration[:owner] do
       resource ':id' do
         desc '所有联系人', entity: Entities::Contact
+        params do
+          requires :page, type: Integer, desc: '页数', default: 1
+          optional :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 30
+        end
         get :contacts do
-          present Contact.where(company_id: params[:id]), with: Entities::Contact
+          present Contact.where(company_id: params[:id]).paginate(page: params[:page], per_page: params[:per_page]).order(created_at: :desc), with: Entities::Contact
         end
 
         desc '新建联系人'

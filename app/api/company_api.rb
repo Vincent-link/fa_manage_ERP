@@ -152,11 +152,19 @@ class CompanyApi < Grape::API
       end
 
       desc '竞争公司'
+      params do
+        requires :page, type: Integer, desc: '页数', default: 1
+        optional :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 30
+      end
       get :competing_companies do
 
       end
 
       desc '新闻报道'
+      params do
+        requires :page, type: Integer, desc: '页数', default: 1
+        optional :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 30
+      end
       get :news do
 
       end
