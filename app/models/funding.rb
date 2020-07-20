@@ -244,6 +244,7 @@ class Funding < FundingPolymer
       when 'create'
         if spa[:id].present?
           spa_track_log = self.track_logs.find(spa[:id])
+          raise '该机构已经添加过融资结算详情，不能重复添加' if spas.where(organization_id: spa_track_log.organization_id).present?
           [:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency].each {|ins| raise '融资结算信息不全' unless (spa[ins] || spa_track_log.try(ins.to_s)).present?}
           raise 'SPA文件必传' unless spa[:file_spa][:blob_id].present? || spa_track_log.file_spa.present?
           spa_track_log.update!(spa.slice(:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency).merge(status: TrackLog.status_spa_sha_value))
@@ -251,6 +252,7 @@ class Funding < FundingPolymer
             spa_track_log.file_spa_file=spa[:file_spa]
           end
         else
+          raise '该机构已经添加过融资结算详情，不能重复添加' if spas.where(organization_id: spa[:organization_id]).present?
           [:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency, :organization_id].each {|ins| raise '融资结算信息不全' unless spa[ins].present?}
           raise 'SPA文件必传' unless spa[:file_spa][:blob_id].present?
           spa_track_log = self.spas.create(spa.slice(:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency, :organization_id))

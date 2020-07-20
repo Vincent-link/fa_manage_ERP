@@ -97,6 +97,7 @@ class TrackLogApi < Grape::API
             tracklog = @funding.track_logs.create(params.slice(:status, :organization_id, :has_bp, :has_teaser, :has_nda, :has_model))
             case params[:status].to_i
             when TrackLog.status_spa_sha_value
+              raise '该机构已经添加过融资结算详情，不能重复添加' if @funding.spas.where(organziation_id: params[:organziation_id]).present?
               @funding.change_spas(current_user.id, {spas: [params.slice(:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency, :file_spa).merge(action: 'update', id: tracklog.id)]})
             when TrackLog.status_issue_ts_value
               tracklog.change_ts(current_user.id, params[:file_ts][:blob_id])

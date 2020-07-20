@@ -66,6 +66,7 @@ class TrackLog < ApplicationRecord
         params[:need_content] = false
       end
     when TrackLog.status_spa_sha_value
+      raise '该机构已经添加过融资结算详情，不能重复添加' if self.funding.spas.where(organization_id: self.organization_id).present?
       [:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency].each {|ins| raise '融资结算信息不全' unless params[ins].present?}
       raise '未传SPA不能进行状态变更' unless (params[:file_spa] || self.file_spa).present?
       if params[:file_spa].present? && params[:file_spa][:blob_id].present?
