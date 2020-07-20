@@ -52,7 +52,7 @@ class VerificationApi < Grape::API
         Verification.transaction do
           @verification.update!(status: params[:status], rejection_reason: params[:rejection_reseaon])
 
-          Verification.verification_type_config[@verification.verification_type.to_sym][:op].call(@verification) if params[:status]
+          Verification.verification_type_config[@verification.verification_type.to_sym][:op].call(@verification, params[:status])
         end
       end
     end

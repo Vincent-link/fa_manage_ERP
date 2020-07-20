@@ -342,7 +342,7 @@ class Funding < FundingPolymer
   end
 
   def gen_claim_verification(params)
-    raise '不能重复提交审核' if self.verifications.verification_type_funding_claim.where(status: nil).present?
+    raise '不能重复提交审核' if self.verifications.verification_type_funding_claim.where(status: nil, sponsor: User.current.id).present?
     params[:company_id] = self.company_id
     calendar = User.current.created_calendars.create!(params)
     desc = Verification.verification_type_config[:funding_claim][:desc].call(self.name, calendar.started_at.strftime("%Y年%m月%日 %H:%M"))
