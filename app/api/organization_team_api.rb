@@ -18,7 +18,7 @@ class OrganizationTeamApi < Grape::API
         post :teams do
           @organization.organization_teams.where.not(name: params[:name]).destroy_all
           params[:name].each do |name|
-            @organization.organization_teams.find_or_create_by name
+            @organization.organization_teams.find_or_create_by name: name
           end
           present @organization.organization_teams, with: Entities::OrganizationTeam
         end
