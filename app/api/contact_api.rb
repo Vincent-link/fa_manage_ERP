@@ -4,7 +4,7 @@ class ContactApi < Grape::API
       resource ':id' do
         desc '所有联系人', entity: Entities::Contact
         params do
-          requires :page, type: Integer, desc: '页数', default: 1
+          optional :page, type: Integer, desc: '页数', default: 1
           optional :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 30
         end
         get :contacts do
