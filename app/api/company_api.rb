@@ -81,14 +81,13 @@ class CompanyApi < Grape::API
       @relation_company = Zombie::DmRegisteredCompany.create_registered_company(declared(params))
     end
 
-    desc '上市公司股票信息'
+    desc '上市公司股票信息', entity: Entities::CompanyTicker
     params do
       optional :name, type: String, desc: "公司名称"
     end
     get :ticker do
-      company_tickers = Zombie::DmCompany.includes(:company_tickers)._select(:name, :ticker).search_by_keyword(params["name"], true)
-
-      present company_tickers
+      company_tickers = Zombie::DmCompany.includes(:company_tickers)._select(:name, :ticker).search_by_keyword(params["name"], true).inspect
+      present company_tickers, with: Entities::CompanyTicker
     end
 
     resource ':id' do
