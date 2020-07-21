@@ -12,18 +12,18 @@ class Pipeline < ApplicationRecord
   before_create :generate_pipeline_name
 
   state_config :status, config: {
-      n_ts_n_el: {value: 1, desc: '无TS（未签EL）'},
-      n_ts_el: {value: 2, desc: '无TS（已签EL）'},
-      tsing: {value: 3, desc: '有TS谈判中'},
-      tsed: {value: 4, desc: '已签TS'},
-      dding: {value: 5, desc: 'DD中'},
-      spaing: {value: 6, desc: 'SPA谈判中'},
-      spaed: {value: 7, desc: 'SPA已签署'},
-      closd: {value: 8, desc: '已交割'},
-      billed: {value: 9, desc: '已开账单'},
-      fee_ed: {value: 10, desc: '已收款'},
-      pending_n_el: {value: 11, desc: '终止（未签EL）'},
-      pending_el: {value: 12, desc: '终止（已签EL）'},
+      n_ts_n_el: {value: 1, desc: '无TS（未签EL）', rate: 10},
+      n_ts_el: {value: 2, desc: '无TS（已签EL）', rate: 10},
+      tsing: {value: 3, desc: '有TS谈判中', rate: 25},
+      tsed: {value: 4, desc: '已签TS', rate: 50},
+      dding: {value: 5, desc: 'DD中', rate: 50},
+      spaing: {value: 6, desc: 'SPA谈判中', rate: 75},
+      spaed: {value: 7, desc: 'SPA已签署', rate: 90},
+      closd: {value: 8, desc: '已交割', rate: 100},
+      billed: {value: 9, desc: '已开账单', rate: 100},
+      fee_ed: {value: 10, desc: '已收款', rate: 100},
+      pending_n_el: {value: 11, desc: '终止（未签EL）', rate: 0},
+      pending_el: {value: 12, desc: '终止（已签EL）', rate: 0},
   }
 
   delegate :status_desc, to: :funding, prefix: true

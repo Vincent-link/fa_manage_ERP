@@ -79,6 +79,10 @@ class User < ApplicationRecord
     end
   end
 
+  def is_current_bu
+    self.bu_id == Settings.current_bu_id
+  end
+
   # def group_users
   #   User.where(id: CacheBox.get_group_user_ids(self.id))
   # end

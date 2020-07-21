@@ -23,24 +23,15 @@ module StateConfig
           end
         end
 
-        define_singleton_method "#{_arg}_id_name" do
+        define_singleton_method "#{_arg}_id_name" do |*extra_attr|
           config.values.map do |element|
-            {:id => element[:value],
-             :name => element[:desc]}
+            res = {:id => element[:value],
+                   :name => element[:desc]}
+            extra_attr.each do |attr|
+              res[attr] = element[attr]
+            end
+            res
           end
-        end
-
-        define_singleton_method "#{_arg}_id_name_key" do
-          result = []
-          config.each do |key, element|
-            result << {
-                :id => element[:value],
-                :name => element[:desc],
-                :key => key.to_s
-            }
-          end
-
-          result
         end
 
         define_singleton_method "#{_arg}_id_name_with_option" do |select_options = {}|
@@ -134,7 +125,7 @@ module StateConfig
         end
 
         define_singleton_method "#{_arg}_value_code" do |value, code|
-          config.values.map{|each_config| each_config[code.to_sym] if each_config[:value] == value}.compact.flatten.uniq
+          config.values.map {|each_config| each_config[code.to_sym] if each_config[:value] == value}.compact.flatten.uniq
         end
 
         define_singleton_method "#{_arg}_filter" do |*filter_array|

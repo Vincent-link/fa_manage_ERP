@@ -117,7 +117,7 @@ class TrackLogApi < Grape::API
 
         get 'count' do
           track_logs = @funding.track_logs
-          track_log_counts = TrackLog.status_id_name_key.map do |ins|
+          track_log_counts = TrackLog.status_id_name(:key).map do |ins|
             {
                 id: ins[:id],
                 name: ins[:name],
