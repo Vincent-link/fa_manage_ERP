@@ -260,7 +260,7 @@ class Funding < FundingPolymer
           spa_track_log.file_spa_file=spa[:file_spa]
         end
       end
-      spa_track_log.gen_spa_detail(user_id, spa[:action])
+      spa_track_log.gen_spa_detail(user_id, spa[:action]) if spa_track_log.present?
     end
   end
 
