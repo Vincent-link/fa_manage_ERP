@@ -37,7 +37,7 @@ class Pipeline < ApplicationRecord
 
   def divide= divide_arr = []
     divide_arr.each do |divide|
-      self.pipeline_divides.find_or_initialize_by user_id: divide[:user_id] do |d|
+      self.pipeline_divides.find_or_initialize_by(user_id: divide[:user_id], bu_id: divide[:bu_id]) do |d|
         d.rate = divide[:rate]
       end
     end if divide_arr.present?

@@ -27,7 +27,7 @@ class PipelineApi < Grape::API
           optional :currency_rate, type: Float, desc: '汇率'
           requires :el_date, type: Date, desc: '签约日期'
           requires :est_bill_date, type: Date, desc: '预计账单日期'
-          optional :divide, type: Array[JSON], desc: '分成 [{user_id: 1, rate: 20}]'
+          optional :divide, type: Array[JSON], desc: '分成 [{user_id: 1, rate: 20}, {bu_id: 2, rate: 80}]'
         end
         post do
           pipeline = Pipeline.create! declared(params)
@@ -55,7 +55,7 @@ class PipelineApi < Grape::API
         optional :currency_rate, type: Float, desc: '汇率'
         requires :el_date, type: Date, desc: '签约日期'
         requires :est_bill_date, type: Date, desc: '预计账单日期'
-        optional :divide, type: Array[JSON], desc: '分成 [{user_id: 1, rate: 20}]'
+        optional :divide, type: Array[JSON], desc: '分成 [{user_id: 1, rate: 20}, {bu_id: 2, rate: 80}]'
       end
       patch do
         pipeline = Pipeline.find params[:id]
