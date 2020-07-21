@@ -153,13 +153,15 @@ class Company < ApplicationRecord
 
   def data_server_member_details(event)
     arr = []
-    event.all_investors.map do |investor|
-      row = {}
-      row[:investor_name] = investor.name
-      row[:investment_money] = investor&.investevent_investor_relation&.investment_money * investor&.investevent_investor_relation&.investment_money_unit
-      row[:investment_ratio] = investor&.investevent_investor_relation&.investment_ratio
-      row[:currency_id] = event.currency_id
-      arr << row
+    if event.all_investors.present?
+      event.all_investors.map do |investor|
+        row = {}
+        row[:investor_name] = investor.name
+        row[:investment_money] = investor&.investevent_investor_relation&.investment_money_unit.present? ? investor&.investevent_investor_relation&.investment_money.to_i * investor&.investevent_investor_relation&.investment_money_unit : investor&.investevent_investor_relation&.investment_money.to_i
+        row[:investment_ratio] = investor&.investevent_investor_relation&.investment_ratio
+        row[:currency_id] = event.currency_id
+        arr << row
+      end
     end
     arr
   end
