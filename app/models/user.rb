@@ -37,6 +37,7 @@ class User < ApplicationRecord
   belongs_to :bu, optional: true, class_name: 'Team', foreign_key: :bu_id
   belongs_to :grade, optional: true
   delegate :name, to: :team, :prefix => true, allow_nil: true
+  delegate :name, to: :bu, :prefix => true, allow_nil: true
   delegate :name, to: :grade, :prefix => true, allow_nil: true
 
   belongs_to :kpi_group, optional: true
