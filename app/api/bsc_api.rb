@@ -130,11 +130,7 @@ class BscApi < Grape::API
           # 判断当前用户是否是管理员
           if can? :remind, "to_vote"
             content = Notification.project_type_ask_to_review_desc.call(@funding.name)
-<<<<<<< HEAD
             @funding.evaluations.where(is_agree: nil).map {|e| Notification.create(notification_type: Notification.notification_type_project_desc, content: content, user_id: e.user_id, is_read: false, notice: {funding_id: @funding.id})}
-=======
-            @funding.evaluations.where(is_agree: nil).map {|e| Notification.create(notification_type: Notification.notification_type_project_desc, content: content, user_id: e.user_id, is_read: false, notice: {funding_id: self.id})}
->>>>>>> add financing events
           else
             raise CanCan::AccessDenied
           end
