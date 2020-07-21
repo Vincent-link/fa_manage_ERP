@@ -70,7 +70,7 @@ class Email < ApplicationRecord
 
   def change_to(params)
     case self.emailable_type
-    when 'Funding'
+    when 'FundingPolymer'
       params[:tos].group_by{|ins| ins[:type]}.each do |k, v|
         email_to_groups = self.email_to_groups
         if k == 'member'
@@ -121,7 +121,7 @@ class Email < ApplicationRecord
   end
 
   def auth_test_user(params)
-    if self.emailable_type == 'Funding'
+    if self.emailable_type == 'FundingPolymer'
       other_ids = params[:user_ids] - self.emailable.funding_users.map(&:user_id)
       others = User.where(id: other_ids)
       raise "#{others.map(&:name).join('、')}不是项目成员" if others.present?

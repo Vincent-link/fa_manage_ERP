@@ -82,7 +82,7 @@ class EmailApi < Grape::API
     get do
       emailable = params[:emailable_type].constantize.find(params[:emailable_id])
       case params[:emailable_type]
-      when "Funding"
+      when "FundingPolymer"
         if params[:push_status]
           emails = emailable.emails.where(status: Email.status_success_value)
         else
