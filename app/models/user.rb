@@ -43,7 +43,7 @@ class User < ApplicationRecord
   belongs_to :kpi_group, optional: true
 
   def position
-    ''
+    '' #todo
   end
 
   def self.find_or_create_user(auth_user_hash)
