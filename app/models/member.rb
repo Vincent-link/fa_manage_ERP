@@ -216,7 +216,7 @@ class Member < ApplicationRecord
       self.member_user_relations.map {|e| Notification.create(notification_type: Notification.notification_type_value("investor"), content: content, user_id: e.user_id, is_read: false, notice: {member_id: self.id}) if content.present?}
     end
 
-    if self.previous_changes[:organization_id].present?
+    if self.previous_changes[:organization_id].present? && self.previous_changes[:organization_id][0].present?
       before = Organization.find(self.previous_changes[:organization_id][0])
       after = Organization.find(self.previous_changes[:organization_id][1])
 
@@ -225,9 +225,6 @@ class Member < ApplicationRecord
     end
 
     if self.previous_changes[:position_rank_id].present?
-      before = Organization.find(self.previous_changes[:organization_id][0])
-      after = Organization.find(self.previous_changes[:organization_id][1])
-
       content = Notification.investor_type_config[:position_change][:desc].call(self.name, self.previous_changes[:position_rank_id][0], self.previous_changes[:position_rank_id][1])
       self.member_user_relations.map {|e| Notification.create(notification_type:  Notification.notification_type_value("investor"), content: content, user_id: e.user_id, is_read: false, notice: {member_id: self.id})}
     end

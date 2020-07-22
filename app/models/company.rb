@@ -65,7 +65,7 @@ class Company < ApplicationRecord
     # 公司详情融资历史是需要加上kun数据
     if kun.nil?
       self_financing_events = self.fundings
-      financing_events = Zombie::DmInvestevent.includes(:company, :invest_type, :invest_round, :investors, :investevent_investor_relations).order_by_date.public_data.not_deleted.where(company_id: self.id)
+      financing_events = Zombie::DmInvestevent.includes(:company, :invest_type, :invest_round, :investors, :investevent_investor_relations).order_by_date.not_deleted.search(company_id: self.id)
       ._select(:id, :all_investors, :birth_date, :invest_type_and_batch_desc, :detail_money_des, :invest_round_id, :investment_money, :investment_money_unit, :investment_ratio)
       all_events = (financing_events + self_financing_events).sort_by {|p| (p.try(:round_id) || p.try(:invest_round_id)).to_i}.reverse
     # 首页创建项目搜索公司时，不需要kun融资数据
@@ -171,7 +171,7 @@ class Company < ApplicationRecord
     event.spas.map do |spa|
       row = {}
       row[:investor_name] = spa.organization&.name if spa.present?
-      row[:nvestment_money] = spa.amount
+      row[:investment_money] = spa.amount
       row[:investment_ratio] = spa.ratio
       row[:currency_id] = spa.currency
       arr << row
