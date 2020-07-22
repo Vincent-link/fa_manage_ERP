@@ -1,22 +1,24 @@
 class TagApi < Grape::API
   mounted do
     resource configuration[:owner] do
-      resource ':type_name' do
+      resource '' do
         before do
-          tag_category_id = TagCategory.tag_category_type_config[params[:type_name].to_sym][:value]
-          @root_category = TagCategory.find(tag_category_id)
+          # tag_category_id = TagCategory.tag_category_type_config[params[:type_name].to_sym][:value]
+          @root_categorys = TagCategory.all
         end
 
         desc '一级标签'
         get :tags do
-          present @root_category.tags.order(created_at: :desc), with: Entities::Tag
+          present TagCategory.all.map{|e| e.tags.where(coverage: e.id).order(created_at: :desc)}.flatten, with: Entities::Tag
         end
 
         desc '创建一级标签'
         params do
           requires :name, type: String, desc: 'tag'
+          requires :coverage, type: Integer, desc: '适用范围'
         end
         post :tags do
+          @root_categorys = TagCategory.find(params[:coverage])
           @root_category.tag_list.add(params[:name])
           @root_category.save
         end
@@ -30,9 +32,12 @@ class TagApi < Grape::API
             desc '修改一级标签'
             params do
               requires :name, type: String, desc: '名称'
+              requires :coverage, type: Integer, desc: '适用范围'
             end
             patch do
-              @one_level_tag.update(name: params[:name])
+              @one_level_tag.update(declared(params))
+
+              @one_level_tag.sub_tag_ids.map {|e| ActsAsTaggableOn::Tag.find(e).update(coverage: @one_level_tag.coverage)} if @one_level_tag.sub_tag_ids.present?
             end
 
             desc '删除一级标签'
@@ -59,6 +64,10 @@ class TagApi < Grape::API
             post :tags do
               @one_level_tag.sub_tag_list.add(params[:name])
               @one_level_tag.save
+
+              # 同步更新二级标签适用范围
+              @one_level_tag.sub_tag_ids.map {|e| ActsAsTaggableOn::Tag.find(e).update(coverage: @one_level_tag.coverage) if ActsAsTaggableOn::Tag.find(e).coverage.nil? || ActsAsTaggableOn::Tag.find(e).coverage != @one_level_tag.coverage} if @one_level_tag.sub_tag_ids.present?
+              true
             end
           end
         end

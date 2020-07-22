@@ -107,6 +107,7 @@ class Calendar < ApplicationRecord
     if self.meeting_category_org_meeting?
       if self.ir_review_syn
         self.organization.ir_reviews.create(content: self.summary)
+        self.create_ir_review_notification(self.organization_id, self.summary)
       end
       if self.newsfeed_syn
         self.organization.newsfeeds.create(content: self.summary)

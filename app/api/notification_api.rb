@@ -44,8 +44,7 @@ class NotificationApi < Grape::API
       arr = []
       [1,2,3].map do |type|
         row = {}
-        row[:type] = Notification.notification_type_desc_for_value(type)
-        row[:unread_num] = User.current.notifications.where(notification_type: type, is_read: false).count
+        row[:unread_num] = Notification.where(notification_type: type, is_read: false).count + User.current.notifications.where(notification_type: type, is_read: false).count
         arr << row
       end
       present arr, with: Entities::NotificationType
