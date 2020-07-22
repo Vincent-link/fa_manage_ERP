@@ -144,8 +144,9 @@ class Member < ApplicationRecord
   def self.es_search(params, options = {})
     where_hash = {}
     params[:query] = '*' if params[:query].blank?
+    where_hash[:name] = {like: "%#{params[:name]}%"} if params[:name].present?
     where_hash[:sector_ids] = {all: params[:sector_ids]} if params[:sector_ids].present?
-    where_hash[:round_ids] = {all: params[:round]} if params[:round].present?
+    where_hash[:round_ids] = {all: params[:round]} if !params[:any_round] && params[:round].present?
     where_hash[:currency_ids] = {all: params[:currency]} if params[:currency].present?
     where_hash[:level] = params[:level] if params[:level].present?
     where_hash[:organization_id] = params[:organization_id] if params[:organization_id].present?

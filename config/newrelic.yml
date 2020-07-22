@@ -6,7 +6,7 @@ common: &default_settings
 
 development:
   <<: *default_settings
-  app_name: Magazine_staging (Development)
+  app_name: Magazine (Development)
 
 test:
   <<: *default_settings
@@ -15,7 +15,7 @@ test:
 
 staging:
   <<: *default_settings
-  app_name: Magazine_staging (Staging)
+  app_name: Magazine (Staging)
 
 production:
   <<: *default_settings

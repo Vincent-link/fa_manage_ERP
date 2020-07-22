@@ -4,9 +4,12 @@ class MemberApi < Grape::API
       desc '投资人列表', entity: Entities::MemberForIndex
       params do
         requires :layout, type: String, desc: 'index/select', default: 'index'
+        optional :name, type: String, desc: '检索名称'
         optional :page, type: Integer, desc: '页数', default: 1
         optional :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 30
         optional :sector_ids, type: Array[Integer], desc: '关注行业'
+        optional :round, type: Array[Integer], desc: '轮次', default: []
+        optional :any_round, type: Boolean, desc: '是否不限轮次', default: false
       end
       get :members do
         member = Member.es_search(params.merge(organization_id: params[:id]))
@@ -43,6 +46,7 @@ class MemberApi < Grape::API
         optional :hot_tag_ids, type: Array[Integer], desc: '热点标签'
         optional :sector_ids, type: Array[Integer], desc: '关注行业'
         optional :round_ids, type: Array[Integer], desc: '关注轮次'
+        optional :any_round, type: Boolean, desc: '是否不限轮次', default: false
         optional :currency_ids, type: Array[Integer], desc: '可投币种'
         optional :scale_ids, type: Array[Integer], desc: '投资规模'
         optional :team_ids, type: Array[Integer], desc: '团队'
@@ -158,6 +162,7 @@ class MemberApi < Grape::API
         optional :hot_tag_ids, type: Array[Integer], desc: '热点标签'
         optional :sector_ids, type: Array[Integer], desc: '关注行业'
         optional :round_ids, type: Array[Integer], desc: '关注轮次'
+        optional :any_round, type: Boolean, desc: '是否不限轮次', default: false
         optional :currency_ids, type: Array[Integer], desc: '可投币种'
         optional :scale_ids, type: Array[Integer], desc: '投资规模'
         optional :team_ids, type: Array[Integer], desc: '团队'
