@@ -6,7 +6,9 @@ module Entities
     expose :content
 
     expose :user, using: Entities::User
-    expose :relate_user_ids
+    expose :relate_user_ids do |ins|
+      CacheBox.user_cache.slice(*ins.relate_user_ids)
+    end
 
     with_options(format_with: :time_to_s_minute) do
       expose :created_at
