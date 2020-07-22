@@ -24,14 +24,26 @@ module StateConfig
         end
 
         define_singleton_method "#{_arg}_id_name" do |*extra_attr|
-          config.values.map do |element|
+          config.map do |key, element|
             res = {:id => element[:value],
                    :name => element[:desc]}
             extra_attr.each do |attr|
-              res[attr] = element[attr]
+              if attr == :key
+                res[attr] = key.to_s
+              else
+                res[attr] = element[attr]
+              end
             end
             res
           end
+          # config.values.map do |element|
+          #   res = {:id => element[:value],
+          #          :name => element[:desc]}
+          #   extra_attr.each do |attr|
+          #     res[attr] = element[attr]
+          #   end
+          #   res
+          # end
         end
 
         define_singleton_method "#{_arg}_id_name_with_option" do |select_options = {}|
