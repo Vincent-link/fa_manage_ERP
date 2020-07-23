@@ -139,7 +139,7 @@ class User < ApplicationRecord
     return nil unless encrypted_email_password
     begin
       len = ActiveSupport::MessageEncryptor.key_len
-      key = ActiveSupport::KeyGenerator.new('password').generate_key(Rails.application.secrets.secret_key_base, len)
+      key = ActiveSupport::KeyGenerator.new('password').generate_key(Rails.application.credentials.secret_key_base, len)
       crypt = ActiveSupport::MessageEncryptor.new(key)
       crypt.decrypt_and_verify(encrypted_email_password)
     rescue Exception => e
@@ -150,7 +150,7 @@ class User < ApplicationRecord
 
   def update_email_password(new_password)
     len = ActiveSupport::MessageEncryptor.key_len
-    key = ActiveSupport::KeyGenerator.new('password').generate_key(Rails.application.secrets.secret_key_base, len)
+    key = ActiveSupport::KeyGenerator.new('password').generate_key(Rails.application.credentials.secret_key_base, len)
     crypt = ActiveSupport::MessageEncryptor.new(key)
     self.update(encrypted_email_password: crypt.encrypt_and_sign(new_password))
   end
