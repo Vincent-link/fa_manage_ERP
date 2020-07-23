@@ -63,9 +63,19 @@ class Member < ApplicationRecord
     end
   end
 
-  [:address, :report_relations].each do |attribute_name|
+  [:report_relations].each do |attribute_name|
     define_method(attribute_name) do
       dm_member.send(attribute_name)
+    end
+  end
+
+  def address
+    if self.address_id
+      if self.address_id >= 100000
+        Address.find(self.address_id)
+      else
+        Zombie::DmAddress.find(self.address_id)
+      end
     end
   end
 
