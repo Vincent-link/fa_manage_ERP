@@ -164,6 +164,7 @@ class Member < ApplicationRecord
     where_hash[:organization_id] = params[:organization_id] if params[:organization_id].present?
     where_hash[:scale_ids] = params[:scale] if params[:scale].present?
     where_hash[:position_rank_id] = params[:position_rank_id] if params[:position_rank_id]
+    where_hash[:followed_location_ids] = {all: params[:followed_location_ids]} if params[:followed_location_ids]
     where_hash[:tel] = params[:tel] if params[:tel]
     where_hash[:user_ids] = params[:covered_by] if params[:covered_by]
     if params[:amount_min].present? || params[:amount_max].present?
@@ -182,7 +183,13 @@ class Member < ApplicationRecord
       end
     end
 
-    Member.search(params[:query], options.merge(where: where_hash, order: {organization_id: :asc, id: :asc}, page: params[:page] || 1, per_page: params[:per_page] || 30, highlight: DEFAULT_HL_TAG))
+    order_hash = {}
+    if params[:order_by]
+      order_hash[params[:order_by]] = params[:order_type]
+    end
+    order_hash[:id] = :asc
+
+    Member.search(params[:query], options.merge(where: where_hash, order: order_hash, page: params[:page] || 1, per_page: params[:per_page] || 30, highlight: DEFAULT_HL_TAG))
   end
 
   def self.syn_by_dm_member(dm_member)

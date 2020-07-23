@@ -107,8 +107,9 @@ class Organization < ApplicationRecord
 
     order_hash = {}
     if params[:order_by]
-      order_hash = {params[:order_by] => params[:order_type]}
+      order_hash[params[:order_by]] = params[:order_type]
     end
+    order_hash[:id] = :asc
 
     Organization.search(params[:query], where: where_hash, order: order_hash, page: params[:page], per_page: params[:per_page], highlight: DEFAULT_HL_TAG)
   end

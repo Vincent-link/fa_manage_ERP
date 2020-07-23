@@ -89,6 +89,7 @@ class MemberApi < Grape::API
       optional :level, type: Array[String], desc: '分级'
       optional :investor_group_id, type: Integer, desc: '投资人名单id'
       optional :covered_by, type: Integer, desc: '对接人id'
+      optional :followed_location_ids, type: Array[Integer], desc: '关注城市', default: []
       requires :layout, type: String, desc: '数据样式', default: 'index', values: ['index', 'card', 'select', 'export', 'ecm_group']
       optional :page, type: Integer, desc: '页数', default: 1
       optional :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 30

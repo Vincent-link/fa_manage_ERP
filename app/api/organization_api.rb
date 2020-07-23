@@ -214,12 +214,17 @@ class OrganizationApi < Grape::API
         requires :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 10
       end
       get :untrack_funding do
-        present Funding.includes(:track_logs).where.not(track_logs: {organization_id: @organization.id}), with: Entities::FundingForUntrack
+        present Funding.left_joins(:track_logs).where("track_logs.organization_id != #{@organization.id} or track_logs.organization_id is null").where(status: [Funding.status_pursue_value, Funding.status_execution_value, Funding.status_closing_value]), with: Entities::FundingForUntrack, members: @organization.members
       end
 
-      desc 'portfollo（假）'
+      desc 'portfollo'
+      params do
+        requires :page, type: Integer, desc: '页数', default: 1
+        requires :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 10
+      end
       get :portfollo do
-
+        funding_ids, company_ids = Funding.includes(:track_logs).where(track_logs: {status: TrackLog.status_spa_sha, organization_id: @organization.id}).pluck(:id, :company_id).transpose
+        present Funding.where(company_id: company_ids, status: [Funding.status_pursue_value, Funding.status_execution_value, Funding.status_closing_value]).where.not(id: funding_ids), with: Entities::FundingForUntrack, members: @organization.members
       end
     end
   end
