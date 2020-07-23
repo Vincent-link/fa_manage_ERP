@@ -85,7 +85,7 @@ class Organization < ApplicationRecord
                      # organization_tags: "#{self.organization_tags.map(&:name).join(' ')}", todo tags
                      members: "#{self.members.map(&:name).join(' ')}",
                      investor_group_ids: investor_group_organizations.map(&:investor_group_id),
-                     investor_group_id_tiers: investor_group_organizations.map {|group_detail| "#{group_detail.investor_group_id}-#{group_detail.tier}"},
+                     investor_group_id_tiers: investor_group_organizations.map {|group_detail| "#{group_detail.investor_group_id}-#{group_detail.tier}"}
   end
 
   def self.es_search(params)
