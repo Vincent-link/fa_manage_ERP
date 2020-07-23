@@ -90,14 +90,15 @@ class Organization < ApplicationRecord
 
   def self.es_search(params)
     where_hash = {}
+    params[:query] = '*' if params[:query].blank?
     where_hash[:name] = {like: "%#{params[:name]}%"} if params[:name].present?
     where_hash[:sector_ids] = {all: params[:sector]} if params[:sector].present?
     where_hash[:round_ids] = {all: params[:round]} if !params[:any_round] && params[:round].present?
     where_hash[:currency_ids] = {all: params[:currency]} if params[:currency].present?
     where_hash[:level] = params[:level] if params[:level].present?
     if params[:investor_group_id].present?
-      where_hash[:investor_group_ids] = {all: [params[:investor_group_id]]}
-      where_hash[:investor_group_id_tiers] = {all: params[:tier].map {|t| "#{params[:investor_group_id]}-#{t}"}} if params[:tier].present?
+      where_hash[:investor_group_ids] = params[:investor_group_id]
+      where_hash[:investor_group_id_tiers] = params[:tier].map {|t| "#{params[:investor_group_id]}-#{t}"} if params[:tier].present?
     end
     if params[:amount_min].present? || params[:amount_max].present?
       range = (params[:amount_min] || 0)..(params[:amount_max] || 9999999)
