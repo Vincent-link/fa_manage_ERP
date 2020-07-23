@@ -173,7 +173,7 @@ class OrganizationApi < Grape::API
           raise "轮次不能为空" if params[:round_ids].nil?
           raise "投资币种不能为空" if params[:currency_ids].nil?
         when 'logo'
-          
+
         end
 
         @organization.organization_tag_ids = params[:organization_tag_ids]
@@ -209,8 +209,12 @@ class OrganizationApi < Grape::API
       end
 
       desc '未跟进项目（假）'
+      params do
+        requires :page, type: Integer, desc: '页数', default: 1
+        requires :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 10
+      end
       get :untrack_funding do
-
+        present Funding.includes(:track_logs).where.not(track_logs: {organization_id: @organization.id}), with: Entities::Funding
       end
 
       desc 'portfollo（假）'
