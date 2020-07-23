@@ -24,6 +24,7 @@ class Member < ApplicationRecord
 
   has_many :email_receivers, as: :receiverable
   has_many :email_tos, as: :toable
+  has_many :investor_group_members
 
   delegate :name, to: :organization, prefix: true
 
@@ -48,11 +49,12 @@ class Member < ApplicationRecord
   attr_accessor :solid_lower_ids, :virtual_lower_ids, :report_line
 
   # searchkick scope and config
-  scope :search_import, -> {includes(:organization, :users)}
+  scope :search_import, -> {includes(:organization, :users, :investor_group_members)}
 
   def search_data
     attributes.merge organization_name: self.organization_name,
-                     user_ids: self.user_ids
+                     user_ids: self.user_ids,
+                     investor_group_ids: self.investor_group_members.map(&:investor_group_id)
   end
 
   def save_to_dm
@@ -168,13 +170,10 @@ class Member < ApplicationRecord
       range = (params[:amount_min] || 0)..(params[:amount_max] || 9999999)
       where_hash[:_or] = [{usd_amount_min: range}, {usd_amount_max: range}]
     end
-    if params[:investor_group_id]
-      if where_hash[:id]
-        where_hash[:id] &= InvestorGroup.find(params[:investor_group_id]).member_ids
-      else
-        where_hash[:id] = InvestorGroup.find(params[:investor_group_id]).member_ids
-      end
+    if params[:investor_group_id].present?
+      where_hash[:investor_group_ids] = params[:investor_group_id]
     end
+
     if params[:followed]
       if where_hash[:id]
         where_hash[:id] &= User.current.follows.member.pluck(:id)
