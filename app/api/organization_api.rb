@@ -241,10 +241,17 @@ class OrganizationApi < Grape::API
       params do
         requires :page, type: Integer, desc: '页数', default: 1
         requires :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 10
+        optional :sector_ids, type: Array[Integer], desc: '行业'
+        optional :round_ids, type: Array[Integer], desc: '轮次'
+        optional :status, type: Array[Integer], desc: '状态'
       end
       get :portfollo do
         funding_ids, company_ids = Funding.includes(:track_logs).where(track_logs: {status: TrackLog.status_spa_sha, organization_id: @organization.id}).pluck(:id, :company_id).transpose
-        present Funding.where(company_id: company_ids, status: [Funding.status_pursue_value, Funding.status_execution_value, Funding.status_closing_value]).where.not(id: funding_ids).paginate(page: params[:page], per_page: params[:per_page]), with: Entities::FundingForUntrack, members: @organization.members
+        fundings = Funding.where(company_id: company_ids, status: [Funding.status_pursue_value, Funding.status_execution_value, Funding.status_closing_value]).where.not(id: funding_ids)
+        fundings = fundings.where(status: params[:status]) if params[:status].present?
+        fundings = fundings.where(round_id: params[:round_ids]) if params[:round_ids].present?
+        fundings = fundings.includes(:company).where(companies: {sector_id: params[:sector_ids]}) if params[:sector_ids].present?
+        present fundings.paginate(page: params[:page], per_page: params[:per_page]), with: Entities::FundingForUntrack, members: @organization.members
       end
     end
   end
