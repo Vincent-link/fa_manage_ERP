@@ -173,7 +173,7 @@ class Member < ApplicationRecord
       end
     end
 
-    Member.search(params[:query], options.merge(where: where_hash, order: {organization_id: :asc}, page: params[:page] || 1, per_page: params[:per_page] || 30, highlight: DEFAULT_HL_TAG))
+    Member.search(params[:query], options.merge(where: where_hash, order: {organization_id: :asc, id: :asc}, page: params[:page] || 1, per_page: params[:per_page] || 30, highlight: DEFAULT_HL_TAG))
   end
 
   def self.syn_by_dm_member(dm_member)
