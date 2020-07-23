@@ -84,15 +84,9 @@ class Calendar < ApplicationRecord
   end
 
   def gen_track_log_detail
-    if self.meeting_category_roadshow? && self.funding
-      track_log = self.funding.track_logs.find_or_create_by!(organization_id: self.organization_id) do |track_log|
-        org_members.each do |cal_member|
-          track_log.track_log_members.build(member_id: cal_member.memberable_id)
-        end
-        track_log.status = TrackLog.status_meeting_value
-      end
+    if self.meeting_category_roadshow? && self.track_log
       if self.previous_changes.has_key? :track_result
-        track_log.change_status_by_calendar(self.id, self.track_result, reason) if self.track_result
+        self.track_log.change_status_by_calendar(self.id, self.track_result, reason) if self.track_result
       else
         action = if self.previous_changes.has_key? :id
                    'create'
@@ -104,7 +98,7 @@ class Calendar < ApplicationRecord
                      'update'
                    end
                  end
-        track_log.gen_meeting_detail(User.current.id, self.id, action, reason)
+        self.track_log.gen_meeting_detail(User.current.id, self.id, action, reason)
       end
     end
   end
