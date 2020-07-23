@@ -24,6 +24,7 @@ module Entities
     expose :company_location_city_id, documentation: {type: Integer, desc: '公司city_id'}
     expose :company_location_province_id, documentation: {type: Integer, desc: '公司province_id'}
     expose :funding_id, documentation: {type: Integer, desc: '项目id'}
+    expose :funding_round_id, documentation: {type: Integer, desc: '项目轮次id'}
     expose :track_log_id, documentation: {type: Integer, desc: '关联的track_log id'}
     expose :track_log_status, documentation: {type: Integer, desc: 'track_log状态'}
     expose :track_log_members, documentation: {type: MemberLite, desc: 'track_log投资人'}

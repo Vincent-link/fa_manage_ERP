@@ -23,7 +23,7 @@ class Calendar < ApplicationRecord
 
   delegate :name, to: :organization, allow_nil: true, prefix: true
   delegate :name, :location_city_id, :location_province_id, to: :company, allow_nil: true, prefix: true
-  delegate :status, to: :funding, allow_nil: true, prefix: true
+  delegate :status, :round_id, to: :funding, allow_nil: true, prefix: true
   delegate :status, :members, to: :track_log, allow_nil: true, prefix: true
 
   attr_accessor :ir_review_syn, :newsfeed_syn, :investor_summary
