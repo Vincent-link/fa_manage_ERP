@@ -1,0 +1,155 @@
+
+
+<p style="font-size: 16px;">Arrow For FA 日报（<%= Time.current.strftime("%Y年%m月%d日") %>）</p>
+<p style="border-bottom: 1px solid #c9c9c9;"></p>
+
+<div style="font-size: 16px; display: flex">
+  <div style="width: 5px; background-color: #a1a1a1;"></div>
+  <div style="margin-left: 5px"> 今日通知汇总（<%= @projects_count + @ir_reviews_count + @investors_count %>）</div>
+</div>
+
+<div style="margin-left: 15px;">
+  <p style="background-color: #c9c9c9; width: 100px; text-align: center;">我的通知</p>
+
+  <% if @projects_count.zero? %>
+    <p style="color: #7a7a7a">暂无通知</p>
+  <% else %>
+    <% @projects_passed.each do |notification| %>
+      <p>
+        <span><%= notification.content %></span>
+        <span><%= link_to "查看项目>>", "#{@server_url}/project/project-list/detail/#{notification.notice["funding_id"]}/info" %></span>
+      </p>
+      <p style="border-bottom: 1px solid #c9c9c9;"></p>
+    <% end %>
+
+    <% @projects_pursued.each do |notification| %>
+      <p>
+        <span><%= notification.content %></span>
+        <span><%= link_to "查看项目>>", "#{@server_url}/project/project-list/detail/#{notification.notice["funding_id"]}/info" %></span>
+      </p>
+      <p style="border-bottom: 1px solid #c9c9c9;"></p>
+    <% end %>
+
+<!--TODO-->
+    <% @projects_bsc_started.each do |notification| %>
+      <p>
+        <span><%= notification.content %></span>
+      </p>
+      <p style="border-bottom: 1px solid #c9c9c9;"></p>
+    <% end %>
+
+    <% @projects_answered.each do |notification| %>
+      <p>
+        <span><%= notification.content %></span>
+        <span><%= link_to "查看>>", "#{@server_url}/project/project-list/detail/#{notification.notice["funding_id"]}/bsc" %></span>
+      </p>
+      <p style="border-bottom: 1px solid #c9c9c9;"></p>
+    <% end %>
+
+    <% @projects_ask_to_review.each do |notification| %>
+      <p>
+        <span><%= notification.content %></span>
+      </p>
+      <p style="border-bottom: 1px solid #c9c9c9;"></p>
+    <% end %>
+
+    <% @projects_waitting.each do |notification| %>
+      <p>
+        <span><%= notification.content %></span>
+      </p>
+      <p style="border-bottom: 1px solid #c9c9c9;"></p>
+    <% end %>
+
+    <% @projects_after_question.each do |notification| %>
+      <p>
+        <span><%= notification.content %></span>
+        <span><%= link_to "查看>>", "#{@server_url}/project/project-list/detail/#{notification.notice["funding_id"]}/bsc" %></span>
+      </p>
+      <p style="border-bottom: 1px solid #c9c9c9;"></p>
+    <% end %>
+
+  <% end %>
+
+  <!--TODO-->
+
+  <!--<p>-->
+  <!--  <span>【滴滴出行】已通过BSC投票，移动到Pursue阶段。</span>-->
+  <!--  <span> 查看项目>> </span>-->
+  <!--</p>-->
+  <!--<p style="border-bottom: 1px solid #c9c9c9;"></p>-->
+
+  <!--<p>-->
+  <!--  <span>【壹站】未通过BSC投票，移动到Pass阶段。</span>-->
+  <!--  <span> 查看项目>> </span>-->
+  <!--</p>-->
+  <!--<p style="border-bottom: 1px solid #c9c9c9;"></p>-->
+
+  <!--<p>-->
+  <!--  <span>【项目名称】已启动项目互评。 </span>-->
+  <!--  <span> 我的互评 </span>-->
+  <!--</p>-->
+  <!--<p style="border-bottom: 1px solid #c9c9c9;"></p>-->
+
+  <!--<p>-->
+  <!--  <span> 您有一个【Title修改】的待办。</span>-->
+  <!--  <span> 去处理>> </span>-->
+  <!--</p>-->
+  <!--<p style="border-bottom: 1px solid #c9c9c9;"></p>-->
+
+  <!--<p>-->
+  <!--  <span> 您有一个【Title修改】的待办已关闭。</span>-->
+  <!--  <span> 查看>> </span>-->
+  <!--</p>-->
+  <!--<p style="border-bottom: 1px solid #c9c9c9;"></p>-->
+
+  <!--<p>-->
+  <!--  <span> 您与【公司名称】的会议已约见，请及时填写会议纪要。</span>-->
+  <!--  <span> 查看>> </span>-->
+  <!--</p>-->
+  <!--<p style="border-bottom: 1px solid #c9c9c9;"></p>-->
+
+  <br />
+
+  <p style="background-color: #c9c9c9; width: 100px; text-align: center;">Ir Review</p>
+
+  <% if @ir_reviews_count.zero? %>
+    <p style="color: #7a7a7a">暂无通知</p>
+  <% else %>
+    <% @ir_reviews.each do |notification| %>
+      <p>
+        <span><%= notification.content %></span>
+        <span><%= link_to "查看>>", "#{@server_url}/investor/org-list/org/#{notification.notice["organization_id"]}/detail" %></span>
+      </p>
+      <p style="border-bottom: 1px solid #c9c9c9;"></p>
+    <% end %>
+  <% end %>
+
+  <br />
+
+  <p style="background-color: #c9c9c9; width: 100px; text-align: center;">投资人动态</p>
+
+  <% if @investors_count.zero? %>
+    <p style="color: #7a7a7a">暂无通知</p>
+  <% else %>
+    <% @investors_position_change.each do |notification| %>
+      <p>
+        <span><%= notification.content %></span>
+      </p>
+      <p style="border-bottom: 1px solid #c9c9c9;"></p>
+    <% end %>
+
+    <% @investors_institutional_change.each do |notification| %>
+      <p>
+        <span><%= notification.content %></span>
+      </p>
+      <p style="border-bottom: 1px solid #c9c9c9;"></p>
+    <% end %>
+
+    <% @investors_resign.each do |notification| %>
+      <p>
+        <span><%= notification.content %></span>
+      </p>
+      <p style="border-bottom: 1px solid #c9c9c9;"></p>
+    <% end %>
+  <% end %>
+</div>
