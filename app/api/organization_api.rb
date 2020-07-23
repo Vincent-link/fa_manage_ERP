@@ -234,7 +234,7 @@ class OrganizationApi < Grape::API
         fundings = fundings.where(status: params[:status]) if params[:status].present?
         fundings = fundings.where(round_id: params[:round_ids]) if params[:round_ids].present?
         fundings = fundings.includes(:company).where(companies: {sector_id: params[:sector_ids]}) if params[:sector_ids].present?
-        present fundings.paginate(page: params[:page], per_page: params[:per_page]), with: Entities::FundingForUntrack, members: @organization.members
+        present fundings.distinct.paginate(page: params[:page], per_page: params[:per_page]), with: Entities::FundingForUntrack, members: @organization.members
       end
 
       desc 'portfollo'
