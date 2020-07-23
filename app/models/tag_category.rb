@@ -1,8 +1,6 @@
 class TagCategory < ApplicationRecord
   acts_as_taggable_on :tags
 
-  after_save :update_coverage
-
   include StateConfig
 
   state_config :tag_category_type, config: {
@@ -15,7 +13,7 @@ class TagCategory < ApplicationRecord
     TagCategory.tag_category_type_desc_for_value(self.id)
   end
 
-  def update_coverage
-    ActsAsTaggableOn::Tag.find(self.tags.last.id).update(coverage: self.id)
+  def update_coverage(coverage)
+    ActsAsTaggableOn::Tag.find(self.tags.last.id).update(coverage: coverage)
   end
 end

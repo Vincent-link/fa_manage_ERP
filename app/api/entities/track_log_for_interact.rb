@@ -4,7 +4,7 @@ module Entities
     expose :status_desc, documentation: {type: 'string', desc: 'track_log状态'}
     expose :funding_round_id, documentation: {type: 'integer', desc: '项目轮次'}
     expose :funding_name, documentation: {type: 'string', desc: '项目名称'}
-    expose :funding_sector_list, documentation: {type: 'string', desc: '项目行业', is_array: true}
+    expose :funding_sector_id, documentation: {type: 'integer', desc: '项目行业id'}
     expose :funding_user_names, documentation: {type: 'string', desc: '项目参与人'}
     expose :member_names, documentation: {type: 'string', desc: '机构参与人'}
     expose :organization_name, documentation: {type: 'string', desc: '机构名称'}

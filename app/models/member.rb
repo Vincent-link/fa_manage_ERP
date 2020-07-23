@@ -11,7 +11,7 @@ class Member < ApplicationRecord
   has_blob_upload :avatar, :card
 
 
-  acts_as_taggable_on :hot_tags
+  acts_as_taggable_on :investor_tags
 
   belongs_to :organization, optional: true
   belongs_to :sponsor, class_name: 'User', optional: true
@@ -144,8 +144,9 @@ class Member < ApplicationRecord
   def self.es_search(params, options = {})
     where_hash = {}
     params[:query] = '*' if params[:query].blank?
+    where_hash[:name] = {like: "%#{params[:name]}%"} if params[:name].present?
     where_hash[:sector_ids] = {all: params[:sector_ids]} if params[:sector_ids].present?
-    where_hash[:round_ids] = {all: params[:round]} if params[:round].present?
+    where_hash[:round_ids] = {all: params[:round]} if !params[:any_round] && params[:round].present?
     where_hash[:currency_ids] = {all: params[:currency]} if params[:currency].present?
     where_hash[:level] = params[:level] if params[:level].present?
     where_hash[:organization_id] = params[:organization_id] if params[:organization_id].present?
@@ -220,7 +221,7 @@ class Member < ApplicationRecord
       before = Organization.find(self.previous_changes[:organization_id][0])
       after = Organization.find(self.previous_changes[:organization_id][1])
 
-      content = Notification.investor_type_config[:institutional_change][:desc].call(self.name, before.name, after.name)
+      content = Notification.investor_type_config[:institutional_change][:desc].call(self.name, before&.name, after.name)
       self.member_user_relations.map {|e| Notification.create(notification_type:  Notification.notification_type_value("investor"), content: content, user_id: e.user_id, is_read: false, notice: {member_id: self.id})}
     end
 

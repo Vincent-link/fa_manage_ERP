@@ -44,6 +44,7 @@ gem "config"
 gem "whenever"
 
 gem 'will_paginate'
+gem 'newrelic_rpm'
 
 # gems below is optional, uncomment is you need
 # kafka

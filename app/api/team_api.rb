@@ -1,8 +1,16 @@
 class TeamApi < Grape::API
   resource :teams do
     desc '所有team', entity: Entities::Team
+    params do
+      optional :range, type: String, desc: '范围', values: ['bu_team', 'all_team'], default: 'bu_team'
+    end
     get do
-      present Team.all, with: Entities::Team
+      case params[:range]
+      when 'bu_team'
+        present Team.where(parent_id: Settings.current_bu_id), with: Entities::Team
+      when 'all_team'
+        present Team.all, with: Entities::Team
+      end
     end
 
     desc "新增team"
@@ -16,7 +24,7 @@ class TeamApi < Grape::API
 
     desc '获取BU', entity: Entities::TeamLite
     get :bu do
-      present Team.where(parent_id: 242), with: Entities::TeamLite
+      present Team.where(parent_id: Settings.current_bu_id), with: Entities::TeamLite
     end
 
     resources ':id' do

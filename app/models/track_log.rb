@@ -17,7 +17,7 @@ class TrackLog < ApplicationRecord
   has_many :track_log_members
   has_many :members, through: :track_log_members, class_name: 'Member'
 
-  delegate :name, :round_id, :user_names, :sector_list, to: :funding, prefix: true
+  delegate :name, :round_id, :user_names, :sector_id, to: :funding, prefix: true
   delegate :name, to: :organization, prefix: true
 
   state_config :status, config: {

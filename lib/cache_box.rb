@@ -69,4 +69,10 @@ class CacheBox
       [id] | ids.map {|i| CacheBox.get_group_user_ids(i)}.flatten
     end
   end
+
+  def self.user_cache
+    Rails.cache.fetch("user_cache", expires_in: 1.minutes) do
+      User.pluck(:id, :name).to_h
+    end
+  end
 end

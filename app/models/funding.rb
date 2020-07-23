@@ -28,7 +28,7 @@ class Funding < FundingPolymer
   after_create :base_time_line
   after_create :reviewing_status
 
-  delegate :sector_list, to: :company
+  delegate :sector_id, to: :company
 
   def gen_serial_number
     current_year = Time.now.year
