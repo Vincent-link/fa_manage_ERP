@@ -6,7 +6,7 @@ class TagCategoryApi < Grape::API
     end
     get do
       if params[:coverage] == "manage"
-        present TagCategory.all, with: Entities::TagCategory
+        present TagCategory.all.order(created_at: :desc), with: Entities::TagCategory
       else
         row = []
         TagCategory.all.map do |cate|

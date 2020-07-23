@@ -1,8 +1,6 @@
 class TagCategory < ApplicationRecord
   acts_as_taggable_on :tags
 
-  after_save :update_coverage
-
   include StateConfig
 
   state_config :tag_category_type, config: {
