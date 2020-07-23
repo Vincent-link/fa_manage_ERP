@@ -14,8 +14,4 @@ class TagCategory < ApplicationRecord
   def tag_category_type
     TagCategory.tag_category_type_desc_for_value(self.id)
   end
-
-  def update_coverage
-    ActsAsTaggableOn::Tag.find(self.tags.last.id).update(coverage: self.id)
-  end
 end

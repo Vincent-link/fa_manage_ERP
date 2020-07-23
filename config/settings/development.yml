@@ -38,3 +38,5 @@ zombie:
   host: "http://router.canary.huaxing.com:9787"
   #host: "http://localhost:8780"
   app_name: 'magazine_dev_lee'
+
+current_bu_id: 244
