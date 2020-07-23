@@ -22,12 +22,13 @@ class Organization < ApplicationRecord
   has_many :organization_teams
   has_many :calendars
   has_many :track_logs
+  has_many :investor_group_organizations
 
   after_validation :save_to_dm
 
   delegate :addresses, to: :dm_organization, prefix: false
 
-  scope :search_import, -> {includes(:ir_reviews, :newsfeeds, :comments, :members, :organization_tags)}
+  scope :search_import, -> {includes(:ir_reviews, :newsfeeds, :comments, :members, :organization_tags, :investor_group_organizations)}
 
   state_config :level, config: {
       a: {value: 'A', desc: 'A'},
@@ -82,7 +83,9 @@ class Organization < ApplicationRecord
                      newsfeeds: "#{self.newsfeeds.map(&:content).join(' ')}",
                      comments: "#{self.comments.map(&:content).join(' ')}",
                      # organization_tags: "#{self.organization_tags.map(&:name).join(' ')}", todo tags
-                     members: "#{self.members.map(&:name).join(' ')}"
+                     members: "#{self.members.map(&:name).join(' ')}",
+                     investor_group_ids: investor_group_organizations.map(&:investor_group_id),
+                     investor_group_id_tiers: investor_group_organizations.map {|group_detail| "#{group_detail.investor_group_id}-#{group_detail.tier}"},
   end
 
   def self.es_search(params)
@@ -92,12 +95,13 @@ class Organization < ApplicationRecord
     where_hash[:round_ids] = {all: params[:round]} if !params[:any_round] && params[:round].present?
     where_hash[:currency_ids] = {all: params[:currency]} if params[:currency].present?
     where_hash[:level] = params[:level] if params[:level].present?
+    if params[:investor_group_id].present?
+      where_hash[:investor_group_ids] = {all: params[:investor_group_id]}
+      where_hash[:investor_group_id_tiers] = {all: params[:tier].map {|t| "#{params[:investor_group_id]}-#{t}"}} if params[:tier].present?
+    end
     if params[:amount_min].present? || params[:amount_max].present?
       range = (params[:amount_min] || 0)..(params[:amount_max] || 9999999)
       where_hash[:_or] = [{usd_amount_min: range}, {usd_amount_max: range}]
-    end
-    if params[:investor_group_id]
-      where_hash[:id] = InvestorGroup.find(params[:investor_group_id]).organization_ids
     end
 
     order_hash = {}

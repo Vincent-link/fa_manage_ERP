@@ -11,7 +11,7 @@ class OrganizationApi < Grape::API
       optional :amount_max, type: Integer, desc: '美元融资规模最大'
       optional :level, type: Array[String], desc: '分级'
       optional :investor_group_id, type: Integer, desc: '投资人名单id'
-      optional :tier, type: Integer, desc: 'tier'
+      optional :tier, type: Array[Integer], desc: 'tier'
       optional :currency, type: Array[Integer], desc: '币种', default: []
       requires :layout, type: String, desc: 'index/select', default: 'index', values: ['index', 'select', 'ecm_group']
       requires :page, type: Integer, desc: '页数', default: 1
