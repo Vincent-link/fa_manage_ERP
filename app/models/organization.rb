@@ -96,7 +96,7 @@ class Organization < ApplicationRecord
     where_hash[:currency_ids] = {all: params[:currency]} if params[:currency].present?
     where_hash[:level] = params[:level] if params[:level].present?
     if params[:investor_group_id].present?
-      where_hash[:investor_group_ids] = {all: params[:investor_group_id]}
+      where_hash[:investor_group_ids] = {all: [params[:investor_group_id]]}
       where_hash[:investor_group_id_tiers] = {all: params[:tier].map {|t| "#{params[:investor_group_id]}-#{t}"}} if params[:tier].present?
     end
     if params[:amount_min].present? || params[:amount_max].present?
