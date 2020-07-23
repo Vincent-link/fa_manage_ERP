@@ -32,7 +32,7 @@ class CalendarApi < Grape::API
       cal = cal.where(status: params[:status]) if params[:status]
       cal = cal.where(meeting_category: params[:meeting_category]) if params[:meeting_category]
       cal = cal.where(started_at: params[:start_date]..(params[:end_date] + 1)) if params[:start_date].present? && params[:end_date].present?
-      present cal.includes(:calendar_members, :user, :organization, :company, :org_members, :com_members, :user_members), with: Entities::Calendar
+      present cal.includes(:calendar_members, :user, :organization, :company, :org_members, :com_members, :user_members).order(started_at: :desc), with: Entities::Calendar
     end
 
     desc '获取call_report'
