@@ -173,7 +173,7 @@ class Member < ApplicationRecord
       end
     end
 
-    Member.search(params[:query], options.merge(where: where_hash, page: params[:page] || 1, per_page: params[:per_page] || 30, highlight: DEFAULT_HL_TAG))
+    Member.search(params[:query], options.merge(where: where_hash, order: {organization_id: :asc}, page: params[:page] || 1, per_page: params[:per_page] || 30, highlight: DEFAULT_HL_TAG))
   end
 
   def self.syn_by_dm_member(dm_member)
@@ -222,12 +222,12 @@ class Member < ApplicationRecord
       after = Organization.find(self.previous_changes[:organization_id][1])
 
       content = Notification.investor_type_config[:institutional_change][:desc].call(self.name, before&.name, after.name)
-      self.member_user_relations.map {|e| Notification.create(notification_type:  Notification.notification_type_value("investor"), content: content, user_id: e.user_id, is_read: false, notice: {member_id: self.id})}
+      self.member_user_relations.map {|e| Notification.create(notification_type: Notification.notification_type_value("investor"), content: content, user_id: e.user_id, is_read: false, notice: {member_id: self.id})}
     end
 
     if self.previous_changes[:position_rank_id].present?
       content = Notification.investor_type_config[:position_change][:desc].call(self.name, self.previous_changes[:position_rank_id][0], self.previous_changes[:position_rank_id][1])
-      self.member_user_relations.map {|e| Notification.create(notification_type:  Notification.notification_type_value("investor"), content: content, user_id: e.user_id, is_read: false, notice: {member_id: self.id})}
+      self.member_user_relations.map {|e| Notification.create(notification_type: Notification.notification_type_value("investor"), content: content, user_id: e.user_id, is_read: false, notice: {member_id: self.id})}
     end
   end
 end
