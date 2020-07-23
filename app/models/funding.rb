@@ -47,7 +47,7 @@ class Funding < FundingPolymer
   end
 
   def user_names
-    self.users.map(&:name).join('、')
+    self.users.map(&:name).uniq.join('、')
   end
 
   def add_project_follower(params)
