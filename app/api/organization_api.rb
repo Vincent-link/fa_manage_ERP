@@ -203,9 +203,22 @@ class OrganizationApi < Grape::API
       params do
         requires :page, type: Integer, desc: '页数', default: 1
         requires :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 10
+        optional :sector_ids, type: Array[Integer], desc: '行业'
+        optional :round_ids, type: Array[Integer], desc: '轮次'
+        optional :status, type: Array[Integer], desc: '状态'
       end
       get :track_logs do
-        present @organization.track_logs.paginate(page: params[:page], per_page: params[:per_page]), with: Entities::TrackLogForInteract
+        track_logs = @organization.track_logs.order(updated_at: :desc)
+        if params[:sector_ids].present?
+          track_logs = track_logs.includes(funding: :company)
+        elsif params[:round_ids].present? || params[:status].present?
+          track_logs = track_logs.includes(:funding)
+        end
+        track_logs = track_logs.where(fundings: {status: params[:status]}) if params[:status].present?
+        track_logs = track_logs.where(fundings: {round_id: params[:round_ids]}) if params[:round_ids].present?
+        track_logs = track_logs.where(fundings: {companies: {sector_id: params[:sector_ids]}}) if params[:sector_ids].present?
+
+        present track_logs.paginate(page: params[:page], per_page: params[:per_page]), with: Entities::TrackLogForInteract
       end
 
       desc '未跟进项目'
