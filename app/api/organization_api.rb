@@ -200,8 +200,12 @@ class OrganizationApi < Grape::API
       end
 
       desc '跟进情况'
+      params do
+        requires :page, type: Integer, desc: '页数', default: 1
+        requires :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 10
+      end
       get :track_logs do
-        present @organization.track_logs, with: Entities::TrackLogForInteract
+        present @organization.track_logs.paginate(page: params[:page], per_page: params[:per_page]), with: Entities::TrackLogForInteract
       end
 
       desc '未跟进项目（假）'

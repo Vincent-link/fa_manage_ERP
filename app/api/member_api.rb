@@ -220,9 +220,13 @@ class MemberApi < Grape::API
       end
 
       desc '与投资人交互'
+      params do
+        requires :page, type: Integer, desc: '页数', default: 1
+        requires :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 10
+      end
       get :track_logs do
         member = Member.find(params[:id])
-        present member.track_logs, with: Entities::TrackLogForInteract
+        present member.track_logs.paginate(page: params[:page], per_page: params[:per_page]), with: Entities::TrackLogForInteract
       end
     end
   end
