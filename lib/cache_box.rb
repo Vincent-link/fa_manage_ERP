@@ -50,6 +50,12 @@ class CacheBox
     end
   end
 
+  def self.dm_member_location
+    Rails.cache.fetch('dm_location_tree') do
+      Zombie::DmLocation.where(name: ['北京', '上海', '天津', '重庆', '香港', '南京', '苏州', '杭州', '宁波', '厦门', '武汉', '长沙', '广州', '深圳', '成都', '西安']).select(:id, :name).as_json
+    end
+  end
+
   def self.dm_locations
     Rails.cache.fetch('dm_locations') do
       Zombie::DmLocation.all._select(:id, :name, :parent_id).index_by(&:id)

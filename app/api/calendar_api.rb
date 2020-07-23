@@ -48,7 +48,7 @@ class CalendarApi < Grape::API
               Calendar.where(company_id: params[:company_id])
             end
       cal = cal.where(meeting_category: [Calendar.meeting_category_roadshow_value, Calendar.meeting_category_com_meeting_value])
-      present cal.includes(:calendar_members, :user, :company, :com_members, :user_members), with: Entities::Calendar
+      present cal.includes(:calendar_members, :user, :company, :com_members, :user_members).order(started_at: :desc), with: Entities::Calendar
     end
 
     desc '创建日程', entity: Entities::Calendar
