@@ -46,7 +46,7 @@ class TeamApi < Grape::API
       end
 
       desc '团队成员'
-      patch :users do
+      get :users do
         present @team.users, with: Entities::UserLite
       end
     end
