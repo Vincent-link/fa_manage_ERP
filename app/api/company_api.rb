@@ -88,7 +88,7 @@ class CompanyApi < Grape::API
       optional :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 30
     end
     get :ticker do
-      company_tickers = Zombie::DmCompany.includes(:company_tickers)._select(:name, :ticker).search_by_keyword(params["name"], true).paginate(page: params[:page], per_page: params[:per_page]).inspect
+      company_tickers = Zombie::DmCompany.includes(:company_tickers)._select(:name, :ticker).search_by_keyword(params["name"], true).paginate(page: params[:page], per_page: params[:per_page]).order(created_at: :desc).inspect
       present company_tickers, with: Entities::CompanyTicker
     end
 
