@@ -3,7 +3,6 @@ module Entities
     expose :id, documentation: {type: 'integer', desc: 'id', required: true}
     expose :name, documentation: {type: 'string', desc: '名称', required: true}
     expose :taggings_count, as: :num, documentation: {type: 'string', desc: '使用情况', required: true} do |ins|
-      ins.taggings_count - 1
       {
           organization_num: organization_num(ins),
           company_num: company_num(ins),

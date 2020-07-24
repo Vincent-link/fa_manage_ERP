@@ -84,9 +84,11 @@ class CompanyApi < Grape::API
     desc '上市公司股票信息', entity: Entities::CompanyTicker
     params do
       optional :name, type: String, desc: "公司名称"
+      optional :page, type: Integer, desc: '页数', default: 1
+      optional :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 30
     end
     get :ticker do
-      company_tickers = Zombie::DmCompany.includes(:company_tickers)._select(:name, :ticker).search_by_keyword(params["name"], true).inspect
+      company_tickers = Zombie::DmCompany.includes(:company_tickers)._select(:name, :ticker).search_by_keyword(params["name"], true).paginate(page: params[:page], per_page: params[:per_page]).inspect
       present company_tickers, with: Entities::CompanyTicker
     end
 

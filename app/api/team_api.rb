@@ -44,6 +44,11 @@ class TeamApi < Grape::API
       patch do
         @team.update(declared(params))
       end
+
+      desc '团队成员'
+      patch :users do
+        present @team.users, with: Entities::UserLite
+      end
     end
   end
 
