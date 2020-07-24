@@ -6,8 +6,8 @@ class PipelineDivide < ApplicationRecord
   belongs_to :user
   belongs_to :team
 
-  delegate :name, to: :team, prefix: true
-  delegate :name, to: :user, prefix: true, allow_nil: true
+  delegate :name, to: :team, prefix: true, allow_nil: true
+  delegate :name, to: :user, prefix: true
 
   after_commit :reindex_pipeline
 
