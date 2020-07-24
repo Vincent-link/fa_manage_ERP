@@ -54,7 +54,8 @@ class Member < ApplicationRecord
   def search_data
     attributes.merge organization_name: self.organization_name,
                      user_ids: self.user_ids,
-                     investor_group_ids: self.investor_group_members.map(&:investor_group_id)
+                     investor_group_ids: self.investor_group_members.map(&:investor_group_id),
+                     i_id: self.id
   end
 
   def save_to_dm
@@ -187,7 +188,7 @@ class Member < ApplicationRecord
     if params[:order_by]
       order_hash[params[:order_by]] = params[:order_type]
     end
-    order_hash[:id] = :asc
+    order_hash[:i_id] = :asc
 
     Member.search(params[:query], options.merge(where: where_hash, order: order_hash, page: params[:page] || 1, per_page: params[:per_page] || 30, highlight: DEFAULT_HL_TAG))
   end

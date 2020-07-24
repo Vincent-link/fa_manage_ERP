@@ -85,7 +85,8 @@ class Organization < ApplicationRecord
                      # organization_tags: "#{self.organization_tags.map(&:name).join(' ')}", todo tags
                      members: "#{self.members.map(&:name).join(' ')}",
                      investor_group_ids: investor_group_organizations.map(&:investor_group_id),
-                     investor_group_id_tiers: investor_group_organizations.map {|group_detail| "#{group_detail.investor_group_id}-#{group_detail.tier}"}
+                     investor_group_id_tiers: investor_group_organizations.map {|group_detail| "#{group_detail.investor_group_id}-#{group_detail.tier}"},
+                     i_id: self.id
   end
 
   def self.es_search(params)
@@ -109,7 +110,7 @@ class Organization < ApplicationRecord
     if params[:order_by]
       order_hash[params[:order_by]] = params[:order_type]
     end
-    order_hash[:id] = :asc
+    order_hash[:i_id] = :asc
 
     Organization.search(params[:query], where: where_hash, order: order_hash, page: params[:page], per_page: params[:per_page], highlight: DEFAULT_HL_TAG)
   end
