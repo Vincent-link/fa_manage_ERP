@@ -91,7 +91,7 @@ module ModelExport
       # FA项目收入贡献表
       def fa_income_contribution_export(options = {})
         date = convert_date(options[:year], options[:month])
-        fa_team_id = Settings.current_bu_id
+        fa_team_id = Settings.fa_team_id
         pipelines = es_search(options)[:results].select { |p| p[:divides].map { |d| d['bu_id']}.include?(fa_team_id) }
 
         file_name = "FA_Income_On_#{date.to_s(:month)}"

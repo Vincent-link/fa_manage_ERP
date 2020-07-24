@@ -12,7 +12,7 @@ class PipelineDivide < ApplicationRecord
   after_commit :reindex_pipeline
 
   def is_fa_bu?
-    bu_id == Settings.current_bu_id
+    bu_id == Settings.fa_team_id
   end
 
   # 给定日期最后修改后的信息

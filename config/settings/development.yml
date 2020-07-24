@@ -40,6 +40,7 @@ zombie:
   app_name: 'magazine_dev_lee'
 
 current_bu_id: 244
+fa_team_id: 244
 
 pipeline:
   first_quarter_better: 0

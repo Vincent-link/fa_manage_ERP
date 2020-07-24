@@ -106,6 +106,11 @@ class Pipeline < ApplicationRecord
     }
   end
 
+  # TODO: total_fee有为nil的数据
+  def total_fee
+    self.read_attribute(:total_fee).nil? ? 0 : self.read_attribute(:total_fee)
+  end
+
   def version_funding(date = nil)
     funding.version_funding(date)
   end
