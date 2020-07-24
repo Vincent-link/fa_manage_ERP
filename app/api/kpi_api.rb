@@ -4,8 +4,8 @@ class KpiApi < Grape::API
       resource ':id' do
         desc '获取组内所有信息'
         get do
-          @kpi_group = KpiGroup.find(params[:id])
-          present @kpi_group, with: Entities::KpiGroup
+          kpi_group = KpiGroup.find(params[:id])
+          present kpi_group, with: Entities::KpiGroup
         end
 
         desc '添加配置'
