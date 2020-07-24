@@ -2,7 +2,8 @@ class UserInvestorGroupApi < Grape::API
   resource :user_investor_groups do
     desc '个人投资人组列表', entity: Array[Entities::UserInvestorGroup]
     get do
-      present UserInvestorGroup.all, with: Entities::UserInvestorGroup
+      group = UserInvestorGroup.where('is_public = true user_id = ?', current_user.id)
+      present group, with: Entities::UserInvestorGroup
     end
 
     desc '创建个人投资人组', entity: Entities::UserInvestorGroup
