@@ -23,12 +23,12 @@ module Helpers
     end
 
     def present(data, *options)
-      is_paging = data.respond_to?(:total_entries)
+      is_paging = data.respond_to?(:total_entries) || ((option = options.first).is_a?(Hash) && option.has_key?(:page_info))
       if is_paging
-        super :page_size, data.per_page
-        super :total_pages, data.total_pages
-        super :current_page, data.current_page
-        super :total_entries, data.total_entries
+        super :page_size, data.respond_to?(:per_page) ? data.per_page : option[:page_info][:per_page]
+        super :total_pages, data.respond_to?(:total_pages) ? data.total_pages : option[:page_info][:total_pages]
+        super :current_page, data.respond_to?(:current_page) ? data.current_page : option[:page_info][:current_page]
+        super :total_entries, data.respond_to?(:total_entries) ? data.total_entries : option[:page_info][:total_entries]
       end
 
       is_paging ? super(:data, data, *options) : super(data, *options)

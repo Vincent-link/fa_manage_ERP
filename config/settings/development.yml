@@ -40,3 +40,14 @@ zombie:
   app_name: 'magazine_dev_lee'
 
 current_bu_id: 244
+
+pipeline:
+  first_quarter_better: 0
+  second_quarter_better: 0
+  third_quarter_better: 0
+  fourth_quarter_better: 0
+  first_quarter_bear: 0
+  second_quarter_bear: 0
+  third_quarter_bear: 0
+  fourth_quarter_bear: 0
+

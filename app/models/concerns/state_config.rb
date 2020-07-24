@@ -128,6 +128,10 @@ module StateConfig
           config
         end
 
+        define_singleton_method "#{_arg}_type_values" do |type|
+          config.values.select { |c| c[:type] == type }.map { |c| c[:value]  }
+        end
+
         define_singleton_method "#{_arg}_values" do
           config.values.map {|each_config| each_config[:value]}
         end
@@ -169,6 +173,10 @@ module StateConfig
 
         define_method "#{_arg}_config" do
           config.select {|k, v| v[:value] == self.send(_arg)}.values.first
+        end
+
+        define_method "#{_arg}_rate" do
+          config.select { |k, v| v[:value] == self.send(_arg) }.values.first.fetch(:rate, 0)
         end
 
         config.keys.each do |_key|

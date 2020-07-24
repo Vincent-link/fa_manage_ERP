@@ -47,6 +47,14 @@ class Company < ApplicationRecord
   #   # attributes.merge sector_ids: self.sector_ids
   # end
 
+  def sector_ids
+    [sector_id, parent_sector_id].compact
+  end
+
+  def sectors
+    CacheBox.dm_single_sector_tree.slice(*sector_ids).values
+  end
+
   def self.es_search(params)
     where_hash = {}
     where_hash[:sector_ids] = {all: params[:sector_ids]} if params[:sector_ids].present?
