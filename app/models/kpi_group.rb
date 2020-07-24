@@ -5,7 +5,6 @@ class KpiGroup < ApplicationRecord
   belongs_to :team
 
   def users_ids=(*ids)
-    self.users.update!(kpi_group_id: nil)
     ids.flatten.each do |id|
       add_user_by_id id
     end
