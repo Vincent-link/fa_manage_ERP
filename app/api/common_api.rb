@@ -34,7 +34,8 @@ class CommonApi < Grape::API
           email_emailable_type: Email.emailable_type_id_name,
           email_status: Email.status_id_name,
           funding_type_range: Funding.type_range_id_name,
-          config_box_upload_type: ConfigBox.upload_type_id_name
+          config_box_upload_type: ConfigBox.upload_type_id_name,
+          teams: Team.all.select(:id, :name).as_json
       }
     end
 

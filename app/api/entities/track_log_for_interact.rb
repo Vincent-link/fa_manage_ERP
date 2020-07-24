@@ -8,6 +8,7 @@ module Entities
     expose :funding_sector_id, documentation: {type: 'integer', desc: '项目行业id'}
     expose :funding_user_names, documentation: {type: 'string', desc: '项目参与人'}
     expose :member_names, documentation: {type: 'string', desc: '机构参与人'}
+    expose :organization_id, documentation: {type: 'integer', desc: '机构id'}
     expose :organization_name, documentation: {type: 'string', desc: '机构名称'}
     expose :last_detail, using: Entities::TrackLogDetailLite, documentation: {type: Entities::TrackLogDetailLite, desc: '最近明细'}
   end

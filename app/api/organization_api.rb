@@ -77,7 +77,6 @@ class OrganizationApi < Grape::API
     post do
       Organization.transaction do
         organization_tag_ids = params.delete(:organization_tag_ids)
-        sector_ids = params.delete(:sector_ids)
         addresses = params.delete(:addresses)
 
         @organization = Organization.create!(declared(params, include_missing: false))
@@ -87,7 +86,6 @@ class OrganizationApi < Grape::API
         end
 
         @organization.organization_tag_ids = organization_tag_ids
-        @organization.sector_ids = sector_ids
       end
       present @organization, with: Entities::OrganizationForShow
     end
@@ -230,7 +228,7 @@ class OrganizationApi < Grape::API
         optional :status, type: Array[Integer], desc: '状态'
       end
       get :untrack_funding do
-        fundings = Funding.left_joins(:track_logs).where("track_logs.organization_id != #{@organization.id} or track_logs.organization_id is null").where(status: [Funding.status_pursue_value, Funding.status_execution_value, Funding.status_closing_value])
+        fundings = Funding.left_joins(:track_logs).where("track_logs.organization_id != #{@organization.id} or track_logs.organization_id is null").where(status: [Funding.status_pursue_value, Funding.status_execution_value])
         fundings = fundings.where(status: params[:status]) if params[:status].present?
         fundings = fundings.where(round_id: params[:round_ids]) if params[:round_ids].present?
         fundings = fundings.includes(:company).where(companies: {sector_id: params[:sector_ids]}) if params[:sector_ids].present?
@@ -247,7 +245,7 @@ class OrganizationApi < Grape::API
       end
       get :portfollo do
         funding_ids, company_ids = Funding.includes(:track_logs).where(track_logs: {status: TrackLog.status_spa_sha, organization_id: @organization.id}).pluck(:id, :company_id).transpose
-        fundings = Funding.where(company_id: company_ids, status: [Funding.status_pursue_value, Funding.status_execution_value, Funding.status_closing_value]).where.not(id: funding_ids)
+        fundings = Funding.where(company_id: company_ids, status: [Funding.status_pursue_value, Funding.status_execution_value]).where.not(id: funding_ids)
         fundings = fundings.where(status: params[:status]) if params[:status].present?
         fundings = fundings.where(round_id: params[:round_ids]) if params[:round_ids].present?
         fundings = fundings.includes(:company).where(companies: {sector_id: params[:sector_ids]}) if params[:sector_ids].present?
