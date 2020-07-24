@@ -25,7 +25,7 @@ class KpiApi < Grape::API
   resources :kpi do
     desc '获取所有kpi类型'
     get :kpi_type do
-      kpi_types = Kpi.kpi_type_id_name_unit
+      kpi_types = Kpi.kpi_type_id_name(:unit, :remarks)
       present kpi_types, with: Entities::KpiType
     end
 
