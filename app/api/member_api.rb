@@ -227,6 +227,7 @@ class MemberApi < Grape::API
         optional :sector_ids, type: Array[Integer], desc: '行业'
         optional :round_ids, type: Array[Integer], desc: '轮次'
         optional :status, type: Array[Integer], desc: '状态'
+        optional :organization_id, type: Integer, desc: '机构id'
       end
       get :track_logs do
         member = Member.find(params[:id])
@@ -240,6 +241,7 @@ class MemberApi < Grape::API
         track_logs = track_logs.where(status: params[:status]) if params[:status].present?
         track_logs = track_logs.where(fundings: {round_id: params[:round_ids]}) if params[:round_ids].present?
         track_logs = track_logs.where(fundings: {companies: {sector_id: params[:sector_ids]}}) if params[:sector_ids].present?
+        track_logs = track_logs.where(organization_id: params[:organization_id]) if params[:organization_id].present?
 
         present track_logs.paginate(page: params[:page], per_page: params[:per_page]), with: Entities::TrackLogForInteract
       end
