@@ -94,6 +94,7 @@ class Pipeline < ApplicationRecord
       time_weight_rate: time_weight_rate(date),
       company_sector_ids: funding.company.sector_ids,
       company_sectors: company_sectors,
+      total_fee: total_fee # TODO: total_fee有为nil的数据
     }
   end
 
