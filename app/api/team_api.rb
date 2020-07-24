@@ -13,6 +13,19 @@ class TeamApi < Grape::API
       end
     end
 
+    desc 'sub_team', entity: Entities::Team
+    params do
+      optional :team_id, type: String, desc: '团队', values: ['bu_team', 'all_team'], default: 'bu_team'
+    end
+    get do
+      case params[:range]
+      when 'bu_team'
+        present Team.where(parent_id: Settings.current_bu_id), with: Entities::Team
+      when 'all_team'
+        present Team.all, with: Entities::Team
+      end
+    end
+
     desc "新增team"
     params do
       optional :name, type: String, desc: '团队名称'
@@ -30,6 +43,11 @@ class TeamApi < Grape::API
     resources ':id' do
       before do
         @team = Team.find(params[:id])
+      end
+
+      desc '子团队'
+      get :sub_team do
+        present @team.sub_teams, with: Entities::Team
       end
 
       desc '删除'

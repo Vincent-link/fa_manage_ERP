@@ -24,6 +24,8 @@ class Company < ApplicationRecord
     if self.new_record?
       company = Zombie::DmCompany.create_company self.attributes_for_dm
       self.id = company.id
+    else
+      # company = Zombie::DmCompany.create_company self.attributes_for_dm
     end
   end
 
@@ -57,9 +59,10 @@ class Company < ApplicationRecord
 
   def self.es_search(params)
     where_hash = {}
-    where_hash[:sector_ids] = {all: params[:sector_ids]} if params[:sector_ids].present?
+    params[:query] = '*' if params[:query].blank?
+    where_hash[:sector_id] = params[:sector_ids] if params[:sector_ids].present?
     where_hash[:is_ka] = params[:is_ka] if !params[:is_ka].nil?
-    where_hash[:recent_financing] = {all: params[:recent_financing_ids]} if params[:recent_financing_ids].present?
+    where_hash[:recent_financing] = params[:recent_financing_ids] if params[:recent_financing_ids].present?
     order_hash = {"updated_at" => "desc"}
     # if params[:order_by]
     #   order_hash = {params[:order_by] => params[:order_type]}

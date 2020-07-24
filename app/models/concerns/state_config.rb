@@ -46,6 +46,24 @@ module StateConfig
           # end
         end
 
+        define_singleton_method "#{_arg}_id_name_unit" do |*extra_attr|
+          config.map do |key, element|
+            res = {:id => element[:value],
+                   :name => element[:desc],
+                   :unit => element[:unit],
+                   :remarks => element[:remarks]
+            }
+            extra_attr.each do |attr|
+              if attr == :key
+                res[attr] = key.to_s
+              else
+                res[attr] = element[attr]
+              end
+            end
+            res
+          end
+        end
+
         define_singleton_method "#{_arg}_id_name_with_option" do |select_options = {}|
           self.try("#{_arg}_array_with_option", select_options).map do |v, k|
             {:id => k,
