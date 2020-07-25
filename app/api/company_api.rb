@@ -43,6 +43,7 @@ class CompanyApi < Grape::API
         tags_params = params.delete(:company_tag_ids)
         logo = params.delete(:logo)
         contacts_params = params.delete(:contacts)
+        # dataserver那边注册公司为必填，而fa不是
         params[:registered_name] ||= ""
 
         @company = Company.create!(params)
@@ -52,12 +53,7 @@ class CompanyApi < Grape::API
           ActiveStorage::Attachment.create!(name: 'logo', record_type: 'Company', record_id: @company.id, blob_id: logo[:blob_id])
         end
 
-        contacts_params.map { |e| Contact.create!(e.merge(company_id: @company.id)) }
-
-        # 从金丝雀获取最近融资
-        @company.syn_recent_financing
-        # 更新一级行业
-        @company.syn_root_sector(params[:sector_id])
+        contacts_params.map { |e| Contact.create!(e.merge(company_id: @company.id)) } if contacts_params
 
         present @company, with: Entities::CompanyForShow
       end

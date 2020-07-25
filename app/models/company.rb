@@ -19,13 +19,14 @@ class Company < ApplicationRecord
   validates_presence_of :location_city_id
 
   after_validation :save_to_dm
+  before_save :syn_recent_financing, :syn_root_sector
 
   def save_to_dm
-    if self.new_record?
-      company = Zombie::DmCompany.create_company self.attributes_for_dm
-      self.id = company.id
+    if self.new_record? && Zombie::DmCompany.find_by_id(self.id).nil?
+      dm_company = Zombie::DmCompany.create_company self.attributes_for_dm
+      self.id = dm_company.id
     else
-      # company = Zombie::DmCompany.create_company self.attributes_for_dm
+      Zombie::DmCompany.find(self.id).update self.attributes_for_dm
     end
   end
 
@@ -39,7 +40,6 @@ class Company < ApplicationRecord
         'location_province_id' => 'location_province_id',
         'detailed_intro' => 'com_des',
         'website' => 'url',
-        'detailed_intro' => 'com_des',
         'registered_name' => 'registered_name',
     }
     self.attributes.transform_keys {|k| dm_key_map[k]}.compact
@@ -114,20 +114,9 @@ class Company < ApplicationRecord
     arr
   end
 
-  def recent_financing
-    self_financing_events = self.fundings
-    financing_events = Zombie::DmInvestevent.includes(:company, :invest_type, :invest_round, :investors).order_by_date.public_data.not_deleted.where(company_id: self.id)._select(:id, :all_investors, :birth_date, :invest_type_and_batch_desc, :detail_money_des, :invest_round_id)
-    all_events = (financing_events + self_financing_events).sort_by {|p| (p.try(:round_id) || p.try(:invest_round_id)).to_i}.reverse
-
-    if all_events.empty?
-      "-"
-    else
-      "#{all_events&.first.try(:invest_type_and_batch_desc) || get_fa_round_name(all_events.first&.try(:round_id))}-#{all_events&.first.try(:detail_money_des) || get_fa_target_amount(all_events.first)}"
-    end
-  end
-
   def syn_recent_financing
     financing_events = Zombie::DmInvestevent.includes(:company, :invest_type, :invest_round).public_data.not_deleted.where(company_id: self.id)._select(:invest_round_id, :invest_type_id).sort_by(&:birth_date)
+
     invest_types = Zombie::DmInvestType.all
     if !financing_events.empty?
       # 如果融资为私募或新三板的话，使用轮次；如果否的话，轮次是nil，使用融资类型表示
@@ -137,15 +126,13 @@ class Company < ApplicationRecord
         self.recent_financing = invest_types.find {|e| e.id == financing_events.last.try(:invest_type_id)}.id
       end
     end
-
-    self.save!
   end
 
-  def syn_root_sector(sector_id)
-    parent_sector_id = CacheBox::dm_sector_tree.select{|e| e["children"].select{|e| e["id"] == sector_id}.present?}&.first["id"] if CacheBox::dm_sector_tree.select{|e| e["children"].select{|e| e["id"] == sector_id}.present?}&.first.present?
+  def syn_root_sector
+    parent_sector_id = CacheBox::dm_sector_tree.select{|e| e["children"].select{|e| e["id"] == self.sector_id}.present?}&.first["id"] if CacheBox::dm_sector_tree.select{|e| e["children"].select{|e| e["id"] == self.sector_id}.present?}&.first.present?
+
     Zombie::DmCompany.filter(id: self.id).last.update(category_id: parent_sector_id)
     self.parent_sector_id = parent_sector_id
-    self.save!
   end
 
   # 获取fa项目融资轮次名称
@@ -162,6 +149,7 @@ class Company < ApplicationRecord
     "#{target_amount}万#{target_amount_currency}"
   end
 
+  # dataserver 投资机构 占股比例
   def data_server_member_details(event)
     arr = []
     if event.all_investors.present?
@@ -177,6 +165,7 @@ class Company < ApplicationRecord
     arr
   end
 
+  # fa 投资机构 占股比例
   def fa_member_details(event)
     arr = []
     event.spas.map do |spa|
@@ -188,5 +177,34 @@ class Company < ApplicationRecord
       arr << row
     end
     arr
+  end
+
+  def self.syn(id)
+    company = Company.find_by_id(id) || Company.new(id: id)
+    raise '该公司不存在' unless company
+
+    Company.transaction do
+      if dm_company = Zombie::DmCompany.where(id: id).first
+        if dm_company.slogan.present? && dm_company.location_city_id.present? && dm_company.location_province_id.present? && dm_company.name.present?
+          company.name = dm_company.name
+          company.one_sentence_intro = dm_company.slogan
+          # company.logo = ""
+          company.sector_id = dm_company.sub_category_id
+
+          company.location_city_id = dm_company.location_city_id
+          company.location_province_id = dm_company.location_province_id
+          company.detailed_intro = dm_company.com_des
+          company.website = dm_company.url
+
+          company.registered_name = dm_company.registered_name
+          company.created_at = dm_company.created_at
+          company.updated_at = dm_company.updated_at
+          if company.changed?
+            company.syn_at = Time.now
+            company.save!
+          end
+         end
+      end
+    end
   end
 end
