@@ -3,9 +3,9 @@ class CompanyApi < Grape::API
     desc '获取所有公司'
     params do
       optional :query, type: String, desc: '检索文本', default: '*'
-      optional :sector_ids, type: Array[Integer], desc: '行业'
+      optional "sector_ids[]", type: Integer, desc: '行业'
       optional :is_ka, type: Boolean, desc: 'KA'
-      optional :recent_financing_ids, type: Array[Integer], desc: '最近融资'
+      optional "recent_financing_ids[]", type: Integer, desc: '最近融资'
       requires :page, type: Integer, desc: '页数', default: 1
       optional :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 30
     end
@@ -53,7 +53,7 @@ class CompanyApi < Grape::API
           ActiveStorage::Attachment.create!(name: 'logo', record_type: 'Company', record_id: @company.id, blob_id: logo[:blob_id])
         end
 
-        contacts_params.map { |e| Contact.create!(e.merge(company_id: @company.id)) } if contacts_params
+        contacts_params.map { |e| Contact.create!(e.merge(company_id: @company.id)) } if contacts_params.present?
 
         present @company, with: Entities::CompanyForShow
       end

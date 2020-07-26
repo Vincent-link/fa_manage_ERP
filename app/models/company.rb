@@ -19,7 +19,7 @@ class Company < ApplicationRecord
   validates_presence_of :location_city_id
 
   after_validation :save_to_dm
-  before_save :syn_recent_financing, :syn_root_sector
+  before_save :syn_root_sector
 
   def save_to_dm
     if self.new_record? && Zombie::DmCompany.find_by_id(self.id).nil?
@@ -60,7 +60,7 @@ class Company < ApplicationRecord
   def self.es_search(params)
     where_hash = {}
     params[:query] = '*' if params[:query].blank?
-    where_hash[:sector_id] = params[:sector_ids] if params[:sector_ids].present?
+    where_hash[:parent_sector_id] = params[:sector_ids] if params[:sector_ids].present?
     where_hash[:is_ka] = params[:is_ka] if !params[:is_ka].nil?
     where_hash[:recent_financing] = params[:recent_financing_ids] if params[:recent_financing_ids].present?
     order_hash = {"updated_at" => "desc"}
@@ -114,20 +114,7 @@ class Company < ApplicationRecord
     arr
   end
 
-  def syn_recent_financing
-    financing_events = Zombie::DmInvestevent.includes(:company, :invest_type, :invest_round).public_data.not_deleted.where(company_id: self.id)._select(:invest_round_id, :invest_type_id).sort_by(&:birth_date)
-
-    invest_types = Zombie::DmInvestType.all
-    if !financing_events.empty?
-      # 如果融资为私募或新三板的话，使用轮次；如果否的话，轮次是nil，使用融资类型表示
-      if !financing_events.last.try(:invest_round_id).nil?
-        self.recent_financing = financing_events.last.try(:invest_round_id)
-      else
-        self.recent_financing = invest_types.find {|e| e.id == financing_events.last.try(:invest_type_id)}.id
-      end
-    end
-  end
-
+  # 创建公司时，把一级行业保存下来
   def syn_root_sector
     parent_sector_id = CacheBox::dm_sector_tree.select{|e| e["children"].select{|e| e["id"] == self.sector_id}.present?}&.first["id"] if CacheBox::dm_sector_tree.select{|e| e["children"].select{|e| e["id"] == self.sector_id}.present?}&.first.present?
 
@@ -191,6 +178,9 @@ class Company < ApplicationRecord
           # company.logo = ""
           company.sector_id = dm_company.sub_category_id
 
+          company.recent_financing = Zombie.syn_recent_financing(dm_company.id)
+          company.parent_sector_id = dm_company.category_id
+
           company.location_city_id = dm_company.location_city_id
           company.location_province_id = dm_company.location_province_id
           company.detailed_intro = dm_company.com_des
@@ -204,6 +194,19 @@ class Company < ApplicationRecord
             company.save!
           end
          end
+      end
+    end
+  end
+
+  def Zombie.syn_recent_financing(dm_cpmany_id)
+    financing_events = Zombie::DmInvestevent.includes(:company, :invest_type, :invest_round).public_data.not_deleted.where(company_id: dm_cpmany_id)._select(:invest_round_id, :invest_type_id).sort_by(&:birth_date)
+    invest_types = Zombie::DmInvestType.all
+    if !financing_events.empty?
+      # 如果融资为私募或新三板的话，使用轮次；如果否的话，轮次是nil，使用融资类型表示
+      if !financing_events.last.try(:invest_round_id).nil?
+        recent_financing = financing_events.last.try(:invest_round_id)
+      # else
+      #   self.recent_financing = invest_types.find {|e| e.id == financing_events.last.try(:invest_type_id)}.try(:id)
       end
     end
   end

@@ -2,7 +2,8 @@ module Entities
   class CompanyForIndex < Base
     expose :id, documentation: {type: 'integer', desc: '公司id'}
     expose :name, documentation: {type: 'string', desc: '公司名称'}
-    expose :sector_id, documentation: {type: 'string', desc: '行业'}
+    expose :sector_id, documentation: {type: 'string', desc: '二级行业'}
+    expose :parent_sector_id, documentation: {type: 'string', desc: '一级行业'}
     expose :location_province_id, documentation: {type: 'integer', desc: '省份'}
     expose :recent_financing, documentation: {type: 'string', desc: '最近融资'} do |ins|
       self_financing_events = ins.fundings
