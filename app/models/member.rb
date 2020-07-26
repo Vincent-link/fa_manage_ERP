@@ -11,7 +11,7 @@ class Member < ApplicationRecord
   has_blob_upload :avatar, :card
 
 
-  acts_as_taggable_on :hot_tags
+  acts_as_taggable_on :investor_tags
 
   belongs_to :organization, optional: true
   belongs_to :sponsor, class_name: 'User', optional: true
@@ -24,6 +24,7 @@ class Member < ApplicationRecord
 
   has_many :email_receivers, as: :receiverable
   has_many :email_tos, as: :toable
+  has_many :investor_group_members
 
   delegate :name, to: :organization, prefix: true
 
@@ -48,11 +49,13 @@ class Member < ApplicationRecord
   attr_accessor :solid_lower_ids, :virtual_lower_ids, :report_line
 
   # searchkick scope and config
-  scope :search_import, -> {includes(:organization, :users)}
+  scope :search_import, -> {includes(:organization, :users, :investor_group_members)}
 
   def search_data
     attributes.merge organization_name: self.organization_name,
-                     user_ids: self.user_ids
+                     user_ids: self.user_ids,
+                     investor_group_ids: self.investor_group_members.map(&:investor_group_id),
+                     i_id: self.id
   end
 
   def save_to_dm
@@ -63,9 +66,19 @@ class Member < ApplicationRecord
     end
   end
 
-  [:address, :report_relations].each do |attribute_name|
+  [:report_relations].each do |attribute_name|
     define_method(attribute_name) do
       dm_member.send(attribute_name)
+    end
+  end
+
+  def address
+    if self.address_id
+      if self.address_id >= 100000
+        Address.find(self.address_id)
+      else
+        Zombie::DmAddress.find(self.address_id)
+      end
     end
   end
 
@@ -144,26 +157,25 @@ class Member < ApplicationRecord
   def self.es_search(params, options = {})
     where_hash = {}
     params[:query] = '*' if params[:query].blank?
+    where_hash[:name] = {like: "%#{params[:name]}%"} if params[:name].present?
     where_hash[:sector_ids] = {all: params[:sector_ids]} if params[:sector_ids].present?
-    where_hash[:round_ids] = {all: params[:round]} if params[:round].present?
+    where_hash[:round_ids] = {all: params[:round]} if !params[:any_round] && params[:round].present?
     where_hash[:currency_ids] = {all: params[:currency]} if params[:currency].present?
     where_hash[:level] = params[:level] if params[:level].present?
     where_hash[:organization_id] = params[:organization_id] if params[:organization_id].present?
     where_hash[:scale_ids] = params[:scale] if params[:scale].present?
     where_hash[:position_rank_id] = params[:position_rank_id] if params[:position_rank_id]
+    where_hash[:followed_location_ids] = {all: params[:followed_location_ids]} if params[:followed_location_ids]
     where_hash[:tel] = params[:tel] if params[:tel]
     where_hash[:user_ids] = params[:covered_by] if params[:covered_by]
     if params[:amount_min].present? || params[:amount_max].present?
       range = (params[:amount_min] || 0)..(params[:amount_max] || 9999999)
       where_hash[:_or] = [{usd_amount_min: range}, {usd_amount_max: range}]
     end
-    if params[:investor_group_id]
-      if where_hash[:id]
-        where_hash[:id] &= InvestorGroup.find(params[:investor_group_id]).member_ids
-      else
-        where_hash[:id] = InvestorGroup.find(params[:investor_group_id]).member_ids
-      end
+    if params[:investor_group_id].present?
+      where_hash[:investor_group_ids] = params[:investor_group_id]
     end
+
     if params[:followed]
       if where_hash[:id]
         where_hash[:id] &= User.current.follows.member.pluck(:id)
@@ -172,7 +184,13 @@ class Member < ApplicationRecord
       end
     end
 
-    Member.search(params[:query], options.merge(where: where_hash, page: params[:page] || 1, per_page: params[:per_page] || 30, highlight: DEFAULT_HL_TAG))
+    order_hash = {}
+    if params[:order_by]
+      order_hash[params[:order_by]] = params[:order_type]
+    end
+    order_hash[:i_id] = :asc
+
+    Member.search(params[:query], options.merge(where: where_hash, order: order_hash, page: params[:page] || 1, per_page: params[:per_page] || 30, highlight: DEFAULT_HL_TAG))
   end
 
   def self.syn_by_dm_member(dm_member)
@@ -216,20 +234,17 @@ class Member < ApplicationRecord
       self.member_user_relations.map {|e| Notification.create(notification_type: Notification.notification_type_value("investor"), content: content, user_id: e.user_id, is_read: false, notice: {member_id: self.id}) if content.present?}
     end
 
-    if self.previous_changes[:organization_id].present?
+    if self.previous_changes[:organization_id].present? && self.previous_changes[:organization_id][0].present?
       before = Organization.find(self.previous_changes[:organization_id][0])
       after = Organization.find(self.previous_changes[:organization_id][1])
 
-      content = Notification.investor_type_config[:institutional_change][:desc].call(self.name, before.name, after.name)
-      self.member_user_relations.map {|e| Notification.create(notification_type:  Notification.notification_type_value("investor"), content: content, user_id: e.user_id, is_read: false, notice: {member_id: self.id})}
+      content = Notification.investor_type_config[:institutional_change][:desc].call(self.name, before&.name, after.name)
+      self.member_user_relations.map {|e| Notification.create(notification_type: Notification.notification_type_value("investor"), content: content, user_id: e.user_id, is_read: false, notice: {member_id: self.id})}
     end
 
     if self.previous_changes[:position_rank_id].present?
-      before = Organization.find(self.previous_changes[:organization_id][0])
-      after = Organization.find(self.previous_changes[:organization_id][1])
-
       content = Notification.investor_type_config[:position_change][:desc].call(self.name, self.previous_changes[:position_rank_id][0], self.previous_changes[:position_rank_id][1])
-      self.member_user_relations.map {|e| Notification.create(notification_type:  Notification.notification_type_value("investor"), content: content, user_id: e.user_id, is_read: false, notice: {member_id: self.id})}
+      self.member_user_relations.map {|e| Notification.create(notification_type: Notification.notification_type_value("investor"), content: content, user_id: e.user_id, is_read: false, notice: {member_id: self.id})}
     end
   end
 end

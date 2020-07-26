@@ -13,5 +13,6 @@ class TrackLogDetail < ApplicationRecord
       ts:       { value: 2, desc: "TS"      },
       calendar: { value: 3, desc: "约见"     },
       spa:      { value: 4, desc: "SPA"     },
+      calendar_result: { value: 5, desc: "约见结论"}
   }
 end

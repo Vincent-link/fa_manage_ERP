@@ -22,9 +22,15 @@ class UserApi < Grape::API
       optional :bu_id, type: Integer, desc: '部门id'
       optional :query, type: String, desc: '检索姓名'
       optional :layout, type: String, desc: '样式', values: ['lite', 'index'], default: 'index'
+      optional :page, type: Integer, desc: '页数', default: 1
+      optional :page_size, as: :per_page, type: Integer, desc: '页数', default: 30
     end
     get do
-      users = User.includes(:roles, :grade, :user_title, :team).order(grade_id: :desc)
+      if params[:page].present? && params[:per_page].present?
+        users = User.includes(:roles, :grade, :user_title, :team).order(grade_id: :desc).paginate(page: params[:page], per_page: params[:per_page])
+      else
+        users = User.includes(:roles, :grade, :user_title, :team).order(grade_id: :desc)
+      end
       users = users.where(bu_id: params[:bu_id]) if params[:bu_id].present?
       users = users.where('name like ?', "%#{params[:query]}%") if params[:query].present?
 

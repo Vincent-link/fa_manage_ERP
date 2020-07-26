@@ -29,7 +29,10 @@ class FundingPolymer < ApplicationRecord
 
   has_many :verifications, as: :verifyable
 
-  scope :search_import, -> { includes(:company, :verifications) }
+  has_many :calendars, foreign_key: :funding_id
+  has_many :track_logs, foreign_key: :funding_id
+
+  scope :search_import, -> { includes(:company, :verifications, :calendars, :track_logs) }
 
   def search_data
     data = attributes.merge({pipeline_status: self.pipelines.pluck(:status),
@@ -46,6 +49,40 @@ class FundingPolymer < ApplicationRecord
       data.merge! "call_report_#{calendar.id}" => calendar.summary
     end
     data
+  end
+
+  # 项目来源
+  def funding_source
+    is_a?(Funding) ? 0 : other_funding_type
+  end
+
+  # 项目来源描述
+  def funding_source_desc
+    is_a?(Funding) ? 'FA' : other_funding_type_desc
+  end
+
+  # 给定日期最后修改后的信息
+  def version_funding(date)
+    return self if date.nil? || date.end_of_month == Date.current.end_of_month
+    version = versions.select { |v| v.created_at.end_of_month.to_date <= date }.last
+    return self.class.new if version.blank?
+    next_version = versions.select { |v| v.id > version&.id }.first
+    next_version.present? ? next_version.reify : self
+  end
+
+  # 导入到pipeline的funding数据
+  def pipeline_es_import_data(date = nil)
+    {
+      funding_name: version_funding(date).name,
+      funding_status: version_funding(date).status,
+      funding_status_desc: version_funding(date).status_desc,
+      funding_category: version_funding(date).category,
+      funding_round_id: version_funding(date).round_id,
+      is_list_company: version_funding(date).is_list,
+      funding_source: version_funding(date).funding_source,
+      funding_funding_source_desc: version_funding(date).funding_source_desc,
+      funding_operating_day: version_funding(date).operating_day
+    }
   end
 
   def self.es_search(params)

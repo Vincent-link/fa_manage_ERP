@@ -17,7 +17,7 @@ class TrackLog < ApplicationRecord
   has_many :track_log_members
   has_many :members, through: :track_log_members, class_name: 'Member'
 
-  delegate :name, :round_id, :user_names, :sector_list, to: :funding, prefix: true
+  delegate :name, :round_id, :user_names, :sector_id, to: :funding, prefix: true
   delegate :name, to: :organization, prefix: true
 
   state_config :status, config: {
@@ -66,6 +66,7 @@ class TrackLog < ApplicationRecord
         params[:need_content] = false
       end
     when TrackLog.status_spa_sha_value
+      raise '该机构已经添加过融资结算详情，不能重复添加' if self.funding.spas.where(organization_id: self.organization_id).present?
       [:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency].each {|ins| raise '融资结算信息不全' unless params[ins].present?}
       raise '未传SPA不能进行状态变更' unless (params[:file_spa] || self.file_spa).present?
       if params[:file_spa].present? && params[:file_spa][:blob_id].present?
@@ -78,9 +79,22 @@ class TrackLog < ApplicationRecord
         params[:need_content] = false
       end
       # raise '未创建会议不能进行状态变更' unless self.calendars.present?
-    when TrackLog.status_pass_value, TrackLog.status_drop_value
+    when TrackLog.status_pass_value, TrackLog.status_drop_value, TrackLog.status_interested_value
       content = "#{params[:content_key] || '状态变更'}：#{self.status_desc} → #{TrackLog.status_desc_for_value(params[:status])}\n#{params[:content]}"
-      self.track_log_details.create(content: content, user_id: params[:user_id] || User.current.id, detail_type: TrackLogDetail.detail_type_base_value)
+      detail = {}
+      detail[:content] = content
+      detail[:user_id] = params[:user_id] || User.current.id
+      if params[:calendar_id].present?
+        detail[:detail_type] = TrackLogDetail.detail_type_calendar_result_value
+        detail[:linkable_type] = 'Calendar'
+        detail[:linkable_id] = params[:calendar_id]
+        detail[:history] = {
+            status: self.status
+        }
+      else
+        detail[:detail_type] = TrackLogDetail.detail_type_base_value
+      end
+      self.track_log_details.create(detail)
       params[:need_content] = false
     end
     before_status = self.status_desc
@@ -245,12 +259,14 @@ class TrackLog < ApplicationRecord
     self.track_log_details.create!(user_id: user_id, content: content, linkable_id: self.id, linkable_type: 'TrackLog', history: history, detail_type: TrackLogDetail.detail_type_spa_value)
   end
 
-  def change_status_by_calendar(status)
+  def change_status_by_calendar(calendar_id, status, content)
     case status
     when 'pass'
-      self.change_status_and_gen_detail(status: TrackLog.status_pass_value, need_content: true, content_key: '由约见结论变更')
+      self.change_status_and_gen_detail(status: TrackLog.status_pass_value, need_content: true, content_key: "由约见结论变更：#{content}", calendar_id: calendar_id)
+    when 'drop'
+      self.change_status_and_gen_detail(status: TrackLog.status_drop_value, need_content: true, content_key: "由约见结论变更：#{content}", calendar_id: calendar_id)
     when 'continue'
-      self.change_status_and_gen_detail(status: TrackLog.status_interested_value, need_content: true, content_key: '由约见结论变更')
+      self.change_status_and_gen_detail(status: TrackLog.status_interested_value, need_content: true, content_key: '由约见结论变更', calendar_id: calendar_id)
     end
   end
 

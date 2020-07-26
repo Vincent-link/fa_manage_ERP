@@ -9,6 +9,7 @@ class CommonApi < Grape::API
           org_level: Organization.level_id_name,
           currencies: CacheBox.dm_currencies,
           locations: CacheBox.dm_location_tree,
+          member_locations: CacheBox.dm_member_location,
           org_tier: Organization.tier_id_name,
           member_report_type: Member.report_type_id_name,
           member_position_rank: CacheBox.dm_position_ranks,
@@ -23,8 +24,8 @@ class CommonApi < Grape::API
           funding_category: Funding.category_id_name,
           funding_source_type: Funding.source_type_id_name,
           funding_confidentiality_level: Funding.confidentiality_level_id_name,
-          track_log_detail_detail_type: TrackLogDetail.detail_type_id_name_key,
-          pipeline_status: Pipeline.status_id_name,
+          track_log_detail_detail_type: TrackLogDetail.detail_type_id_name(:key),
+          pipeline_status: Pipeline.status_id_name(:rate),
           track_log_status: TrackLog.status_id_name,
           funding_all_funding_file_type: Funding.all_funding_file_type_id_name,
           email_blob_file_kind: EmailBlob.file_kind_id_name,
@@ -33,7 +34,8 @@ class CommonApi < Grape::API
           email_emailable_type: Email.emailable_type_id_name,
           email_status: Email.status_id_name,
           funding_type_range: Funding.type_range_id_name,
-          config_box_upload_type: ConfigBox.upload_type_id_name
+          config_box_upload_type: ConfigBox.upload_type_id_name,
+          teams: Team.all.select(:id, :name).as_json
       }
     end
 

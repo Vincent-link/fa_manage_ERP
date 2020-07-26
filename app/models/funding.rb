@@ -15,9 +15,6 @@ class Funding < FundingPolymer
 
   has_many :funding_company_contacts, class_name: 'FundingCompanyContact'
 
-  has_many :calendars
-
-  has_many :track_logs
   has_many :spas, -> {where(:status => TrackLog.status_spa_sha_value)}, class_name: 'TrackLog'
 
   has_many :emails, as: :emailable
@@ -31,7 +28,7 @@ class Funding < FundingPolymer
   after_create :base_time_line
   after_create :reviewing_status
 
-  delegate :sector_list, to: :company
+  delegate :sector_id, to: :company
 
   def gen_serial_number
     current_year = Time.now.year
@@ -50,7 +47,7 @@ class Funding < FundingPolymer
   end
 
   def user_names
-    self.users.map(&:name).join('、')
+    self.users.map(&:name).uniq.join('、')
   end
 
   def add_project_follower(params)
@@ -117,10 +114,10 @@ class Funding < FundingPolymer
       end
       raise '公司简介不少于400字' if params[:com_desc].size < 400
     when Funding.status_execution_value
-      raise '未传el' unless self.file_el_atttachment.present?
-      raise '未填收入预测' unless self.pipelines.present?
+      raise '项目移动到Execution需要再Hera签订EL' unless self.file_el_atttachment.present?
+      error!({code: 500, msg: '请填写收入预测信息', data: {serviceCode: 520}}, 200) unless self.pipelines.present?
     when Funding.status_closing_value
-      raise '未传spa' unless ActiveStorage::Attachment.where(name: 'file_ts', record_type: 'TrackLog', record_id: self.track_log_ids).present?
+      raise '未传ts' unless ActiveStorage::Attachment.where(name: 'file_ts', record_type: 'TrackLog', record_id: self.track_log_ids).present?
     when Funding.status_closed_value
       raise '未传spa' unless ActiveStorage::Attachment.where(name: 'file_spa', record_type: 'TrackLog', record_id: self.track_log_ids).present?
     when Funding.status_paid_value
@@ -247,6 +244,7 @@ class Funding < FundingPolymer
       when 'create'
         if spa[:id].present?
           spa_track_log = self.track_logs.find(spa[:id])
+          raise '该机构已经添加过融资结算详情，不能重复添加' if spas.where(organization_id: spa_track_log.organization_id).present?
           [:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency].each {|ins| raise '融资结算信息不全' unless (spa[ins] || spa_track_log.try(ins.to_s)).present?}
           raise 'SPA文件必传' unless spa[:file_spa][:blob_id].present? || spa_track_log.file_spa.present?
           spa_track_log.update!(spa.slice(:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency).merge(status: TrackLog.status_spa_sha_value))
@@ -254,6 +252,7 @@ class Funding < FundingPolymer
             spa_track_log.file_spa_file=spa[:file_spa]
           end
         else
+          raise '该机构已经添加过融资结算详情，不能重复添加' if spas.where(organization_id: spa[:organization_id]).present?
           [:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency, :organization_id].each {|ins| raise '融资结算信息不全' unless spa[ins].present?}
           raise 'SPA文件必传' unless spa[:file_spa][:blob_id].present?
           spa_track_log = self.spas.create(spa.slice(:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency, :organization_id))
@@ -261,7 +260,7 @@ class Funding < FundingPolymer
           spa_track_log.file_spa_file=spa[:file_spa]
         end
       end
-      spa_track_log.gen_spa_detail(user_id, spa[:action])
+      spa_track_log.gen_spa_detail(user_id, spa[:action]) if spa_track_log.present?
     end
   end
 
@@ -345,10 +344,10 @@ class Funding < FundingPolymer
   end
 
   def gen_claim_verification(params)
-    raise '不能重复提交审核' if self.verifications.verification_type_funding_claim.where(status: nil).present?
+    raise '不能重复提交审核' if self.verifications.verification_type_funding_claim.where(status: nil, sponsor: User.current.id).present?
     params[:company_id] = self.company_id
     calendar = User.current.created_calendars.create!(params)
-    desc = Verification.verification_type_config[:funding_claim][:desc].call(self.name, calendar.started_at.strftime("%Y年%m月%日 %H:%M"))
+    desc = Verification.verification_type_config[:funding_claim][:desc].call(self.name, calendar.started_at.strftime("%Y年%m月%d日 %H:%M"))
     self.verifications.create(verification_type: Verification.verification_type_funding_claim_value, desc: desc, sponsor: User.current.id, verifi_type: Verification.verifi_type_resource_value)
   end
 

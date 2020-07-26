@@ -113,11 +113,13 @@ class FundingApi < Grape::API
     params do
       optional :keyword, type: String, desc: '关键字'
       optional :status, type: Integer, desc: '项目状态', values: Funding.status_values
+      optional :status_array, type: Array[Integer], desc: '项目状态数组', values: Funding.status_values
       optional :layout, type: String, desc: '按状态分数组: status_group'
       optional :is_me, type: Boolean, desc: '是否查询我的项目'
     end
     get 'lite' do
       params[:keyword] = '*' if ['', nil].include? params[:keyword]
+      params[:status] = params[:status_array] if params[:status_array].present?
       fundings = FundingPolymer.es_search(params)
       case params[:layout]
       when 'status_group'

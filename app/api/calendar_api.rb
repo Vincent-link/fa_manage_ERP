@@ -32,7 +32,7 @@ class CalendarApi < Grape::API
       cal = cal.where(status: params[:status]) if params[:status]
       cal = cal.where(meeting_category: params[:meeting_category]) if params[:meeting_category]
       cal = cal.where(started_at: params[:start_date]..(params[:end_date] + 1)) if params[:start_date].present? && params[:end_date].present?
-      present cal.includes(:calendar_members, :user, :organization, :company, :org_members, :com_members, :user_members), with: Entities::Calendar
+      present cal.includes(:calendar_members, :user, :organization, :company, :org_members, :com_members, :user_members).order(started_at: :desc), with: Entities::Calendar
     end
 
     desc '获取call_report'
@@ -48,7 +48,7 @@ class CalendarApi < Grape::API
               Calendar.where(company_id: params[:company_id])
             end
       cal = cal.where(meeting_category: [Calendar.meeting_category_roadshow_value, Calendar.meeting_category_com_meeting_value])
-      present cal.includes(:calendar_members, :user, :company, :com_members, :user_members), with: Entities::Calendar
+      present cal.includes(:calendar_members, :user, :company, :com_members, :user_members).order(started_at: :desc), with: Entities::Calendar
     end
 
     desc '创建日程', entity: Entities::Calendar
@@ -152,13 +152,12 @@ class CalendarApi < Grape::API
         optional :investor_summary, type: JSON, desc: '投资人信息更新 investor_summary[member_id] = xxxxx'
         optional :ir_review_syn, type: Boolean, desc: '是否同步到IR Review'
         optional :newsfeed_syn, type: Boolean, desc: '是否同步到Newsfeed'
-        optional :track_result, type: String, desc: 'track_log跟进', values: %w(continue pass)
+        optional :track_result, type: String, desc: 'track_log跟进', values: %w(continue pass drop)
+        optional :reason, type: String, desc: 'pass理由'
       end
       post :summary do
         calendar = Calendar.find params[:id]
-        calendar.update! declared(params)
-
-        calendar.create_ir_review_notification(calendar.organization_id, params[:summary]) if params[:ir_review_syn]
+        calendar.update! declared(params, include_missing: false)
 
         present calendar, with: Entities::Calendar
       end
@@ -166,7 +165,7 @@ class CalendarApi < Grape::API
       desc '清空会议纪要'
       delete :summary do
         calendar = Calendar.find params[:id]
-        calendar.update! summary: nil
+        calendar.update! summary: nil, status: Calendar.status_meet_value
         present calendar, with: Entities::Calendar
       end
 

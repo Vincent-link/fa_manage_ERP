@@ -38,12 +38,13 @@ class User < ApplicationRecord
   belongs_to :bu, optional: true, class_name: 'Team', foreign_key: :bu_id
   belongs_to :grade, optional: true
   delegate :name, to: :team, :prefix => true, allow_nil: true
+  delegate :name, to: :bu, :prefix => true, allow_nil: true
   delegate :name, to: :grade, :prefix => true, allow_nil: true
 
   belongs_to :kpi_group, optional: true
 
   def position
-    ''
+    '' #todo
   end
 
   def self.find_or_create_user(auth_user_hash)
@@ -78,6 +79,10 @@ class User < ApplicationRecord
     ids.flatten.each do |id|
       add_role_by_id id
     end
+  end
+
+  def is_current_bu
+    self.bu_id == Settings.current_bu_id
   end
 
   # def group_users
@@ -135,7 +140,7 @@ class User < ApplicationRecord
     return nil unless encrypted_email_password
     begin
       len = ActiveSupport::MessageEncryptor.key_len
-      key = ActiveSupport::KeyGenerator.new('password').generate_key(Rails.application.secrets.secret_key_base, len)
+      key = ActiveSupport::KeyGenerator.new('password').generate_key(Rails.application.credentials.secret_key_base, len)
       crypt = ActiveSupport::MessageEncryptor.new(key)
       crypt.decrypt_and_verify(encrypted_email_password)
     rescue Exception => e
@@ -146,7 +151,7 @@ class User < ApplicationRecord
 
   def update_email_password(new_password)
     len = ActiveSupport::MessageEncryptor.key_len
-    key = ActiveSupport::KeyGenerator.new('password').generate_key(Rails.application.secrets.secret_key_base, len)
+    key = ActiveSupport::KeyGenerator.new('password').generate_key(Rails.application.credentials.secret_key_base, len)
     crypt = ActiveSupport::MessageEncryptor.new(key)
     self.update(encrypted_email_password: crypt.encrypt_and_sign(new_password))
   end

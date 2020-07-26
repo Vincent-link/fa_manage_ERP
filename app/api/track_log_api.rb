@@ -62,15 +62,17 @@ class TrackLogApi < Grape::API
           end
 
           given status: ->(val) {val == TrackLog.status_spa_sha_value} do
-            requires :pay_date, type: String, desc: '结算日期', regexp: /^\d{4}-\d{2}$/
-            requires :is_fee, type: Boolean, desc: '是否收费'
-            requires :fee_rate, type: Float, desc: '费率'
-            requires :fee_discount, type: Float, desc: '费率折扣'
-            requires :amount, type: Float, desc: '投资金额'
-            requires :currency, type: Integer, desc: '币种'
-            requires :ratio, type: Float, desc: '股份比例'
-            requires :file_spa, type: Hash do
-              optional :blob_id, type: Integer, desc: 'spa文件id'
+            given track_log_id: ->(val) {val.nil?} do
+              requires :pay_date, type: String, desc: '结算日期', regexp: /^\d{4}-\d{2}$/
+              requires :is_fee, type: Boolean, desc: '是否收费'
+              requires :fee_rate, type: Float, desc: '费率'
+              requires :fee_discount, type: Float, desc: '费率折扣'
+              requires :amount, type: Float, desc: '投资金额'
+              requires :currency, type: Integer, desc: '币种'
+              requires :ratio, type: Float, desc: '股份比例'
+              requires :file_spa, type: Hash do
+                optional :blob_id, type: Integer, desc: 'spa文件id'
+              end
             end
           end
 
@@ -95,6 +97,7 @@ class TrackLogApi < Grape::API
             tracklog = @funding.track_logs.create(params.slice(:status, :organization_id, :has_bp, :has_teaser, :has_nda, :has_model))
             case params[:status].to_i
             when TrackLog.status_spa_sha_value
+              raise '该机构已经添加过融资结算详情，不能重复添加' if @funding.spas.where(organziation_id: params[:organziation_id]).present?
               @funding.change_spas(current_user.id, {spas: [params.slice(:pay_date, :is_fee, :fee_discount, :fee_rate, :amount, :ratio, :currency, :file_spa).merge(action: 'update', id: tracklog.id)]})
             when TrackLog.status_issue_ts_value
               tracklog.change_ts(current_user.id, params[:file_ts][:blob_id])
@@ -114,7 +117,7 @@ class TrackLogApi < Grape::API
 
         get 'count' do
           track_logs = @funding.track_logs
-          track_log_counts = TrackLog.status_id_name_key.map do |ins|
+          track_log_counts = TrackLog.status_id_name(:key).map do |ins|
             {
                 id: ins[:id],
                 name: ins[:name],

@@ -15,8 +15,7 @@ class NotificationApi < Grape::API
         params[:notification_type] ||= [1,2,3]
         params[:is_read] = [true, false] if params[:is_read].nil?
 
-        notifications = Notification.where(notification_type: params[:notification_type], is_read: params[:is_read])
-        .or(User.current.notifications.where(notification_type: params[:notification_type], is_read: params[:is_read])).paginate(page: params[:page], per_page: params[:per_page]).order(created_at: :desc)
+        notifications = User.current.notifications.where(notification_type: params[:notification_type], is_read: params[:is_read]).paginate(page: params[:page], per_page: params[:per_page]).order(created_at: :desc)
 
         present notifications, with: Entities::Notification
       end

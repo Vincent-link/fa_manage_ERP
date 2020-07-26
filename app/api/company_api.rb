@@ -3,9 +3,9 @@ class CompanyApi < Grape::API
     desc '获取所有公司'
     params do
       optional :query, type: String, desc: '检索文本', default: '*'
-      optional :sector_ids, type: Array[Integer], desc: '行业'
+      optional "sector_ids[]", type: Integer, desc: '行业'
       optional :is_ka, type: Boolean, desc: 'KA'
-      optional :recent_financing_ids, type: Array[Integer], desc: '最近融资'
+      optional "recent_financing_ids[]", type: Integer, desc: '最近融资'
       requires :page, type: Integer, desc: '页数', default: 1
       optional :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 30
     end
@@ -43,6 +43,7 @@ class CompanyApi < Grape::API
         tags_params = params.delete(:company_tag_ids)
         logo = params.delete(:logo)
         contacts_params = params.delete(:contacts)
+        # dataserver那边注册公司为必填，而fa不是
         params[:registered_name] ||= ""
 
         @company = Company.create!(params)
@@ -52,12 +53,7 @@ class CompanyApi < Grape::API
           ActiveStorage::Attachment.create!(name: 'logo', record_type: 'Company', record_id: @company.id, blob_id: logo[:blob_id])
         end
 
-        contacts_params.map { |e| Contact.create!(e.merge(company_id: @company.id)) }
-
-        # 从金丝雀获取最近融资
-        @company.syn_recent_financing
-        # 更新一级行业
-        @company.syn_root_sector(params[:sector_id])
+        contacts_params.map { |e| Contact.create!(e.merge(company_id: @company.id)) } if contacts_params.present?
 
         present @company, with: Entities::CompanyForShow
       end
@@ -81,14 +77,15 @@ class CompanyApi < Grape::API
       @relation_company = Zombie::DmRegisteredCompany.create_registered_company(declared(params))
     end
 
-    desc '上市公司股票信息'
+    desc '上市公司股票信息', entity: Entities::CompanyTicker
     params do
       optional :name, type: String, desc: "公司名称"
+      optional :page, type: Integer, desc: '页数', default: 1
+      optional :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 30
     end
     get :ticker do
-      company_tickers = Zombie::DmCompany.includes(:company_tickers)._select(:name, :ticker).search_by_keyword(params["name"], true)
-
-      present company_tickers
+      company_tickers = Zombie::DmCompany.includes(:company_tickers)._select(:name, :ticker).search_by_keyword(params["name"], true).paginate(page: params[:page], per_page: params[:per_page]).order(created_at: :desc).inspect
+      present company_tickers, with: Entities::CompanyTicker
     end
 
     resource ':id' do

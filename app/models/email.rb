@@ -70,7 +70,7 @@ class Email < ApplicationRecord
 
   def change_to(params)
     case self.emailable_type
-    when 'Funding'
+    when 'FundingPolymer'
       params[:tos].group_by{|ins| ins[:type]}.each do |k, v|
         email_to_groups = self.email_to_groups
         if k == 'member'
@@ -121,7 +121,7 @@ class Email < ApplicationRecord
   end
 
   def auth_test_user(params)
-    if self.emailable_type == 'Funding'
+    if self.emailable_type == 'FundingPolymer'
       other_ids = params[:user_ids] - self.emailable.funding_users.map(&:user_id)
       others = User.where(id: other_ids)
       raise "#{others.map(&:name).join('、')}不是项目成员" if others.present?
@@ -154,7 +154,7 @@ class Email < ApplicationRecord
   def official_push_email
     raise '邮件推送中不要重复推送' if self.status_pushing?
     raise '邮件推送成功不要重复推送' if self.status_success?
-    self.email_to_groups.where(status: EmailToGroup.status_filter(:no_push, :fail)).update_all(status: EmailToGroup.status_pushing_value)
+    self.email_to_groups.where(status: EmailToGroup.status_filter(:not_push, :fail)).update_all(status: EmailToGroup.status_pushing_value)
     self.update(:status => Email.status_pushing_value, :send_at => Time.now)
     self.email_to_groups.status_pushing.each do |email_to_group|
       dear_to = email_to_group.dear_to

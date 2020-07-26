@@ -11,7 +11,7 @@ class OrganizationApi < Grape::API
       optional :amount_max, type: Integer, desc: '美元融资规模最大'
       optional :level, type: Array[String], desc: '分级'
       optional :investor_group_id, type: Integer, desc: '投资人名单id'
-      optional :tier, type: Integer, desc: 'tier'
+      optional :tier, type: Array[Integer], desc: 'tier'
       optional :currency, type: Array[Integer], desc: '币种', default: []
       requires :layout, type: String, desc: 'index/select', default: 'index', values: ['index', 'select', 'ecm_group']
       requires :page, type: Integer, desc: '页数', default: 1
@@ -68,20 +68,24 @@ class OrganizationApi < Grape::API
         optional :id, type: Integer, desc: 'file_id 已有文件id'
         optional :blob_id, type: Integer, desc: 'blob_id 新文件id'
       end
-      optional :invest_period_id, type: Integer, desc: '投资周期'
+      optional :invest_period, type: Integer, desc: '投资周期'
       optional :decision_flow, type: String, desc: '投资决策流程'
       optional :ic_rule, type: String, desc: '投委会机制'
       optional :alias, type: Array[String], desc: '机构别名'
+      optional :addresses, type: Array[JSON], desc: '机构地址'
     end
     post do
       Organization.transaction do
         organization_tag_ids = params.delete(:organization_tag_ids)
-        sector_ids = params.delete(:sector_ids)
+        addresses = params.delete(:addresses)
 
         @organization = Organization.create!(declared(params, include_missing: false))
 
+        addresses.each do |address|
+          Zombie::DmAddress.create_address('Investor', @organization.id, nil, address[:location_id], address[:address_desc])
+        end
+
         @organization.organization_tag_ids = organization_tag_ids
-        @organization.sector_ids = sector_ids
       end
       present @organization, with: Entities::OrganizationForShow
     end
@@ -167,7 +171,7 @@ class OrganizationApi < Grape::API
           raise "轮次不能为空" if params[:round_ids].nil?
           raise "投资币种不能为空" if params[:currency_ids].nil?
         when 'logo'
-          
+
         end
 
         @organization.organization_tag_ids = params[:organization_tag_ids]
@@ -194,18 +198,59 @@ class OrganizationApi < Grape::API
       end
 
       desc '跟进情况'
+      params do
+        requires :page, type: Integer, desc: '页数', default: 1
+        requires :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 10
+        optional :sector_ids, type: Array[Integer], desc: '行业'
+        optional :round_ids, type: Array[Integer], desc: '轮次'
+        optional :status, type: Array[Integer], desc: '状态'
+      end
       get :track_logs do
-        present @organization.track_logs, with: Entities::TrackLogForInteract
+        track_logs = @organization.track_logs.order(updated_at: :desc)
+        if params[:sector_ids].present?
+          track_logs = track_logs.includes(funding: :company)
+        elsif params[:round_ids].present?
+          track_logs = track_logs.includes(:funding)
+        end
+        track_logs = track_logs.where(status: params[:status]) if params[:status].present?
+        track_logs = track_logs.where(fundings: {round_id: params[:round_ids]}) if params[:round_ids].present?
+        track_logs = track_logs.where(fundings: {companies: {sector_id: params[:sector_ids]}}) if params[:sector_ids].present?
+
+        present track_logs.paginate(page: params[:page], per_page: params[:per_page]), with: Entities::TrackLogForInteract
       end
 
-      desc '未跟进项目（假）'
+      desc '未跟进项目'
+      params do
+        requires :page, type: Integer, desc: '页数', default: 1
+        requires :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 10
+        optional :sector_ids, type: Array[Integer], desc: '行业'
+        optional :round_ids, type: Array[Integer], desc: '轮次'
+        optional :status, type: Array[Integer], desc: '状态'
+      end
       get :untrack_funding do
-
+        fundings = Funding.left_joins(:track_logs).where("track_logs.organization_id != #{@organization.id} or track_logs.organization_id is null").where(status: [Funding.status_pursue_value, Funding.status_execution_value])
+        fundings = fundings.where(status: params[:status]) if params[:status].present?
+        fundings = fundings.where(round_id: params[:round_ids]) if params[:round_ids].present?
+        fundings = fundings.includes(:company).where(companies: {sector_id: params[:sector_ids]}) if params[:sector_ids].present?
+        present fundings.distinct.paginate(page: params[:page], per_page: params[:per_page]), with: Entities::FundingForUntrack, members: @organization.members
       end
 
-      desc 'portfollo（假）'
+      desc 'portfollo'
+      params do
+        requires :page, type: Integer, desc: '页数', default: 1
+        requires :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 10
+        optional :sector_ids, type: Array[Integer], desc: '行业'
+        optional :round_ids, type: Array[Integer], desc: '轮次'
+        optional :status, type: Array[Integer], desc: '状态'
+      end
       get :portfollo do
-
+        funding_ids, company_ids = Funding.includes(:track_logs).where(track_logs: {status: TrackLog.status_spa_sha, organization_id: @organization.id}).pluck(:id, :company_id).transpose
+        company_ids |= Zombie::DmInvestevent.by_investor(@organization.id).pluck(:company_id)
+        fundings = Funding.where(company_id: company_ids, status: [Funding.status_pursue_value, Funding.status_execution_value]).where.not(id: funding_ids)
+        fundings = fundings.where(status: params[:status]) if params[:status].present?
+        fundings = fundings.where(round_id: params[:round_ids]) if params[:round_ids].present?
+        fundings = fundings.includes(:company).where(companies: {sector_id: params[:sector_ids]}) if params[:sector_ids].present?
+        present fundings.paginate(page: params[:page], per_page: params[:per_page]), with: Entities::FundingForUntrack, members: @organization.members
       end
     end
   end

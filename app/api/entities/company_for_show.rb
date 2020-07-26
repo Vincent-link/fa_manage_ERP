@@ -18,5 +18,6 @@ module Entities
       expose :updated_at, documentation: {type: 'datetime', desc: '最近更新时间'}
     end
     expose :contacts, using: Entities::Contact
+    expose :recent_financing, documentation: {type: 'integer', desc: '最近融资'}
   end
 end

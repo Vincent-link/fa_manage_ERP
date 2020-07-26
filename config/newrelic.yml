@@ -1,0 +1,21 @@
+common: &default_settings
+  license_key: d612c9c3ce7a9e8eb0d6d564d8faf855d80e26d1
+  app_name: Magazine
+  log_level: info
+
+
+development:
+  <<: *default_settings
+  app_name: Magazine (Development)
+
+test:
+  <<: *default_settings
+  # It doesn't make sense to report to New Relic from automated test runs.
+  monitor_mode: false
+
+staging:
+  <<: *default_settings
+  app_name: Magazine (Staging)
+
+production:
+  <<: *default_settings

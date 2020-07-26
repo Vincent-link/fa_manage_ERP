@@ -48,17 +48,22 @@ class Verification < ApplicationRecord
       funding_ka: {
           value: 8,
           desc: -> (funding){"项目【#{funding}】申请进入KA"},
-          op: ->(verification){
-            # 把项目变成ka的
-            verification.verifyable&.update!(is_ka: true)
+          op: ->(verification, status){
+            if status
+              # 把项目变成ka的
+              verification.verifyable&.update!(is_ka: true)
+            end
           }
       },
       funding_claim: {
           value: 9,
           desc: -> (funding, time) { "认领项目【#{funding}】约见时间（#{time}）" },
-          op: -> (verification) {
-            funding = verification.verifyable
-            funding.duplicate_base_info([verification.sponsor])
+          op: -> (verification, status) {
+            if status
+              funding = verification.verifyable
+              funding.duplicate_base_info([verification.sponsor])
+              funding.verifications.verification_type_funding_claim.update(status: false)
+            end
           }
       }
   }

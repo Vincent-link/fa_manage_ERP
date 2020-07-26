@@ -133,7 +133,7 @@ class InvesteventApi < Grape::API
         optional :delete_note, type: String, desc: "删除理由"
       end
       delete do
-        @event = Zombie::DmInvestevent.public_data.find(params[:id])
+        @event = Zombie::DmInvestevent.find(params[:id])
         @event.contribute_delete(params[:delete_note])
         true
       end

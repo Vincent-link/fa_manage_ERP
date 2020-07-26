@@ -50,6 +50,12 @@ class CacheBox
     end
   end
 
+  def self.dm_member_location
+    Rails.cache.fetch('dm_member_location') do
+      Zombie::DmLocation.where(name: ['北京', '上海', '天津', '重庆', '香港', '南京', '苏州', '杭州', '宁波', '厦门', '武汉', '长沙', '广州', '深圳', '成都', '西安']).select(:id, :name).as_json
+    end
+  end
+
   def self.dm_locations
     Rails.cache.fetch('dm_locations') do
       Zombie::DmLocation.all._select(:id, :name, :parent_id).index_by(&:id)
@@ -67,6 +73,12 @@ class CacheBox
     Rails.cache.fetch("cb_get_group_user_ids_#{id}") do
       ids = User.where(leader_id: id).pluck(:id)
       [id] | ids.map {|i| CacheBox.get_group_user_ids(i)}.flatten
+    end
+  end
+
+  def self.user_cache
+    Rails.cache.fetch("user_cache", expires_in: 1.minutes) do
+      User.pluck(:id, :name).to_h
     end
   end
 end

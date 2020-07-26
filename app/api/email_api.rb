@@ -82,7 +82,7 @@ class EmailApi < Grape::API
     get do
       emailable = params[:emailable_type].constantize.find(params[:emailable_id])
       case params[:emailable_type]
-      when "Funding"
+      when "FundingPolymer"
         if params[:push_status]
           emails = emailable.emails.where(status: Email.status_success_value)
         else
@@ -180,9 +180,9 @@ class EmailApi < Grape::API
       post 'official_push' do
         raise '不要用别人的邮箱发邮件' unless (@email.from_id || @email.user_id) == current_user.id
         if params[:tos].present?
-          email_to_groups = @email.email_to_groups
+          email_tos = @email.email_tos
           params[:tos].each do |to|
-            email_to_groups.find(to[:relation_id]).update!(person_title: to[:person_title])
+            email_tos.find(to[:relation_id]).update!(person_title: to[:person_title])
           end
         end
         @email.official_push_email

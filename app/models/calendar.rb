@@ -17,15 +17,16 @@ class Calendar < ApplicationRecord
 
   before_validation :set_current_user
   before_save :set_meeting_status
+  before_validation :delete_when_cancel
   after_save :gen_track_log_detail
   after_save :gen_org_meeting_info
 
   delegate :name, to: :organization, allow_nil: true, prefix: true
-  delegate :name, to: :company, allow_nil: true, prefix: true
-  delegate :status, to: :funding, allow_nil: true, prefix: true
-  delegate :status, to: :track_log, allow_nil: true, prefix: true
+  delegate :name, :location_city_id, :location_province_id, to: :company, allow_nil: true, prefix: true
+  delegate :status, :round_id, to: :funding, allow_nil: true, prefix: true
+  delegate :status, :members, to: :track_log, allow_nil: true, prefix: true
 
-  attr_accessor :ir_review_syn, :newsfeed_syn, :track_result, :investor_summary
+  attr_accessor :ir_review_syn, :newsfeed_syn, :investor_summary
 
   scope :nearly, -> {where(started_at: (Date.today.beginning_of_month - 3.month)..(Date.today.beginning_of_month + 2.month))}
 
@@ -41,11 +42,15 @@ class Calendar < ApplicationRecord
   }
 
   state_config :status, config: {
-      new: {value: 1, desc: '未约见'},
-      meet: {value: 2, desc: '已约见'},
+      new: {value: 1, desc: '待约见'},
+      meet: {value: 2, desc: '待填写纪要'},
       done: {value: 3, desc: '已完成'},
       cancel: {value: 4, desc: '已取消'}
   }
+
+  def result_track_log_detail
+    self.track_log_details.find {|ins| ins.detail_type_calendar_result?}
+  end
 
   def contact_ids=(contact_ids)
     self.calendar_members.where(memberable_type: 'Contact').where.not(memberable_id: contact_ids).destroy_all
@@ -79,25 +84,22 @@ class Calendar < ApplicationRecord
   end
 
   def gen_track_log_detail
-    if self.meeting_category_roadshow? && self.funding
-      track_log = self.funding.track_logs.find_or_create_by!(organization_id: self.organization_id) do |track_log|
-        org_members.each do |cal_member|
-          track_log.track_log_members.build(member_id: cal_member.memberable_id)
-        end
-        track_log.status = TrackLog.status_meeting_value
-      end
-      action = if self.previous_changes.has_key? :id
-                 'create'
-               else
-                 case self.status
-                 when Calendar.status_cancel_value
-                   'delete'
+    if self.meeting_category_roadshow? && self.track_log
+      if self.previous_changes.has_key? :track_result
+        self.track_log.change_status_by_calendar(self.id, self.track_result, reason) if self.track_result
+      else
+        action = if self.previous_changes.has_key? :id
+                   'create'
                  else
-                   'update'
+                   case self.status
+                   when Calendar.status_cancel_value
+                     'delete'
+                   else
+                     'update'
+                   end
                  end
-               end
-      track_log.gen_meeting_detail(User.current.id, self.id, action)
-      track_log.change_status_by_calendar(self.track_result) if self.track_result
+        self.track_log.gen_meeting_detail(User.current.id, self.id, action, reason)
+      end
     end
   end
 
@@ -105,6 +107,7 @@ class Calendar < ApplicationRecord
     if self.meeting_category_org_meeting?
       if self.ir_review_syn
         self.organization.ir_reviews.create(content: self.summary)
+        self.create_ir_review_notification(self.organization_id, self.summary)
       end
       if self.newsfeed_syn
         self.organization.newsfeeds.create(content: self.summary)
@@ -124,5 +127,9 @@ class Calendar < ApplicationRecord
 
   def set_meeting_status
     self.status = Calendar.status_done_value if self.summary.present? && !self.status_cancel?
+  end
+
+  def delete_when_cancel
+    self.destroy if self.status_cancel?
   end
 end

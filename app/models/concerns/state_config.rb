@@ -23,24 +23,27 @@ module StateConfig
           end
         end
 
-        define_singleton_method "#{_arg}_id_name" do
-          config.values.map do |element|
-            {:id => element[:value],
-             :name => element[:desc]}
+        define_singleton_method "#{_arg}_id_name" do |*extra_attr|
+          config.map do |key, element|
+            res = {:id => element[:value],
+                   :name => element[:desc]}
+            extra_attr.each do |attr|
+              if attr == :key
+                res[attr] = key.to_s
+              else
+                res[attr] = element[attr]
+              end
+            end
+            res
           end
-        end
-
-        define_singleton_method "#{_arg}_id_name_key" do
-          result = []
-          config.each do |key, element|
-            result << {
-                :id => element[:value],
-                :name => element[:desc],
-                :key => key.to_s
-            }
-          end
-
-          result
+          # config.values.map do |element|
+          #   res = {:id => element[:value],
+          #          :name => element[:desc]}
+          #   extra_attr.each do |attr|
+          #     res[attr] = element[attr]
+          #   end
+          #   res
+          # end
         end
 
         define_singleton_method "#{_arg}_id_name_with_option" do |select_options = {}|
@@ -125,6 +128,10 @@ module StateConfig
           config
         end
 
+        define_singleton_method "#{_arg}_type_values" do |type|
+          config.values.select { |c| c[:type] == type }.map { |c| c[:value]  }
+        end
+
         define_singleton_method "#{_arg}_values" do
           config.values.map {|each_config| each_config[:value]}
         end
@@ -134,7 +141,7 @@ module StateConfig
         end
 
         define_singleton_method "#{_arg}_value_code" do |value, code|
-          config.values.map{|each_config| each_config[code.to_sym] if each_config[:value] == value}.compact.flatten.uniq
+          config.values.map {|each_config| each_config[code.to_sym] if each_config[:value] == value}.compact.flatten.uniq
         end
 
         define_singleton_method "#{_arg}_filter" do |*filter_array|
@@ -166,6 +173,10 @@ module StateConfig
 
         define_method "#{_arg}_config" do
           config.select {|k, v| v[:value] == self.send(_arg)}.values.first
+        end
+
+        define_method "#{_arg}_rate" do
+          config.select { |k, v| v[:value] == self.send(_arg) }.values.first.fetch(:rate, 0)
         end
 
         config.keys.each do |_key|

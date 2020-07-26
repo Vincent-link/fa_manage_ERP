@@ -2,10 +2,10 @@ class KpiApi < Grape::API
   mounted do
     resource configuration[:owner] do
       resource ':id' do
-        desc '获取组内所有kpi配置'
+        desc '获取组内所有信息'
         get do
-          kpis = Kpi.where(kpi_group_id: params[:id], parent_id: nil).order(created_at: :desc)
-          present kpis, with: Entities::Kpi
+          kpi_group = KpiGroup.find(params[:id])
+          present kpi_group, with: Entities::KpiGroup
         end
 
         desc '添加配置'
@@ -25,7 +25,7 @@ class KpiApi < Grape::API
   resources :kpi do
     desc '获取所有kpi类型'
     get :kpi_type do
-      kpi_types = Kpi.kpi_type_id_name
+      kpi_types = Kpi.kpi_type_id_name(:unit, :remarks)
       present kpi_types, with: Entities::KpiType
     end
 
