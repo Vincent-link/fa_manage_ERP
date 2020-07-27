@@ -196,6 +196,10 @@ module StateConfig
             config[_key][:op]
           end
 
+          define_singleton_method "#{_arg}_#{_key}_fit" do
+            config[_key][:fit]
+          end
+
           define_method "#{_arg}_#{_key}?" do
             self.send(_arg) == config[_key][:value]
           end

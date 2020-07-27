@@ -132,6 +132,26 @@ class MemberApi < Grape::API
       present dm_members, with: Entities::DmMemberLite, member_hash: member_hash
     end
 
+    desc '投资人动态', entity: Entities::NewsFeeds
+    params do
+      optional :filter, type: String, desc: "筛选", values: ["member", "organization"], desc: "member: 投资人动态，organization: 投资机构动态，不传则为全部"
+      optional :page, type: Integer, desc: "页数", default: 1
+      optional :per_page, type: Integer, desc: "每页条数，预设20", default: 20
+    end
+    get :news_feeds do
+      result = []
+      target_amount = params[:page] * params[:per_page]
+      p_v_ids = PaperTrail::Version.order(created_at: :desc).map(&:id)
+      p_v_ids.each_slice(5000) do |p_v_array|
+        PaperTrail::Version.where(id: p_v_array).order(created_at: :desc).each do |p_v|
+          result << p_v if PaperTrail::Version.version_type_attach(p_v, params[:filter]).present?
+          break if result.count == target_amount
+        end
+        break if result.count == target_amount
+      end
+
+      present result, with: Entities::NewsFeeds
+    end
 
     resource ':id' do
       desc '投资人详情', entity: Entities::MemberForShow
