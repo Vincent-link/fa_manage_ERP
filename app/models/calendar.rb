@@ -16,7 +16,7 @@ class Calendar < ApplicationRecord
   belongs_to :track_log, optional: true
   has_many :track_log_details, as: :linkable
 
-  validates :contact_ids, if: Proc.new {|calendar| (calendar.funding || calendar.company).nil? || ((calendar.contact_ids || []) - (calendar.company || calendar.funding.company).contact_ids).empty?}
+  validate :contact_ids, presence: true, if: Proc.new {|calendar| (calendar.funding || calendar.company).nil? || ((calendar.contact_ids || []) - (calendar.company || calendar.funding.company).contact_ids).empty?}
 
   before_validation :set_current_user
   before_save :set_meeting_status
