@@ -1,3 +1,2 @@
 class UserInvestorGroup < InvestorGroup
-
 end
