@@ -140,7 +140,7 @@ class MemberApi < Grape::API
     end
     get :news_feeds do
       result = []
-      p_v_ids = PaperTrail::Version.where("id < ?", params[:last_id]).order(created_at: :desc).map(&:id)
+      p_v_ids = PaperTrail::Version.pluck(:id).select{|id| id < params[:last_id]}.sort.reverse
       p_v_ids.each_slice(5000) do |p_v_array|
         PaperTrail::Version.where(id: p_v_array).order(created_at: :desc).each do |p_v|
           result << p_v if PaperTrail::Version.version_type_attach(p_v, params[:filter]).present?
