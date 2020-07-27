@@ -2,8 +2,14 @@ module Entities
   class MemberForNewsFeeds < Base
     expose :id, documentation: {type: 'integer', desc: '投资人id'}
     expose :name, documentation: {type: 'string', desc: '投资人名称'}
+    expose :avatar, documentation: {type: 'string', desc: '投资人头像url'} do |ins|
+      ins.avatar_attachment&.service_url
+    end
     expose :organization_id, documentation: {type: 'integer', desc: '机构id', required: true}
     expose :organization_name, documentation: {type: 'string', desc: '机构名称', required: true}
+    expose :organization_logo, documentation: {type: 'string', desc: '机构logo url'} do |ins|
+      ins.organization&.logo_attachment&.service_url
+    end
     expose :previous_organization_id, if: {type: PaperTrail::Version.news_feeds_type_value("member_change_org")}, documentation: {type: 'integer', desc: '更改前机构id'} do |_ins, opt|
       opt[:changes]["organization_id"].first
     end
