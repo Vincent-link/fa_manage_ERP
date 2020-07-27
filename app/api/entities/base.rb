@@ -13,5 +13,6 @@ module Entities
       dt&.to_s(:minute)
     end
     format_with(:dm_time_to_s_second) {|dt| Time.parse(dt)&.to_s(:second)}
+    format_with(:c_ymd_hm) {|dt| dt.to_s(:c_ymd_hm)}
   end
 end

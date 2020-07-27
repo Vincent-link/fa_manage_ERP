@@ -1,7 +1,7 @@
 class Member < ApplicationRecord
   acts_as_paranoid
   has_paper_trail
-  searchkick language: 'chinese'
+  searchkick language: 'chinese2'
 
   include StateConfig
   include BlobFileSupport
@@ -9,7 +9,6 @@ class Member < ApplicationRecord
   has_one_attached :avatar
   has_one_attached :card
   has_blob_upload :avatar, :card
-
 
   acts_as_taggable_on :investor_tags
 
@@ -25,6 +24,12 @@ class Member < ApplicationRecord
   has_many :email_receivers, as: :receiverable
   has_many :email_tos, as: :toable
   has_many :investor_group_members
+
+  has_many :calendar_members, -> {order(created_at: :desc)}, as: :memberable
+  has_many :calendars, through: :calendar_members
+  has_many :calendar_users, through: :calendars
+
+  has_and_belongs_to_many :organization_teams
 
   delegate :name, to: :organization, prefix: true
 
@@ -80,10 +85,6 @@ class Member < ApplicationRecord
         Zombie::DmAddress.find(self.address_id)
       end
     end
-  end
-
-  def organization_teams
-    OrganizationTeam.where(id: self.team_ids)
   end
 
   def dm_member

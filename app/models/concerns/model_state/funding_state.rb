@@ -45,7 +45,11 @@ module ModelState
       }
 
       state_config :confidentiality_level, config: {
-          first: {value: 1, desc: '假数据level 1'}
+          one:   {value: 1, desc: '1级', full_desc: '可见大部分信息（仅保密：BSC相关信息、结算详情）'},
+          two:   {value: 2, desc: '2级', full_desc: '可见项目介绍、项目信息、项目跟进人、公司融资历史、项目变更历史、约见记录（含call report）（保密：BSC相关信息、结算详情、推送记录、会议）'},
+          three: {value: 3, desc: '3级', full_desc: '可见项目介绍、项目信息、项目跟进人、公司融资历史、项目变更历史（保密： 约见记录、BSC相关信息、结算详情、推送记录、会议）'},
+          four:  {value: 4, desc: '4级', full_desc: '仅可见项目列表、能搜索到该项目、不能查看项目详情'},
+          five:  {value: 5, desc: '5级', full_desc: '完全保密、在项目列表也不能看到，搜索不到该项目'},
       }
 
       state_config :all_funding_file_type, config: {

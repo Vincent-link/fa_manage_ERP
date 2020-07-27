@@ -8,12 +8,22 @@ class Calendar < ApplicationRecord
   has_many :org_members, -> {where(memberable_type: 'Member')}, class_name: 'CalendarMember'
   has_many :com_members, -> {where(memberable_type: 'Contact')}, class_name: 'CalendarMember'
   has_many :user_members, -> {where(memberable_type: 'User')}, class_name: 'CalendarMember'
+  has_many :calendar_users, through: :user_members, source: :memberable, source_type: 'User'
+  has_many :calendar_contacts, through: :com_members, source: :memberable, source_type: 'Contact'
   belongs_to :user
   belongs_to :funding, optional: true
   belongs_to :company, optional: true
   belongs_to :organization, optional: true
   belongs_to :track_log, optional: true
   has_many :track_log_details, as: :linkable
+
+  validate do |calendar|
+    if (calendar.funding || calendar.company).present?
+      cal_contact_ids = calendar.calendar_contact_ids || []
+      com_contact_ids = (calendar.company || calendar.funding.company).contact_ids
+      errors.add(:base, '公司成员选择错误') if (cal_contact_ids - com_contact_ids).present?
+    end
+  end
 
   before_validation :set_current_user
   before_save :set_meeting_status
@@ -131,5 +141,11 @@ class Calendar < ApplicationRecord
 
   def delete_when_cancel
     self.destroy if self.status_cancel?
+  end
+
+  def self.auto_meet
+    Calendar.status_new.where('ended_at < ?', Time.now).each do |c|
+      c.update! status: Calendar.status_meet_value
+    end
   end
 end

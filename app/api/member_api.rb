@@ -98,7 +98,7 @@ class MemberApi < Grape::API
       optional :tel, type: String, desc: '手机号'
     end
     get do
-      members = Member.es_search(params, includes: :organization)
+      members = Member.es_search(params, includes: [:organization, :users, :organization_teams])
       case params[:layout]
       when 'index'
         present members, with: Entities::MemberForIndex
@@ -109,7 +109,6 @@ class MemberApi < Grape::API
       when 'export'
         present members.limit 300 #todo export
       when 'ecm_group'
-        members = Member.es_search(params, includes: [:organization, :users])
         present members, with: Entities::MemberForEcmGroup
       end
     end
@@ -132,6 +131,25 @@ class MemberApi < Grape::API
       present dm_members, with: Entities::DmMemberLite, member_hash: member_hash
     end
 
+    desc '投资人动态', entity: Entities::NewsFeeds
+    params do
+      optional :filter, type: String, desc: "筛选", values: ["member", "organization"], desc: "member: 投资人动态，organization: 投资机构动态，不传则为全部"
+      optional :last_id, type: Integer, desc: "最后一笔数据id", default: 1_000_000_000
+      optional :per_page, type: Integer, desc: "每页条数，预设20", default: 20
+    end
+    get :news_feeds do
+      result = []
+      p_v_ids = PaperTrail::Version.pluck(:id).select {|id| id < params[:last_id]}.sort.reverse
+      p_v_ids.each_slice(500) do |p_v_array|
+        PaperTrail::Version.where(id: p_v_array).includes(:item).order(created_at: :desc).each do |p_v|
+          result << p_v if PaperTrail::Version.version_type_attach(p_v, params[:filter]).present?
+          break if result.count == params[:per_page]
+        end
+        break if result.count == params[:per_page]
+      end
+
+      present result, with: Entities::NewsFeeds
+    end
 
     resource ':id' do
       desc '投资人详情', entity: Entities::MemberForShow

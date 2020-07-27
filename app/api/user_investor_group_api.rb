@@ -10,6 +10,7 @@ class UserInvestorGroupApi < Grape::API
     params do
       requires :name, type: String, desc: '组名称'
       requires :is_public, type: Boolean, desc: '是否公开'
+      optional :member_ids, type: Array[Integer], desc: '投资人id'
     end
     post do
       present UserInvestorGroup.create!(declared(params)), with: Entities::UserInvestorGroup
@@ -29,18 +30,10 @@ class UserInvestorGroupApi < Grape::API
       params do
         requires :name, type: String, desc: '组名称'
         requires :is_public, type: Boolean, desc: '是否公开'
+        optional :member_ids, type: Array[Integer], desc: '投资人id'
       end
       patch do
-        @user_investor_group.update(declared(params))
-        present @user_investor_group, with: Entities::UserInvestorGroup
-      end
-
-      desc '添加到名单', entity: Entities::UserInvestorGroup
-      params do
-        requires :member_id, type: Integer, desc: '投资人id'
-      end
-      post :detail do
-        @user_investor_group.members << Member.find(params[:member_id])
+        @user_investor_group.update!(declared(params))
         present @user_investor_group, with: Entities::UserInvestorGroup
       end
     end

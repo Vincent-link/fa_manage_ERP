@@ -77,6 +77,8 @@ class TrackLogApi < Grape::API
           end
 
           optional :calendar, type: Hash do
+            optional :contact_ids, type: Array[Integer], desc: '公司联系人id'
+            requires :cr_user_ids, type: Array[Integer], desc: '华兴参与人id'
             requires :started_at, type: Time, desc: '开始时间'
             requires :ended_at, type: Time, desc: '结束时间'
             optional :address_id, type: Integer, desc: '会议地点id'
@@ -106,7 +108,7 @@ class TrackLogApi < Grape::API
             end
           end
           tracklog.member_ids = params[:member_ids]
-          current_user.created_calendars.create!(params[:calendar].slice(:started_at, :ended_at, :address_id, :meeting_type).merge(meeting_category: Calendar.meeting_category_roadshow_value, track_log_id: tracklog.id, funding_id: tracklog.funding_id, organization_id: tracklog.organization_id)) if params[:calendar].present?
+          current_user.created_calendars.create!(params[:calendar].slice(:started_at, :ended_at, :address_id, :meeting_type, :contact_ids, :cr_user_ids).merge(meeting_category: Calendar.meeting_category_roadshow_value, track_log_id: tracklog.id, funding_id: tracklog.funding_id, organization_id: tracklog.organization_id, company_id: @funding.company_id)) if params[:calendar].present?
           tracklog.track_log_details.create(params.slice(:content).merge(user_id: current_user.id)) if params[:content].present?
           present tracklog, with: Entities::TrackLogBase
         end

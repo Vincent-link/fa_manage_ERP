@@ -32,7 +32,8 @@ casual_email: ['15611360995@163.com',
                'cefeng@huaxing.com',
                'wenyagao@huaxing.com',
                'jarvisli@huaxing.com',
-               'WenYaGao@huaxing.com']
+               'WenYaGao@huaxing.com',
+               'theotychen@163.com']
 
 zombie:
   host: "http://router.canary.huaxing.com:9787"

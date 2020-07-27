@@ -1,0 +1,2 @@
+class CompetingCompany < ApplicationRecord
+end

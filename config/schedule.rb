@@ -13,8 +13,20 @@
 #   rake "some:great:rake:task"
 # end
 #
-every 1.days do
+every 1.days, at: '3:00 am' do
   runner "Pipeline.reset_avg_days_to_close"
 end
+
+every 30.minutes do
+  runner "Calendar.auto_meet"
+end
+
+# every 1.day, at: "6:00 pm" do
+#   rake "send_report_email:daily"
+# end
+#
+# every :sunday, at: "6:00 pm" do
+#   rake "send_report_email:weekly"
+# end
 
 # Learn more: http://github.com/javan/whenever
