@@ -51,18 +51,19 @@ class Pipeline < ApplicationRecord
   end
 
   def version_pipelines
+    min_month_version = versions.min { |v| v.created_at }
     # 每月最后的versions
-    month_versions = versions.group_by { |v| v.created_at.to_s(:month) }.values.map do |arr|
-      arr.sort_by(&:created_at).last
+    month_versions = (min_month_version.created_at.to_s(:month)..Date.current.prev_month.to_s(:month)).inject({}) do |res, month|
+      res.merge!(month => versions.select { |v| v.created_at.to_s(:month) <= month }.sort_by(&:created_at).last)
     end
 
     month_versions.inject([]) do |res, item|
-      next_version = versions.select { |v| v.id > item.id }.first
+      next_version = versions.select { |v| v.id > item.last.id }.first
       version_pipeline = next_version.present? ? next_version.reify : self
-      date = item.created_at.end_of_month.to_date
+      date = "#{item.first}-01".to_date.end_of_month
 
       res << version_pipeline.attributes.merge(
-        date: item.created_at.end_of_month.to_date
+        date: date
       ).merge(funding.pipeline_es_import_data(date)).merge(es_import_data(date)).merge(divide_es_import_data(date))
     end
   end
