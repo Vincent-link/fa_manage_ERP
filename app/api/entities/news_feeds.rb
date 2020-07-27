@@ -1,5 +1,6 @@
 module Entities
   class NewsFeeds < Base
+    expose :id, documentation: {type: 'integer', desc: '数据 id'}
     expose :type, documentation: {type: 'integer', desc: "类型：" + PaperTrail::Version.news_feeds_type_hash.inspect}
     expose :type_name, documentation: {type: 'string', desc: '类型名称'} do |ins|
       PaperTrail::Version.news_feeds_type_desc_for_value(ins.type)
