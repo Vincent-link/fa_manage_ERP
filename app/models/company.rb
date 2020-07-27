@@ -45,9 +45,10 @@ class Company < ApplicationRecord
     self.attributes.transform_keys {|k| dm_key_map[k]}.compact
   end
 
-  # def search_data
-  #   # attributes.merge sector_ids: self.sector_ids
-  # end
+  def search_data
+    attributes.merge calendar_summary: "#{self.calendars.map(&:summary).join(' ')}",
+                     calendar_summary_detail: "#{self.calendars.map(&:summary_detail).join(' ')}"
+  end
 
   def sector_ids
     [sector_id, parent_sector_id].compact
@@ -67,8 +68,16 @@ class Company < ApplicationRecord
     # if params[:order_by]
     #   order_hash = {params[:order_by] => params[:order_type]}
     # end
+    
+    Company.search(params[:query], fields: [:name, :parent_sector_id, :one_sentence_intro, :detailed_intro], where: where_hash, order: order_hash, page: params[:page], per_page: params[:per_page], highlight: DEFAULT_HL_TAG)
+  end
 
-    Company.search(params[:query], match: :phrase, where: where_hash, order: order_hash, page: params[:page], per_page: params[:per_page], highlight: DEFAULT_HL_TAG)
+  def tc_search_highlights
+    unless self.respond_to?(:search_highlights)
+      nil
+    else
+      self.search_highlights.transform_keys {|k| Company.human_attribute_name(k)}
+    end
   end
 
   def financing_events(kun=nil)
@@ -95,7 +104,7 @@ class Company < ApplicationRecord
         event_hash[:target_amount] = get_fa_target_amount(event)
 
         if event.status == Funding.status_pass_value
-          event_hash[:funding_members] = "pass理由：#{event.time_lines.pluck(:reason).join("。")}"
+          event_hash[:pass_reason] = event.time_lines.last.reason
         else
           event_hash[:funding_members] = event.funding_members.pluck(:name).join("、")
         end
@@ -209,5 +218,10 @@ class Company < ApplicationRecord
       #   self.recent_financing = invest_types.find {|e| e.id == financing_events.last.try(:invest_type_id)}.try(:id)
       end
     end
+  end
+
+  # 日历约见已完成
+  def callreport_num
+    self.calendars.where(status: Calendar.status_done_value).count
   end
 end
