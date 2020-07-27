@@ -135,21 +135,22 @@ class MemberApi < Grape::API
     desc '投资人动态', entity: Entities::NewsFeeds
     params do
       optional :filter, type: String, desc: "筛选", values: ["member", "organization"], desc: "member: 投资人动态，organization: 投资机构动态，不传则为全部"
-      optional :last_id, type: Integer, desc: "最后一笔数据id", default: 1_000_000_000
+      optional :page, type: Integer, desc: "页数", default: 1
       optional :per_page, type: Integer, desc: "每页条数，预设20", default: 20
     end
     get :news_feeds do
       result = []
-      p_v_ids = PaperTrail::Version.pluck(:id).select{|id| id < params[:last_id]}.sort.reverse
+      target_amount = params[:page] * params[:per_page]
+      p_v_ids = PaperTrail::Version.pluck(:id).sort.reverse
       p_v_ids.each_slice(500) do |p_v_array|
         PaperTrail::Version.where(id: p_v_array).includes(:item).order(created_at: :desc).each do |p_v|
           result << p_v if PaperTrail::Version.version_type_attach(p_v, params[:filter]).present?
-          break if result.count == params[:per_page]
+          break if result.count == target_amount
         end
-        break if result.count == params[:per_page]
+        break if result.count == target_amount
       end
 
-      present result, with: Entities::NewsFeeds
+      present result.last(params[:per_page]), with: Entities::NewsFeeds
     end
 
     resource ':id' do
