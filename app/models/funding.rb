@@ -25,10 +25,15 @@ class Funding < FundingPolymer
   has_many :users, through: :funding_users
 
   before_create :gen_serial_number
+  before_create :set_level_1
   after_create :base_time_line
   after_create :reviewing_status
 
   delegate :sector_id, to: :company
+
+  def set_level_1
+    self.confidentiality_level = FundingPolymer.confidentiality_level_one_value
+  end
 
   def gen_serial_number
     current_year = Time.now.year
