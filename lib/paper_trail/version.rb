@@ -43,7 +43,7 @@ module PaperTrail
       },
       org_create: {
           value: 6,
-          desc: '新增投资机构',
+          desc: '新增一个投资机构',
           fit: -> (ins){ins.event == "create" && ins.item_type == "Organization"}
       }
     }
