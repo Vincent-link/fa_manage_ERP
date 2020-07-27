@@ -103,8 +103,12 @@ class Organization < ApplicationRecord
       where_hash[:investor_group_ids] = params[:investor_group_id]
       where_hash[:investor_group_id_tiers] = params[:tier].map {|t| "#{params[:investor_group_id]}-#{t}"} if params[:tier].present?
     end
-    if params[:amount_min].present? || params[:amount_max].present?
-      range = (params[:amount_min] || 0)..(params[:amount_max] || 9999999)
+    if params[:rmb_amount_min].present? || params[:rmb_amount_max].present?
+      range = (params[:rmb_amount_min] || 0)..(params[:rmb_amount_max] || 9999999)
+      where_hash[:_or] = [{rmb_amount_min: range}, {rmb_amount_max: range}]
+    end
+    if params[:usd_amount_min].present? || params[:usd_amount_max].present?
+      range = (params[:usd_amount_min] || 0)..(params[:usd_amount_max] || 9999999)
       where_hash[:_or] = [{usd_amount_min: range}, {usd_amount_max: range}]
     end
 

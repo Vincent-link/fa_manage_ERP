@@ -7,8 +7,10 @@ class OrganizationApi < Grape::API
       optional :sector, type: Array[Integer], desc: '行业', default: []
       optional :round, type: Array[Integer], desc: '轮次', default: []
       optional :any_round, type: Boolean, desc: '是否不限轮次', default: false
-      optional :amount_min, type: Integer, desc: '美元融资规模最小'
-      optional :amount_max, type: Integer, desc: '美元融资规模最大'
+      optional :usd_amount_min, type: Integer, desc: '美元融资规模最小'
+      optional :usd_amount_max, type: Integer, desc: '美元融资规模最大'
+      optional :rmb_amount_min, type: Integer, desc: '人民币融资规模最小'
+      optional :rmb_amount_max, type: Integer, desc: '人民币融资规模最大'
       optional :tags, type: Array[String], desc: '机构标签'
       optional :level, type: Array[String], desc: '分级'
       optional :investor_group_id, type: Integer, desc: '投资人名单id'
