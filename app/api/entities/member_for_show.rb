@@ -23,7 +23,8 @@ module Entities
     expose :investor_tags, documentation: {type: 'integer', desc: '标签', is_array: true}
     expose :followed_location_ids, documentation: {type: 'integer', desc: '关注地区', is_array: true}
 
-    expose :users, as: :covered_by, using: Entities::UserForLogin, documentation: {type: 'Entities::UserLite', desc: '对接成员'}
+    expose :users, as: :covered_by, using: Entities::UserWithAvatar, documentation: {type: 'Entities::UserLite', desc: '对接成员'}
+    expose :calendar_users, as: :recent_touched_users, using: Entities::UserWithAvatar, documentation: {type: 'Entities::UserLite', desc: '最近交互用户'}
 
     expose :sponsor, using: Entities::UserLite, documentation: {type: 'Entities::UserLite', desc: '来源'}
     expose :is_head, documentation: {type: 'boolean', desc: '是否高层'}

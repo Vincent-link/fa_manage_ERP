@@ -86,7 +86,8 @@ class Organization < ApplicationRecord
                      members: "#{self.members.map(&:name).join(' ')}",
                      investor_group_ids: investor_group_organizations.map(&:investor_group_id),
                      investor_group_id_tiers: investor_group_organizations.map {|group_detail| "#{group_detail.investor_group_id}-#{group_detail.tier}"},
-                     i_id: self.id
+                     i_id: self.id,
+                     tags: self.organization_tag_list
   end
 
   def self.es_search(params)
@@ -97,6 +98,7 @@ class Organization < ApplicationRecord
     where_hash[:round_ids] = {all: params[:round]} if !params[:any_round] && params[:round].present?
     where_hash[:currency_ids] = {all: params[:currency]} if params[:currency].present?
     where_hash[:level] = params[:level] if params[:level].present?
+    where_hash[:tags] = params[:tags] if params[:tags].present?
     if params[:investor_group_id].present?
       where_hash[:investor_group_ids] = params[:investor_group_id]
       where_hash[:investor_group_id_tiers] = params[:tier].map {|t| "#{params[:investor_group_id]}-#{t}"} if params[:tier].present?
@@ -109,8 +111,8 @@ class Organization < ApplicationRecord
     order_hash = {}
     if params[:order_by]
       order_hash[params[:order_by]] = params[:order_type]
+      order_hash[:i_id] = :asc
     end
-    order_hash[:i_id] = :asc
 
     Organization.search(params[:query], where: where_hash, order: order_hash, page: params[:page], per_page: params[:per_page], highlight: DEFAULT_HL_TAG)
   end

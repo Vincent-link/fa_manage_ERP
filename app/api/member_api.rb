@@ -110,7 +110,7 @@ class MemberApi < Grape::API
         present members.limit 300 #todo export
       when 'ecm_group'
         members = Member.es_search(params, includes: [:organization, :users])
-        present members, with: Entities::MemberForEcmGroup
+        present members.includes(:organization_teams), with: Entities::MemberForEcmGroup
       end
     end
 
