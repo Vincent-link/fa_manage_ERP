@@ -94,7 +94,7 @@ class Calendar < ApplicationRecord
   end
 
   def gen_track_log_detail
-    if self.meeting_category_roadshow? && self.track_log
+    if self.meeting_category_roadshow? && self.track_log && User.current
       if self.previous_changes.has_key? :track_result
         self.track_log.change_status_by_calendar(self.id, self.track_result, reason) if self.track_result
       else
