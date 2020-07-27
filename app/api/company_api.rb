@@ -154,7 +154,7 @@ class CompanyApi < Grape::API
         optional :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 30
       end
       get :competing_companies do
-        competing_companies = Company.last(10)
+        competing_companies = Company.limit(100).paginate(page: params[:page], per_page: params[:page_size]).order(created_at: :desc)
         present competing_companies, with: Entities::CompanyForCompeting
       end
 
@@ -164,7 +164,7 @@ class CompanyApi < Grape::API
         optional :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 30
       end
       get :news do
-        news = News.last(10)
+        news = News.limit(100).paginate(page: params[:page], per_page: params[:page_size]).order(created_at: :desc)
         present news, with: Entities::News
       end
     end
