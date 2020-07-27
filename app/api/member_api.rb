@@ -135,7 +135,7 @@ class MemberApi < Grape::API
     desc '投资人动态', entity: Entities::NewsFeeds
     params do
       optional :filter, type: String, desc: "筛选", values: ["member", "organization"], desc: "member: 投资人动态，organization: 投资机构动态，不传则为全部"
-      optional :last_id, type: Integer, desc: "最后一笔数据id"
+      optional :last_id, type: Integer, desc: "最后一笔数据id", default: 1_000_000_000
       optional :per_page, type: Integer, desc: "每页条数，预设20", default: 20
     end
     get :news_feeds do
