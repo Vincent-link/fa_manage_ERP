@@ -38,6 +38,7 @@ module PaperTrail
           desc: '投资机构IR_Review',
           fit: -> (ins){ins.event == "create" &&
               ins.item_type == "Comment" &&
+              ins.item.present? &&
               ins.object_changes["type"][1] == "IrReview" &&
               ins.object_changes["commentable_type"][1] == "Organization"}
       },
