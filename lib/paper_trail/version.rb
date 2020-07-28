@@ -50,6 +50,23 @@ module PaperTrail
       }
     }
 
+    def present_data(column)
+      case event
+      when "create"
+        object_changes[column]&.last
+      when "update"
+        object[column]
+      end
+    end
+
+    def previous_org
+      Organization.find_by_id(present_data("organization_id"))
+    end
+
+    def following_org
+      Organization.find_by_id(object_changes["organization_id"]&.last)
+    end
+
     def self.version_type_attach(ins, event_filter)
       MEMBER_TYPE.each {|member_type| ins.type = news_feeds_type_value(member_type) if send(("news_feeds_type_" + member_type + "_fit")).send(:call, ins) && event_filter.in?(["member", nil])}
       ORG_TYPE.each {|org_type| ins.type = news_feeds_type_value(org_type) if send(("news_feeds_type_" + org_type + "_fit")).send(:call, ins) && event_filter.in?(["organization", nil])}
