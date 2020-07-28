@@ -16,7 +16,7 @@ module PaperTrail
       member_change_position: {
           value: 2,
           desc: '职位变更',
-          fit: -> (ins){ins.event == "update" && ins.item_type == "Member" && ins.object_changes&.keys&.include?("position")}
+          fit: -> (ins){ins.event == "update" && ins.item_type == "Member" && ins.object_changes&.keys&.include?("position_rank_id")}
       },
       member_create: {
           value: 3,
