@@ -194,6 +194,14 @@ class Member < ApplicationRecord
     Member.search(params[:query], options.merge(where: where_hash, order: order_hash, page: params[:page] || 1, per_page: params[:per_page] || 30, highlight: DEFAULT_HL_TAG))
   end
 
+  def t_search_highlights
+    unless self.respond_to?(:search_highlights)
+      nil
+    else
+      self.search_highlights.transform_keys {|k| Member.human_attribute_name(k)}
+    end
+  end
+
   def self.syn_by_dm_member(dm_member)
     member = Member.find_by_id(dm_member.id) || Member.new(id: dm_member.id)
     member.organization_id = dm_member.investor_id
