@@ -18,6 +18,7 @@ module Entities
     end
     expose :callreport_num, documentation: {type: 'integer', desc: 'callreport数量'}
     expose :is_ka, documentation: {type: 'boolean', desc: '是否ka'}
+    expose :is_chance, documentation: {type: 'boolean', desc: '是否有潜在融资需求'}
     with_options(format_with: :time_to_s_second) do
       expose :updated_at, documentation: {type: 'datetime', desc: '最近更新时间'}
     end
@@ -25,7 +26,7 @@ module Entities
       ins.financing_events("not_kun")
     end
     expose :one_sentence_intro, documentation: {type: 'string', desc: '一句话简介'}
-    expose :fundings, documentation: {type: 'string', desc: '一句话简介'} do |ins, options|
+    expose :fundings, documentation: {type: 'string', desc: '项目状态'} do |ins, options|
       ins.fundings.map do |e|
         {
           id: e.id,
