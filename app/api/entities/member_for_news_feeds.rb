@@ -1,13 +1,13 @@
 module Entities
   class MemberForNewsFeeds < Base
     expose :id, documentation: {type: 'integer', desc: '投资人id'} do |ins|
-      ins.item.id
+      ins.item&.id
     end
     expose :name, documentation: {type: 'string', desc: '投资人名称'} do |ins|
       ins.present_data("name")
     end
     expose :avatar, documentation: {type: 'string', desc: '投资人头像url'} do |ins|
-      ins.item.avatar_attachment&.service_url
+      ins.item&.avatar_attachment&.service_url
     end
     expose :organization_id, documentation: {type: 'integer', desc: '机构id'} do |ins|
       ins.present_data("organization_id")
