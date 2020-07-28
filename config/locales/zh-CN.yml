@@ -37,6 +37,7 @@ zh-CN:
       kpi: KPI
       kpi_group: KPI组
       statistic: 统计
+      eva_batch: 互评
 
   activerecord:
     models:

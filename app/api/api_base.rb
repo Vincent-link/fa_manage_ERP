@@ -82,6 +82,7 @@ class ApiBase < Grape::API
   mount EmailApi
   mount KnowledgeBaseApi
   mount StatisticsApi
+  mount EvaBatchApi
 
   add_swagger_documentation array_use_braces: true
 end

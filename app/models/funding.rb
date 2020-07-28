@@ -28,11 +28,18 @@ class Funding < FundingPolymer
   before_create :set_level_1
   after_create :base_time_line
   after_create :reviewing_status
+  after_save :change_execution_at
 
   delegate :sector_id, to: :company
 
   def set_level_1
     self.confidentiality_level = FundingPolymer.confidentiality_level_one_value
+  end
+
+  def change_execution_at
+    if saved_change_to_status? && self.status_execution?
+      self.update!(execution_at: Time.now)
+    end
   end
 
   def gen_serial_number
@@ -374,5 +381,13 @@ class Funding < FundingPolymer
     funding = Funding.create!(funding_params)
     funding.add_project_follower(normal_user_ids: normal_user_ids)
     funding
+  end
+
+  def self.my_fundings
+    self.includes(:funding_users).where(funding_users: {user_id: Thread.current[:current_user]})
+  end
+
+  def self.all_funding_ids
+    Funding.all.map(&:id)
   end
 end
