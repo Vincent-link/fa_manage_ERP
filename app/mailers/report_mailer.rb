@@ -28,7 +28,7 @@ class ReportMailer < ApplicationMailer
     {
       from: ApplicationMailer::SMTP_ACCOUNT,
       to: [user.email],
-      subject: "Arrow For FA 日报（#{Time.current.strftime("%Y年%m月%d日")}）"
+      subject: "每周投资者信息变动汇总（2020年4月19日-2020年4月26日）"
     }
   end
 end
