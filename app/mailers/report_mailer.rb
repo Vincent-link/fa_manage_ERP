@@ -20,8 +20,8 @@ class ReportMailer < ApplicationMailer
     delivery_mail!(email_params(user))
   end
 
-  def send_weekly_report
-
+  def send_weekly_report(user)
+    delivery_mail!(email_params(user))
   end
 
   def email_params(user)
