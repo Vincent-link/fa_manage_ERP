@@ -20,7 +20,7 @@ class EvaBatchApi < Grape::API
       year = Date.today.year
       params[:started_at] ||= Date.new(year)
       params[:ended_at] ||= Date.new(year, 12, 31)
-      eva_batchs = Zombie::QuestionnaireEvaBatch.search_eva_batch(params.slice(:started_at, :ended_at))._select(:id, :batch_name).inspect
+      eva_batchs = Zombie::QsEvaBatch.search_eva_batch(params.slice(:started_at, :ended_at))._select(:id, :batch_name).inspect
       present eva_batchs, with: Entities::QuestionnaireEvaBatchLite
     end
 
@@ -29,9 +29,9 @@ class EvaBatchApi < Grape::API
     end
 
     get 'batch_now' do
-      eva_batch = Zombie::QuestionnaireEvaBatch.search_eva_batch(batch_name: batch_now).first
+      eva_batch = Zombie::QsEvaBatch.search_eva_batch(batch_name: batch_now).first
       unless eva_batch.present?
-        eva_batch = Zombie::QuestionnaireEvaBatch.create_or_update_eva_batch(batch_name: batch_now, template_id: 1002)
+        eva_batch = Zombie::QsEvaBatch.create_or_update_eva_batch(batch_name: batch_now, template_id: 1002)
       end
       present eva_batch, with: Entities::QuestionnaireEvaBatchLite
     end
@@ -46,7 +46,7 @@ class EvaBatchApi < Grape::API
     get 'all_evaluations' do
       params[:eva_batch_ids] = [params[:eva_batch_id]] if params[:eva_batch_ids].present?
       params[:funding_ids] = Funding.where('name ilike (?)', "%#{params[:funding_name]}%").map(&:id) if params[:funding_name].present?
-      template = Zombie::QuestionnaireTemplate.find 1002
+      template = Zombie::QsTemplate.find 1002
       batch_funding_with_evaluations = template.all_batch_funding_with_evaluation(params.slice(:eva_batch_ids, :batch_funding_status, :funding_ids))
       present batch_funding_with_evaluations, with: Entities::QuestionnaireBatchFundingWithEvaluation
     end
@@ -62,14 +62,14 @@ class EvaBatchApi < Grape::API
     get 'my_evaluations' do
       params[:eva_batch_ids] = [params[:eva_batch_id]] if params[:eva_batch_ids].present?
       params[:funding_ids] = Funding.where('name ilike (?)', "%#{params[:funding_name]}%").map(&:id) if params[:funding_name].present?
-      template = Zombie::QuestionnaireTemplate.find 1002
+      template = Zombie::QsTemplate.find 1002
       evalutaions = template.my_evaluation(params.slice(:eva_batch_ids, :commit_status, :batch_funding_status, :funding_ids))
       present evalutaions, with: Entities::QuestionnaireEvaluation
     end
 
     resource ':id' do
       before do
-        @eva_batch = Zombie::QuestionnaireEvaBatch.system_find params[:id]
+        @eva_batch = Zombie::QsEvaBatch.system_find params[:id]
       end
 
       desc '获取待互评项目', entity: Entities::FundingLittleInfo
