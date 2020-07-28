@@ -3,6 +3,7 @@ module PaperTrail
     include StateConfig
     include PaperTrail::VersionConcern
     attr_accessor :type
+    belongs_to :item, -> { with_deleted }, polymorphic: true
 
     MEMBER_TYPE = ["member_change_org", "member_change_position", "member_create", "member_retire"]
     ORG_TYPE = ["org_ir_review", "org_create"]
@@ -38,7 +39,7 @@ module PaperTrail
           desc: '投资机构IR_Review',
           fit: -> (ins){ins.event == "create" &&
               ins.item_type == "Comment" &&
-              ins.item.present? &&
+              ins.item.deleted_at.nil? &&
               ins.object_changes["type"][1] == "IrReview" &&
               ins.object_changes["commentable_type"][1] == "Organization"}
       },

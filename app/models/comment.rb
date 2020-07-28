@@ -3,7 +3,7 @@ class Comment < ApplicationRecord
 
   include NotificationExtend
   
-  belongs_to :commentable, polymorphic: true
+  belongs_to :commentable, -> { with_deleted }, polymorphic: true
   belongs_to :user
 
   before_validation :set_current_user
