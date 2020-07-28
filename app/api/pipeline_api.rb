@@ -138,50 +138,6 @@ class PipelineApi < Grape::API
       env['api.format'] = :binary
       body File.read file_path
     end
-
-    desc 'Pipeline概览'
-    params do
-      optional :year, type: Integer, desc: '搜索的年份'
-      optional :month, type: Integer, desc: '搜索的月份'
-    end
-
-    get :overview do
-      res = Pipeline.group_by_status_type(params)
-      present res
-    end
-
-    desc 'Pipeline分组概览'
-    params do
-      optional :year, type: Integer, desc: '搜索的年份'
-      optional :month, type: Integer, desc: '搜索的月份'
-    end
-
-    get :team_overview do
-      res = Pipeline.group_by_team(params)
-      present res
-    end
-
-    desc 'Pipeline 预测收入和年内概率收入饼图'
-    params do
-      optional :year, type: Integer, desc: '搜索的年份'
-      optional :month, type: Integer, desc: '搜索的月份'
-    end
-
-    get :pie_for_bu do
-      res = Pipeline.statistic_pie_for_bu(params)
-      present res
-    end
-
-    desc 'Pipeline 按时间维度统计'
-    params do
-      optional :year, type: Integer, desc: '搜索的年份'
-      optional :month, type: Integer, desc: '搜索的月份'
-    end
-
-    get :statistic_by_month do
-      res = Pipeline.statistic_by_est_bill_date(params)
-      present res
-    end
   end
 
   mount HistoryApi, with: {owner: 'pipelines'}
