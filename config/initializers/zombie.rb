@@ -14,7 +14,7 @@ ZombieService.secret = secret
 Zombie.appid = appid
 Zombie.secret = secret
 
-
+ZombieService.standalone = true
 
 # ZombieService.service_host = "http://127.0.0.1:3003"           # 服务端本机地址和端口
 # ZombieService.service_name = "arrow_for_fa"                     # 服务端本机地址和端口
