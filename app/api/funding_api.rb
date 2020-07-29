@@ -65,8 +65,18 @@ class FundingApi < Grape::API
       #   optional :wechat, type: String, desc: '微信号'
       #   optional :description, type: String, desc: '简介'
       # end
-      given category: -> (val) { FundingPolyme.category_filter(:pp, :ma).include? val } do
+      given category: -> (val) { FundingPolymer.category_filter(:pp, :ma).include? val } do
         requires :calendar, type: Hash do
+          requires :contact_ids, type: Array[Integer], desc: '公司联系人id'
+          requires :cr_user_ids, type: Array[Integer], desc: '华兴参与人id'
+          requires :started_at, type: Time, desc: '开始时间'
+          requires :ended_at, type: Time, desc: '结束时间'
+          optional :address_id, type: Integer, desc: '会议地点id'
+        end
+      end
+
+      given category: -> (val) { !FundingPolymer.category_filter(:pp, :ma).include?(val) } do
+        optional :calendar, type: Hash do
           requires :contact_ids, type: Array[Integer], desc: '公司联系人id'
           requires :cr_user_ids, type: Array[Integer], desc: '华兴参与人id'
           requires :started_at, type: Time, desc: '开始时间'
@@ -87,7 +97,7 @@ class FundingApi < Grape::API
         @funding.add_project_follower(params)
         @funding.gen_funding_company_contacts(params)
         @funding.funding_various_file(params)
-        @funding.calendars.create!(declared(params)[:calendar].merge(company_id: params[:company_id], meeting_type: Calendar.meeting_type_face_value, meeting_category: Calendar.meeting_category_com_meeting_value))
+        @funding.calendars.create!(declared(params)[:calendar].merge(company_id: params[:company_id], meeting_type: Calendar.meeting_type_face_value, meeting_category: Calendar.meeting_category_com_meeting_value)) if params[:calendar].present?
       end
       present @funding, with: Entities::FundingLite
     end
