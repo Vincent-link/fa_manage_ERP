@@ -13,20 +13,29 @@ class Company < ApplicationRecord
   searchkick language: "chinese"
   scope :search_import, -> {includes(:calendars)}
 
-  validates_presence_of :name
-  validates_presence_of :one_sentence_intro
-  validates_presence_of :location_province_id
-  validates_presence_of :location_city_id
+  validates_presence_of :name, unless: :is_kun
+  validates_presence_of :one_sentence_intro, unless: :is_kun
+  validates_presence_of :location_province_id, unless: :is_kun
+  validates_presence_of :location_city_id, unless: :is_kun
+
+  attr_accessor :blob_id
 
   after_validation :save_to_dm
   before_save :syn_root_sector
 
   def save_to_dm
-    if self.new_record? && Zombie::DmCompany.find_by_id(self.id).nil?
-      dm_company = Zombie::DmCompany.create_company self.attributes_for_dm
-      self.id = dm_company.id
-    else
-      Zombie::DmCompany.find(self.id).update self.attributes_for_dm
+    if self.blob_id.present?
+      blob = ActiveStorage::Blob.find(self.blob_id)
+      self.logo_url = blob.service_url
+    end
+
+    if self.is_kun.nil?
+      if self.new_record?
+        dm_company = Zombie::DmCompany.create_company self.attributes_for_dm
+        self.id = dm_company.id
+      else
+        Zombie::DmCompany.find(self.id).update self.attributes_for_dm
+      end
     end
   end
 
@@ -185,63 +194,64 @@ class Company < ApplicationRecord
 
     Company.transaction do
       if dm_company = Zombie::DmCompany.where(id: id).first
-        if dm_company.slogan.present? && dm_company.location_city_id.present? && dm_company.location_province_id.present? && dm_company.name.present?
-          company.name = dm_company.name
-          company.one_sentence_intro = dm_company.slogan if company.one_sentence_intro.nil?
-          # 如何公司的logo是用户上传的，就不同步了
-          company.logo_url = dm_company.logo if company.logo_attachment.present?
-          company.sector_id = dm_company.sub_category_id
+        company.name = dm_company.name
+        company.one_sentence_intro = dm_company.slogan if company.one_sentence_intro.nil?
+        # 如果fa这边公司的logo是用户上传的，就不同步了
+        binding.pry
+        company.logo_url = dm_company.logo if company.logo_attachment.nil?
+        company.sector_id = dm_company.sub_category_id
 
-          company.recent_financing = Zombie.syn_recent_financing(dm_company.id)
-          company.parent_sector_id = dm_company.category_id
+        company.parent_sector_id = dm_company.category_id
+        company.location_city_id = dm_company.location_city_id
+        company.location_province_id = dm_company.location_province_id
+        company.detailed_intro = dm_company.com_des if company.detailed_intro.nil?
+        company.website = dm_company.url
 
-          company.location_city_id = dm_company.location_city_id
-          company.location_province_id = dm_company.location_province_id
-          company.detailed_intro = dm_company.com_des
-          company.website = dm_company.url
-
-          company.registered_name = dm_company.registered_name
-          company.created_at = dm_company.created_at
-          company.updated_at = dm_company.updated_at
-          if company.changed?
-            company.syn_at = Time.now
-            company.save!
-          end
-         end
+        company.registered_name = dm_company.registered_name
+        company.created_at = dm_company.created_at
+        company.updated_at = dm_company.updated_at
+        if company.changed?
+          company.syn_at = Time.now
+          company.is_kun = true
+          company.save!
+        end
       end
     end
   end
 
-  def Zombie.syn_recent_financing(dm_cpmany_id)
-    financing_events = Zombie::DmInvestevent.includes(:company, :invest_type, :invest_round).public_data.not_deleted.where(company_id: dm_cpmany_id)._select(:invest_round_id, :invest_type_id).sort_by(&:birth_date)
-    invest_types = Zombie::DmInvestType.all
-    if !financing_events.empty?
-      # 如果融资为私募或新三板的话，使用轮次；如果否的话，轮次是nil，使用融资类型表示
-      if !financing_events.last.try(:invest_round_id).nil?
-        recent_financing = financing_events.last.try(:invest_round_id)
-      # else
-      #   self.recent_financing = invest_types.find {|e| e.id == financing_events.last.try(:invest_type_id)}.try(:id)
-      end
-    end
-  end
+  # def Zombie.syn_recent_financing(dm_cpmany_id)
+  #   financing_events = Zombie::DmInvestevent.includes(:company, :invest_type, :invest_round).public_data.not_deleted.where(company_id: dm_cpmany_id)._select(:invest_round_id, :invest_type_id).sort_by(&:birth_date)
+  #   invest_types = Zombie::DmInvestType.all
+  #   if !financing_events.empty?
+  #     # 如果融资为私募或新三板的话，使用轮次；如果否的话，轮次是nil，使用融资类型表示
+  #     if !financing_events.last.try(:invest_round_id).nil?
+  #       recent_financing = financing_events.last.try(:invest_round_id)
+  #     # else
+  #     #   self.recent_financing = invest_types.find {|e| e.id == financing_events.last.try(:invest_type_id)}.try(:id)
+  #     end
+  #   end
+  # end
 
   # 日历约见已完成
   def callreport_num
     self.calendars.where(status: Calendar.status_done_value).count
   end
 
+  # 是否具有潜在融资需求
   def is_chance
     Zombie::DmCompany.find_by_id(self.id)&.overview&.cat_round_date_rate.to_f
   end
 
+  # 创建公司之后，和blob建立关联
   def save_logo(logo_params)
     if logo_params.present? && logo_params[:blob_id].present?
       ActiveStorage::Attachment.create!(name: 'logo', record_type: 'Company', record_id: self.id, blob_id: logo_params[:blob_id])
-      self.logo_url = self.logo_attachment.service_url
     end
   end
 
   def create_contact(contacts_params)
     contacts_params.map { |e| Contact.create!(e.merge(company_id: self.id)) } if contacts_params.present?
   end
+
+
 end

@@ -129,7 +129,7 @@ module ModelExport
           sheet1.row(row).default_format = default_format
           sheet1[row, 0] = pipeline[:status_desc]
           sheet1[row, 1] = pipeline[:funding_status_desc]
-          sheet1[row, 2] = rounds.find { |e| e["id"] == pipeline[:funding_round_id] }.fetch('name', nil)
+          sheet1[row, 2] = rounds.find { |e| e["id"] == pipeline[:funding_round_id] }&.fetch('name', nil)
           sheet1[row, 3] = Pipeline.est_amount_currency_desc_for_value(pipeline[:est_amount_currency])
           sheet1[row, 4] = pipeline[:est_amount]
           sheet1[row, 5] = pipeline[:total_fee_currency]

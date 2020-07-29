@@ -8,6 +8,7 @@ namespace :syn_company do
 
   desc "This task does nothing"
   task :initial do
-    Zombie::DmCompany.pluck(:id).each {|e| Company.syn(e)}
+    Company.syn(211139)
+    #Zombie::DmCompany.pluck(:id).each {|e| Company.syn(e)}
   end
 end

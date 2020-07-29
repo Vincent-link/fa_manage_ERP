@@ -37,7 +37,8 @@ casual_email: ['15611360995@163.com',
 
 zombie:
   host: "http://router.canary.huaxing.com:9787"
-  local_host: 'fa-test.huaxing.com'
+  local_host: 'http://127.0.0.1:3003'
+  router_conf_path: 'http://127.0.0.1:8770/set_model_path'
   #host: "http://localhost:8780"
   app_name: 'magazine_dev_lee'
 

@@ -148,7 +148,7 @@ class FundingPolymer < ApplicationRecord
   end
 
   def self.export(params)
-    params[:page], params[:per_page], params[:status] = 1, 100000, FundingPolymer.status_interesting
+    params[:page], params[:per_page], params[:status] = 1, 100000, FundingPolymer.status_interesting_value
     fundings = self.es_search(params)
     currency = CacheBox.dm_currencies.map{|ins| [ins['id'], ins['name']]}.to_h
     round = CacheBox.dm_single_rounds

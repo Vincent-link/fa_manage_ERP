@@ -20,15 +20,15 @@ class ReportMailer < ApplicationMailer
     delivery_mail!(email_params(user))
   end
 
-  def send_weekly_report
-
+  def send_weekly_report(user)
+    delivery_mail!(email_params(user))
   end
 
   def email_params(user)
     {
       from: ApplicationMailer::SMTP_ACCOUNT,
       to: [user.email],
-      subject: "Arrow For FA 日报（#{Time.current.strftime("%Y年%m月%d日")}）"
+      subject: "每周投资者信息变动汇总（2020年4月19日-2020年4月26日）"
     }
   end
 end

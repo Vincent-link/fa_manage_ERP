@@ -1,5 +1,6 @@
 class Verification < ApplicationRecord
   belongs_to :user, optional: true
+  belongs_to :sponsor, class_name: 'User', foreign_key: :sponsor, optional: true
   belongs_to :verifyable, polymorphic: true, optional: true
 
   include StateConfig

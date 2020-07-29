@@ -65,12 +65,24 @@ class FundingApi < Grape::API
       #   optional :wechat, type: String, desc: '微信号'
       #   optional :description, type: String, desc: '简介'
       # end
-      requires :calendar, type: Hash do
-        requires :contact_ids, type: Array[Integer], desc: '公司联系人id'
-        requires :cr_user_ids, type: Array[Integer], desc: '华兴参与人id'
-        requires :started_at, type: Time, desc: '开始时间'
-        requires :ended_at, type: Time, desc: '结束时间'
-        optional :address_id, type: Integer, desc: '会议地点id'
+      given category: -> (val) { FundingPolymer.category_filter(:pp, :ma).include? val } do
+        requires :calendar, type: Hash do
+          requires :contact_ids, type: Array[Integer], desc: '公司联系人id'
+          requires :cr_user_ids, type: Array[Integer], desc: '华兴参与人id'
+          requires :started_at, type: Time, desc: '开始时间'
+          requires :ended_at, type: Time, desc: '结束时间'
+          optional :address_id, type: Integer, desc: '会议地点id'
+        end
+      end
+
+      given category: -> (val) { !FundingPolymer.category_filter(:pp, :ma).include?(val) } do
+        optional :calendar, type: Hash do
+          requires :contact_ids, type: Array[Integer], desc: '公司联系人id'
+          requires :cr_user_ids, type: Array[Integer], desc: '华兴参与人id'
+          requires :started_at, type: Time, desc: '开始时间'
+          requires :ended_at, type: Time, desc: '结束时间'
+          optional :address_id, type: Integer, desc: '会议地点id'
+        end
       end
     end
     post do
@@ -85,7 +97,7 @@ class FundingApi < Grape::API
         @funding.add_project_follower(params)
         @funding.gen_funding_company_contacts(params)
         @funding.funding_various_file(params)
-        @funding.calendars.create!(declared(params)[:calendar].merge(company_id: params[:company_id], meeting_type: Calendar.meeting_type_face_value, meeting_category: Calendar.meeting_category_com_meeting_value))
+        @funding.calendars.create!(declared(params)[:calendar].merge(company_id: params[:company_id], meeting_type: Calendar.meeting_type_face_value, meeting_category: Calendar.meeting_category_com_meeting_value)) if params[:calendar].present?
       end
       present @funding, with: Entities::FundingLite
     end
@@ -142,7 +154,7 @@ class FundingApi < Grape::API
       optional :type_range, type: Array[Integer], desc: "范围#{Funding.type_range_id_name}", values: Funding.type_range_values
       optional :is_me, type: Boolean, desc: '是否查询我的项目'
     end
-    get do
+    get 'export' do
       params[:keyword] = '*' if ['', nil].include? params[:keyword]
       file_path, file_name = FundingPolymer.export(params)
       header['Content-Disposition'] = "attachment; filename=\"#{File.basename(file_name)}.xls\""

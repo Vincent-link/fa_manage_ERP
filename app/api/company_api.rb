@@ -47,7 +47,7 @@ class CompanyApi < Grape::API
         # dataserver那边注册公司为必填，而fa不是
         params[:registered_name] ||= ""
 
-        @company = Company.create!(params)
+        @company = Company.create!(params.merge(blob_id: logo[:blob_id]))
         @company.company_tag_ids = tags_params
         @company.save_logo(logo)
         @company.create_contact(contacts_params)
