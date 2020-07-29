@@ -65,12 +65,14 @@ class FundingApi < Grape::API
       #   optional :wechat, type: String, desc: '微信号'
       #   optional :description, type: String, desc: '简介'
       # end
-      requires :calendar, type: Hash do
-        requires :contact_ids, type: Array[Integer], desc: '公司联系人id'
-        requires :cr_user_ids, type: Array[Integer], desc: '华兴参与人id'
-        requires :started_at, type: Time, desc: '开始时间'
-        requires :ended_at, type: Time, desc: '结束时间'
-        optional :address_id, type: Integer, desc: '会议地点id'
+      given category: -> (val) { FundingPolyme.category_filter(:pp, :ma).include? val } do
+        requires :calendar, type: Hash do
+          requires :contact_ids, type: Array[Integer], desc: '公司联系人id'
+          requires :cr_user_ids, type: Array[Integer], desc: '华兴参与人id'
+          requires :started_at, type: Time, desc: '开始时间'
+          requires :ended_at, type: Time, desc: '结束时间'
+          optional :address_id, type: Integer, desc: '会议地点id'
+        end
       end
     end
     post do
