@@ -142,7 +142,7 @@ class FundingApi < Grape::API
       optional :type_range, type: Array[Integer], desc: "范围#{Funding.type_range_id_name}", values: Funding.type_range_values
       optional :is_me, type: Boolean, desc: '是否查询我的项目'
     end
-    get do
+    get 'export' do
       params[:keyword] = '*' if ['', nil].include? params[:keyword]
       file_path, file_name = FundingPolymer.export(params)
       header['Content-Disposition'] = "attachment; filename=\"#{File.basename(file_name)}.xls\""
