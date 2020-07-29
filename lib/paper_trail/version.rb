@@ -29,7 +29,7 @@ module PaperTrail
           desc: '离职一位投资人',
           fit: -> (ins){ins.event == "update" &&
               ins.item_type == "Member" &&
-              !ins.object_changes&.keys&.include?("organization_id")
+              !ins.object_changes&.keys&.include?("organization_id") &&
               ins.object_changes&.keys&.include?("is_dimission") &&
               ins.object_changes["is_dimission"][1]
           }
