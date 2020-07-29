@@ -2,18 +2,7 @@ module Entities
   class CompanyBaseInfo < Base
     expose :id, documentation: {type: 'integer', desc: '公司id'}
     expose :name, documentation: {type: 'string', desc: '公司名称'}
-    expose :logo_attachment do |ins|
-      binding.pry
-      if ins.logo_attachment.nil?
-        ins.logo_url
-      else
-        binding.pry
-        {
-          id: ins.logo_attachment.id
-
-        }
-      end
-    end
+    expose :logo_attachment, as: :logo, using: Entities::File, documentation: {type: Entities::File, desc: '公司头像', required: true}
     expose :one_sentence_intro, documentation: {type: 'string', desc: '一句话简介'}
     expose :location_province_id, documentation: {type: 'integer', desc: '省份'}
     expose :location_city_id, documentation: {type: 'integer', desc: '城市'}

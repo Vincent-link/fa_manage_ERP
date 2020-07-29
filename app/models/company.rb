@@ -24,12 +24,12 @@ class Company < ApplicationRecord
   before_save :syn_root_sector
 
   def save_to_dm
-    if self.blob_id.present?
-      blob = ActiveStorage::Blob.find(self.blob_id)
-      self.logo_url = blob.service_url
-    end
-
     if self.is_kun.nil?
+      if self.blob_id.present?
+        blob = ActiveStorage::Blob.find(self.blob_id)
+        self.logo_url = blob.service_url
+      end
+
       if self.new_record?
         dm_company = Zombie::DmCompany.create_company self.attributes_for_dm
         self.id = dm_company.id
@@ -197,7 +197,6 @@ class Company < ApplicationRecord
         company.name = dm_company.name
         company.one_sentence_intro = dm_company.slogan if company.one_sentence_intro.nil?
         # 如果fa这边公司的logo是用户上传的，就不同步了
-        binding.pry
         company.logo_url = dm_company.logo if company.logo_attachment.nil?
         company.sector_id = dm_company.sub_category_id
 
@@ -252,6 +251,4 @@ class Company < ApplicationRecord
   def create_contact(contacts_params)
     contacts_params.map { |e| Contact.create!(e.merge(company_id: self.id)) } if contacts_params.present?
   end
-
-
 end

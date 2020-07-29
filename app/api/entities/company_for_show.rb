@@ -2,7 +2,23 @@ module Entities
   class CompanyForShow < Base
     expose :id, documentation: {type: 'integer', desc: '公司id'}
     expose :name, documentation: {type: 'string', desc: '公司名称'}
-    expose :logo_attachment, as: :logo, using: Entities::File, documentation: {type: Entities::File, desc: '公司头像', required: true}
+    expose :logo_attachment, as: :logo, using: Entities::File, documentation: {type: Entities::File, desc: '公司头像', required: true} do |ins|
+      if ins.logo_attachment.nil?
+        {
+          id: 0,
+          service_url: ins.logo_url,
+          filename: "",
+          byte_size: 0
+        }
+      else
+        {
+          id: ins.logo_attachment.id,
+          service_url: ins.logo_attachment.service_url,
+          filename: ins.logo_attachment.filename,
+          byte_size: ins.logo.byte_size
+        }
+      end
+    end
     expose :website, documentation: {type: 'string', desc: '公司网址'}
     expose :one_sentence_intro, documentation: {type: 'string', desc: '一句话简介'}
     expose :detailed_intro, documentation: {type: 'string', desc: '详细介绍'}
