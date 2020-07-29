@@ -233,4 +233,15 @@ class Company < ApplicationRecord
   def is_chance
     Zombie::DmCompany.find_by_id(self.id)&.overview&.cat_round_date_rate.to_f
   end
+
+  def save_logo(logo_params)
+    if logo_params.present? && logo_params[:blob_id].present?
+      ActiveStorage::Attachment.create!(name: 'logo', record_type: 'Company', record_id: self.id, blob_id: logo_params[:blob_id])
+      self.logo_url = self.logo_attachment.service_url
+    end
+  end
+
+  def create_contact(contacts_params)
+    contacts_params.map { |e| Contact.create!(e.merge(company_id: self.id)) } if contacts_params.present?
+  end
 end

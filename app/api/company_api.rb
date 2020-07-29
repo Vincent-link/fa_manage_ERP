@@ -49,12 +49,8 @@ class CompanyApi < Grape::API
 
         @company = Company.create!(params)
         @company.company_tag_ids = tags_params
-
-        if logo.present?
-          ActiveStorage::Attachment.create!(name: 'logo', record_type: 'Company', record_id: @company.id, blob_id: logo[:blob_id])
-        end
-
-        contacts_params.map { |e| Contact.create!(e.merge(company_id: @company.id)) } if contacts_params.present?
+        @company.save_logo(logo)
+        @company.create_contact(contacts_params)
 
         present @company, with: Entities::CompanyForShow
       end
