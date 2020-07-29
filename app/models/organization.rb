@@ -23,12 +23,13 @@ class Organization < ApplicationRecord
   has_many :calendars
   has_many :track_logs
   has_many :investor_group_organizations
+  has_many :covered_users, through: :members, source: :users, class_name: 'User'
 
   after_validation :save_to_dm
 
   delegate :addresses, to: :dm_organization, prefix: false
 
-  scope :search_import, -> {includes(:ir_reviews, :newsfeeds, :comments, :members, :organization_tags, :investor_group_organizations)}
+  scope :search_import, -> {includes(:ir_reviews, :newsfeeds, :comments, :organization_tags, :investor_group_organizations, :members => [:users])}
 
   state_config :level, config: {
       a: {value: 'A', desc: 'A'},
@@ -87,7 +88,8 @@ class Organization < ApplicationRecord
                      investor_group_ids: investor_group_organizations.map(&:investor_group_id),
                      investor_group_id_tiers: investor_group_organizations.map {|group_detail| "#{group_detail.investor_group_id}-#{group_detail.tier}"},
                      i_id: self.id,
-                     tags: self.organization_tag_list
+                     tags: self.organization_tag_list,
+                     covered_user_ids: self.covered_user_ids
   end
 
   def self.es_search(params)
@@ -99,6 +101,7 @@ class Organization < ApplicationRecord
     where_hash[:currency_ids] = {all: params[:currency]} if params[:currency].present?
     where_hash[:level] = params[:level] if params[:level].present?
     where_hash[:tags] = params[:tags] if params[:tags].present?
+    where_hash[:covered_user_ids] = params[:covered_user_ids] if params[:covered_user_ids].present?
     if params[:investor_group_id].present?
       where_hash[:investor_group_ids] = params[:investor_group_id]
       where_hash[:investor_group_id_tiers] = params[:tier].map {|t| "#{params[:investor_group_id]}-#{t}"} if params[:tier].present?

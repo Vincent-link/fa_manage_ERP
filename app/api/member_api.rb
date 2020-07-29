@@ -107,7 +107,7 @@ class MemberApi < Grape::API
       when 'card'
         present members, with: Entities::MemberForCard
       when 'export'
-        present members.limit 300 #todo export
+        stream members
       when 'ecm_group'
         present members, with: Entities::MemberForEcmGroup
       end

@@ -1,4 +1,5 @@
 class Pipeline < ApplicationRecord
+  acts_as_paranoid
   has_paper_trail
   include StateConfig
   include ModelSearch::PipelineSearch

@@ -41,13 +41,15 @@ class Company < ApplicationRecord
         'detailed_intro' => 'com_des',
         'website' => 'url',
         'registered_name' => 'registered_name',
+        'logo_url' => 'logo',
     }
     self.attributes.transform_keys {|k| dm_key_map[k]}.compact
   end
 
   def search_data
     attributes.merge calendar_summary: "#{self.calendars.map(&:summary).join(' ')}",
-                     calendar_summary_detail: "#{self.calendars.map(&:summary_detail).join(' ')}"
+                     calendar_summary_detail: "#{self.calendars.map(&:summary_detail).join(' ')}",
+                     cat_round_date_rate: is_chance
   end
 
   def sector_ids
@@ -64,12 +66,14 @@ class Company < ApplicationRecord
     where_hash[:parent_sector_id] = params[:sector_ids] if params[:sector_ids].present?
     where_hash[:is_ka] = params[:is_ka] if !params[:is_ka].nil?
     where_hash[:recent_financing] = params[:recent_financing_ids] if params[:recent_financing_ids].present?
-    order_hash = {"updated_at" => "desc"}
+    where_hash[:cat_round_date_rate] = Settings.company.invest_rate_min..Settings.company.invest_rate_max if params[:is_chance]
+
+    order_hash = {}
     # if params[:order_by]
     #   order_hash = {params[:order_by] => params[:order_type]}
     # end
-    
-    Company.search(params[:query], fields: [:name, :parent_sector_id, :one_sentence_intro, :detailed_intro], where: where_hash, order: order_hash, page: params[:page], per_page: params[:per_page], highlight: DEFAULT_HL_TAG)
+
+    Company.search(params[:query], fields: [:name, :parent_sector_id, :one_sentence_intro, :detailed_intro, :calendar_summary, :calendar_summary_detail, :cat_round_date_rate], where: where_hash, order: order_hash, page: params[:page], per_page: params[:per_page], highlight: DEFAULT_HL_TAG)
   end
 
   def tc_search_highlights
@@ -183,8 +187,9 @@ class Company < ApplicationRecord
       if dm_company = Zombie::DmCompany.where(id: id).first
         if dm_company.slogan.present? && dm_company.location_city_id.present? && dm_company.location_province_id.present? && dm_company.name.present?
           company.name = dm_company.name
-          company.one_sentence_intro = dm_company.slogan
-          # company.logo = ""
+          company.one_sentence_intro = dm_company.slogan if company.one_sentence_intro.nil?
+          # 如何公司的logo是用户上传的，就不同步了
+          company.logo_url = dm_company.logo if company.logo_attachment.present?
           company.sector_id = dm_company.sub_category_id
 
           company.recent_financing = Zombie.syn_recent_financing(dm_company.id)
@@ -223,5 +228,9 @@ class Company < ApplicationRecord
   # 日历约见已完成
   def callreport_num
     self.calendars.where(status: Calendar.status_done_value).count
+  end
+
+  def is_chance
+    Zombie::DmCompany.find_by_id(self.id)&.overview&.cat_round_date_rate.to_f
   end
 end

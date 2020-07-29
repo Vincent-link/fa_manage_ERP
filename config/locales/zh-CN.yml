@@ -38,7 +38,8 @@ zh-CN:
       kpi_group: KPI组
       statistic: 统计
       user_cover_investor: 我覆盖的投资人
-
+      eva_batch: 互评
+      
   activerecord:
     models:
       organization: 投资机构

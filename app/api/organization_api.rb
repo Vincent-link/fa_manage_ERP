@@ -14,6 +14,7 @@ class OrganizationApi < Grape::API
       optional :tags, type: Array[String], desc: '机构标签'
       optional :level, type: Array[String], desc: '分级'
       optional :investor_group_id, type: Integer, desc: '投资人名单id'
+      optional :covered_user_ids, type: Array[Integer], desc: '对接人'
       optional :tier, type: Array[Integer], desc: 'tier'
       optional :currency, type: Array[Integer], desc: '币种', default: []
       requires :layout, type: String, desc: 'index/select', default: 'index', values: ['index', 'select', 'ecm_group']

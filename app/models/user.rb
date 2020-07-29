@@ -235,4 +235,9 @@ class User < ApplicationRecord
     end
   end
 
+  def self.can_operate_eva_batch
+    user = User.find Thread.current[:current_user]
+    true
+    # todo 判断有没有操作互评的权限
+  end
 end

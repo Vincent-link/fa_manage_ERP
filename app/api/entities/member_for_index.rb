@@ -15,5 +15,6 @@ module Entities
     expose :round_ids, documentation: {type: 'integer', desc: '轮次', is_array: true}
     expose :any_round, documentation: {type: 'boolean', desc: '是否不限轮次'}
     expose :followed_location_ids, documentation: {type: 'integer', desc: '关注地区', is_array: true}
+    expose :t_search_highlights, as: :search_highlights, documentation: {type: 'hash', desc: 'es结果高亮'}
   end
 end

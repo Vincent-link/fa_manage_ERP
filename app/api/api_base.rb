@@ -83,6 +83,7 @@ class ApiBase < Grape::API
   mount KnowledgeBaseApi
   mount StatisticsApi
   mount UserCoverInvestorApi
+  mount EvaBatchApi
 
   add_swagger_documentation array_use_braces: true
 end

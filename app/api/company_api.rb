@@ -5,6 +5,7 @@ class CompanyApi < Grape::API
       optional :query, type: String, desc: '检索文本', default: '*'
       optional "sector_ids[]", type: Integer, desc: '行业'
       optional :is_ka, type: Boolean, desc: 'KA'
+      optional :is_chance, type: Boolean, desc: '潜在融资需求'
       optional "recent_financing_ids[]", type: Integer, desc: '最近融资'
       requires :page, type: Integer, desc: '页数', default: 1
       optional :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 30
@@ -154,7 +155,7 @@ class CompanyApi < Grape::API
         optional :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 30
       end
       get :competing_companies do
-        competing_companies = Company.limit(100).paginate(page: params[:page], per_page: params[:page_size]).order(created_at: :desc)
+        competing_companies = Company.limit(100).paginate(page: params[:page], per_page: params[:per_page]).order(created_at: :desc)
         present competing_companies, with: Entities::CompanyForCompeting
       end
 
@@ -164,7 +165,7 @@ class CompanyApi < Grape::API
         optional :page_size, as: :per_page, type: Integer, desc: '每页条数', default: 30
       end
       get :news do
-        news = News.limit(100).paginate(page: params[:page], per_page: params[:page_size]).order(created_at: :desc)
+        news = News.limit(100).paginate(page: params[:page], per_page: params[:per_page]).order(created_at: :desc)
         present news, with: Entities::News
       end
     end
