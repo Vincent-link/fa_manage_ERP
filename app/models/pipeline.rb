@@ -96,7 +96,8 @@ class Pipeline < ApplicationRecord
       time_weight_rate: time_weight_rate(date),
       company_sector_ids: funding.company.sector_ids,
       company_sectors: company_sectors,
-      total_fee: total_fee # TODO: total_fee有为nil的数据
+      total_fee: total_fee, #total_fee有为空的数据
+      total_fee_currency: total_fee_currency # total_fee_currency为空
     }
   end
 
@@ -109,9 +110,14 @@ class Pipeline < ApplicationRecord
     }
   end
 
-  # TODO: total_fee有为nil的数据
+  # total_fee有为空时
   def total_fee
-    self.read_attribute(:total_fee).nil? ? 0 : self.read_attribute(:total_fee)
+    self.read_attribute(:total_fee).blank? ? 0 : self.read_attribute(:total_fee)
+  end
+
+  # total_fee_currency为空时
+  def total_fee_currency
+    self.read_attribute(:total_fee_currency).blank? ? self.est_amount_currency : self.read_attribute(:total_fee_currency)
   end
 
   def version_funding(date = nil)
